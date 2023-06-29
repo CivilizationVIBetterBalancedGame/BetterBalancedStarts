@@ -81,43 +81,21 @@ function BBS_AssignStartingPlots.Create(args)
         BBS_MIN_DISTANCE = MapConfiguration.GetValue("BBSMinDistance"),
     }
 
-    -- Get Players data
-    local bbs_civilisations = {};
-    local civilisationsIDs = PlayerManager.GetAliveMajorIDs();
+    instance = {
+        __InitStartingData      = BBS_AssignStartingPlots.__InitStartingData,
+        __FindBias              = BBS_AssignStartingPlots.__FindBias,
+        __ComputeBiasScore      = BBS_AssignStartingPlots.__ComputeBiasScore,
+        __GetTerrainIndex       = BBS_AssignStartingPlots.__GetTerrainIndex,
+        __GetFeatureIndex       = BBS_AssignStartingPlots.__GetFeatureIndex,
+        __GetResourceIndex      = BBS_AssignStartingPlots.__GetResourceIndex,
 
-    for i = 1, PlayerManager.GetAliveMajorsCount() do
-        local leader = PlayerConfigurations[civilisationsIDs[i]]:GetLeaderTypeName();
-        local name = PlayerConfigurations[civilisationsIDs[i]]:GetCivilizationTypeName();
-        local team = Players[civilisationsIDs[i]]:GetTeam();
-
-        print(leader, name, team);
-
-        table.insert(bbs_civilisations, {
-            leader = leader,
-            name = name,
-            team = team
-        });
-    end
-
-    -- Get City States data
-    local bbs_citystates = {}
-    local citystatesIDs = PlayerManager.GetAliveMinorIDs();
-
-    for i = 1, PlayerManager.GetAliveMinorsCount() do
-        local leader = PlayerConfigurations[citystatesIDs[i]]:GetLeaderTypeName();
-        local name = PlayerConfigurations[citystatesIDs[i]]:GetCivilizationTypeName();
-        
-        print(leader, name);
-
-        table.insert(bbs_citystates, {
-            leader = leader,
-            name = name
-        });
-    end
+        majorSpawns = {},
+        minorSpawns = {},
+    }
 
     -- Get Bias all
-    local bbs_negative_bias = {}
-    local bbs_custom_bias = {}
+    bbs_negative_bias = {}
+    bbs_custom_bias = {}
 
     -- Custom negative bias located in StartBiasNegatives table
     local ret = DB.Query("SELECT * from StartBiasNegatives");
@@ -145,7 +123,6 @@ function BBS_AssignStartingPlots.Create(args)
             });
         end
     end
-
     -- Get min distance
     local bbs_min_distance = bbs_game_config.BBS_MIN_DISTANCE
     print("bbs_min_distance", bbs_min_distance)
@@ -155,8 +132,38 @@ function BBS_AssignStartingPlots.Create(args)
     then
         bbs_min_distance = BBS_MAP_MAP_SCRIPT_TO_MIN_DISTANCE[bbs_game_config.BBS_MAP_SCRIPT]
     end
+    
+    -- Get Players data
+    local bbs_civilisations = {};
+    local civilisationsIDs = PlayerManager.GetAliveMajorIDs();
 
-    -- Adjust min distance in function of player number
+    for i = 1, PlayerManager.GetAliveMajorsCount() do
+        local player = Players[civilisationsIDs[i]];
+        local leader = PlayerConfigurations[civilisationsIDs[i]]:GetLeaderTypeName();
+        local name = PlayerConfigurations[civilisationsIDs[i]]:GetCivilizationTypeName();
+        local team = Players[civilisationsIDs[i]]:GetTeam();
+        local newCivilization = CivilizationAssignSpawn.new(player, leader, name, team)
+
+        table.insert(bbs_civilisations, newCivilization);
+
+        --instance.iNumMajorCivs = instance.iNumMajorCivs + 1
+        --table.insert(instance.majorList, civilisationsIDs[i])
+    end
+
+    -- Get City States data
+    local bbs_citystates = {}
+    local citystatesIDs = PlayerManager.GetAliveMinorIDs();
+
+    for i = 1, PlayerManager.GetAliveMinorsCount() do
+        local player = Players[citystatesIDs[i]];
+        local leader = PlayerConfigurations[citystatesIDs[i]]:GetLeaderTypeName();
+        local name = PlayerConfigurations[citystatesIDs[i]]:GetCivilizationTypeName();
+        local newCS = CivilizationAssignSpawn.new(player, leader, name, nil)
+        
+        table.insert(bbs_citystates, newCS);
+    end
+
+     -- Adjust min distance in function of player number
     -- Count number of real players in the game
     total_players = 0
     for i = 1, PlayerManager.GetAliveMajorsCount() do
@@ -174,27 +181,70 @@ function BBS_AssignStartingPlots.Create(args)
         bbs_min_distance = bbs_min_distance + 2;
     end
 
-
     -- Set game properties
     Game:SetProperty("BBS_MAJOR_DISTANCE", bbs_min_distance)
 
-    instance = {
-        __InitStartingData = BBS_AssignStartingPlots.__InitStartingData,
-    }
+    if MapConfiguration.GetValue("BBS_Team_Spawn") ~= nil then
+		Teamers_Config = MapConfiguration.GetValue("BBS_Team_Spawn")
+	end
+
+    local BBS_failed = false;
 
     instance:__InitStartingData()
 
-    if true then
+    print("Start Assign Centroid",  os.date("%c"))
+    -- Place civs, highest bias first
+    table.sort(bbs_civilisations, function (a, b)
+        return a.HighestBias < b.HighestBias;
+    end)
+    for _, civ in pairs(bbs_civilisations) do
+        civ:AssignSpawnByCentroid(BBS_HexMap);
+    end
+
+    -- Firaxis attribution of spawns 
+    for j, civ in pairs(bbs_civilisations) do
+        if civ.CivilizationLeader ~= BBS_LEADER_TYPE_SPECTATOR then
+            civ.Player:SetStartingPlot(civ.StartingHex.Plot)
+            table.insert(instance.majorSpawns, civ.StartingHex);
+            print(civ.CivilizationLeader.." spawn = "..tostring(civ.StartingHex:PrintXY()))
+        else
+            local hex0 = BBS_HexMap:GetHexInMap(j, 0);
+            civ.Player:SetStartingPlot(hex0.Plot)
+        end
+    end
+    -- randomly place cs in free space
+    for i, cs in pairs(bbs_citystates) do
+        local foundSpawn = false
+        local validspawnsleft = BBS_HexMap:GetAnySpawnablesTiles()
+        while foundSpawn == false do
+            local rng = TerrainBuilder.GetRandomNumber(#validspawnsleft - 1, "Random valid spawns");
+            local testedHex = validspawnsleft[rng+1]
+            local distMinor = testedHex:DistanceToClosest(BBS_HexMap, instance.minorSpawns) 
+            local distMajor = testedHex:DistanceToClosest(BBS_HexMap, instance.majorSpawns)
+            if testedHex.IsCivStartingPlot == false and (distMinor == nil or distMinor > 7) and (distMajor == nil or distMajor > 8) then
+                foundSpawn = true;
+                table.insert(instance.minorSpawns, testedHex);
+                cs.StartingHex = testedHex
+                testedHex.IsCivStartingPlot = true;
+                cs.Player:SetStartingPlot(cs.StartingHex.Plot)
+                print("CS "..tostring(i).." spawn = "..tostring(cs.StartingHex:PrintXY()))
+            end
+        end
+        
+    end
+    --StartPositioner.DivideMapIntoMinorRegions(instance.iNumMinorCivs);
+    Game:SetProperty("BBS_RESPAWN", true)
+    print("End Assign Centroid",  os.date("%c"))
+    
+    if BBS_failed then
         print("BBS_AssignStartingPlots: To Many Attempts Failed - Go to Firaxis Placement")
         Game:SetProperty("BBS_RESPAWN", false)
         local argSPlot = AssignStartingPlots.Create(args)
-        CheckSpawn();
-        return argSPlot;
-    end
-    
 
+        return instance;
+    end
     -- print("BBS_AssignStartingPlots: Sending Data")
-    -- return instance
+    return instance
 end
 
 BBS_resources_count = {};
@@ -217,6 +267,9 @@ function BBS_AssignStartingPlots:__InitStartingData()
 
     BBS_HexMap:RunKmeans(20, 30);
     BBS_HexMap:PrintHexMap();
+    for _, c in pairs(BBS_HexMap.centroidsArray) do
+        c:ComputeCentroidScore();
+    end
     -- TEMP get hexes from a region (same centroid)
     -- TEMP count % of hills in a region
     for index, centroid in ipairs(BBS_HexMap.centroidsArray) do
@@ -240,106 +293,7 @@ function BBS_AssignStartingPlots:__InitStartingData()
     print("Hill% = "..tostring(hillpercent).." %")
      --------------------
     print("Done parsing map",  os.date("%c"))
+
 end
 
 
-function BBS_AssignStartingPlots:__GetTerrainIndex(terrainType)
-    if (terrainType == "TERRAIN_COAST") then
-        return g_TERRAIN_TYPE_COAST;
-    elseif (terrainType == "TERRAIN_DESERT") then
-        return g_TERRAIN_TYPE_DESERT;
-    elseif (terrainType == "TERRAIN_TUNDRA") then
-        return g_TERRAIN_TYPE_TUNDRA;
-    elseif (terrainType == "TERRAIN_SNOW") then
-        return g_TERRAIN_TYPE_SNOW;
-    elseif (terrainType == "TERRAIN_PLAINS") then
-        return g_TERRAIN_TYPE_PLAINS;
-    elseif (terrainType == "TERRAIN_GRASS") then
-        return g_TERRAIN_TYPE_GRASS;
-    elseif (terrainType == "TERRAIN_DESERT_HILLS") then
-        return g_TERRAIN_TYPE_DESERT_HILLS;
-    elseif (terrainType == "TERRAIN_TUNDRA_HILLS") then
-        return g_TERRAIN_TYPE_TUNDRA_HILLS;
-    elseif (terrainType == "TERRAIN_TUNDRA_MOUNTAIN") then
-        return g_TERRAIN_TYPE_TUNDRA_MOUNTAIN;
-    elseif (terrainType == "TERRAIN_SNOW_HILLS") then
-        return g_TERRAIN_TYPE_SNOW_HILLS;
-    elseif (terrainType == "TERRAIN_PLAINS_HILLS") then
-        return g_TERRAIN_TYPE_PLAINS_HILLS;
-    elseif (terrainType == "TERRAIN_GRASS_HILLS") then
-        return g_TERRAIN_TYPE_GRASS_HILLS;
-    elseif (terrainType == "TERRAIN_GRASS_MOUNTAIN") then
-        return g_TERRAIN_TYPE_GRASS_MOUNTAIN;
-    elseif (terrainType == "TERRAIN_PLAINS_MOUNTAIN") then
-        return g_TERRAIN_TYPE_PLAINS_MOUNTAIN;
-    elseif (terrainType == "TERRAIN_DESERT_MOUNTAIN") then
-        return g_TERRAIN_TYPE_DESERT_MOUNTAIN;
-    end
-end
-
-function BBS_AssignStartingPlots:__GetFeatureIndex(featureType)
-    if (featureType == "FEATURE_VOLCANO") then
-        return g_FEATURE_VOLCANO;
-    elseif (featureType == "FEATURE_JUNGLE") then
-        return g_FEATURE_JUNGLE;
-    elseif (featureType == "FEATURE_FOREST") then
-        return g_FEATURE_FOREST;
-    elseif (featureType == "FEATURE_MARSH") then
-        return 5;
-    elseif (featureType == "FEATURE_FLOODPLAINS") then
-        return g_FEATURE_FLOODPLAINS;
-    elseif (featureType == "FEATURE_FLOODPLAINS_PLAINS") then
-        return g_FEATURE_FLOODPLAINS_PLAINS;
-    elseif (featureType == "FEATURE_FLOODPLAINS_GRASSLAND") then
-        return g_FEATURE_FLOODPLAINS_GRASSLAND;
-    elseif (featureType == "FEATURE_GEOTHERMAL_FISSURE") then
-        return g_FEATURE_GEOTHERMAL_FISSURE;
-    end
-end
-
-function BBS_AssignStartingPlots:__GetResourceIndex(resourceType)
-    local resourceTypeName = "LOC_" .. resourceType .. "_NAME";
-    for row in GameInfo.Resources() do
-        if (row.Name == resourceTypeName) then
-            return row.Index;
-        end
-    end
-end
-
--- TEMP Testing methods for HexMap functions and ideas
-function CheckSpawn()
-    print("CheckSpawn testing custom methods");
-    local tempMajorList = PlayerManager.GetAliveMajorIDs();
-    for i = 1, PlayerManager.GetAliveMajorsCount() do
-        local startPlot = Players[tempMajorList[i]]:GetStartingPlot();
-        if (startPlot == nil) then
-            bError_major = true
-            --___Debug("Error Major Player is missing:", tempMajorList[i]);
-            print("Error Major Player is missing:", tempMajorList[i]);
-        else
-            local civName = PlayerConfigurations[tempMajorList[i]]:GetCivilizationTypeName()
-            ___Debug("Major Start X: ", startPlot:GetX(), "Major Start Y: ", startPlot:GetY(), "ID:",civName);
-            local startingHex = BBS_HexMap:GetHexInMap(startPlot:GetX(), startPlot:GetY())
-            local nbPlotIle = startPlot:GetArea():GetPlotCount() --TODO in HexMap
-            print("Plot Area = "..tostring(startPlot:GetArea():GetID()).." et nb cases = "..nbPlotIle)    
-            local plotTotal = 0
-            local numberKO = 0
-            local hexesInRing7 = BBS_HexMap:GetAllHexInRing(startingHex, 7) --TODO ignore spectator
-            for i = 1, #hexesInRing7 do
-                plotTotal = plotTotal + 1
-                if hexesInRing7[i]:IsImpassable() then
-                    numberKO = numberKO + 1
-                end
-            end
-            local unworkableHexPercent = (numberKO / plotTotal) * 100
-            local workableTileThreshold = 50
-            local islandThreshold = 50
-            if unworkableHexPercent > workableTileThreshold then
-                print("Starting tile ("..startingHex:GetX()..", "..startingHex:GetY()..") for "..civName.." has more than "..tostring(unworkableHexPercent).." percent of unworkable tiles in ring 7.")
-            end
-            if nbPlotIle < islandThreshold then
-                print("Starting tile ("..startingHex:GetX()..", "..startingHex:GetY()..") for "..civName.." is on a islands with less than "..tostring(islandThreshold).." tiles.")
-            end
-        end
-    end
-end
