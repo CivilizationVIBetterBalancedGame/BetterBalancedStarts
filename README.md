@@ -31,8 +31,10 @@ GameConfiguration.IsAnyMultiplayer();
 ## MapConfiguration
 ```lua
 MapConfiguration.GetValue(string);
+```
 
--- Players
+## Players
+```lua
 --[[
     [list] of all Players accessible from IDS
     Players[ID]:GetTeam();
