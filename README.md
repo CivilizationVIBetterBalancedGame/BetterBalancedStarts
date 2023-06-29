@@ -1,10 +1,13 @@
 # BetterBalancedStarts
 
-```-- Game)
+## Game
+```lua
 Game:SetProperty(string, int);
 Game:GetProperty(string);
+```
 
--- GameInfo
+## GameInfo
+```lua
 GameInfo.StartBiasResources();
 GameInfo.StartBiasFeatures();
 GameInfo.StartBiasTerrains();
@@ -16,13 +19,17 @@ GameInfo.TypeTags();
 --[[ GameInfo.Resources[ResourceType] ]]--
 --[[ GameInfo.Leaders_XP2[LeaderType] ]]--
 --[[ GameInfo.Leaders_XP2[LeaderType].OceanStart ]]--
+```
 
--- GameConfiguration
+## GameConfiguration
+```lua
 GameConfiguration.GetStartEra();
 GameConfiguration.GetValue(string);
 GameConfiguration.IsAnyMultiplayer();
+```
 
--- MapConfiguration
+## MapConfiguration
+```lua
 MapConfiguration.GetValue(string);
 
 -- Players
@@ -34,31 +41,41 @@ MapConfiguration.GetValue(string);
     Players[ID]:IsAlive(); -- bool
     Players[ID]:IsMajor(); -- bool
 ]]--
+```
 
--- PlayerManager
+## PlayerManager
+```lua
 PlayerManager.GetAliveMajorIDs(); -- Civilisations
 PlayerManager.GetAliveMinorIDs(); -- City States
 PlayerManager.GetAliveMajorsCount();
 PlayerManager.GetAliveMinorsCount();
+```
 
--- PlayerConfigurations
+## PlayerConfigurations
+```lua
 --[[
     [list] of all civ in the game including CS accessible from IDS
     PlayerConfigurations[ID]:GetLeaderTypeName();
     PlayerConfigurations[ID]:GetCivilizationTypeName();
     PlayerConfigurations[ID]:GetHandicapTypeID(); --> 2021024770 seems to be not counted as real player.
 ]]--
+```
 
--- TerrainBuilder
+## TerrainBuilder
+```lua
 TerrainBuilder.SetTerrainType(plot, terrainID);
 TerrainBuilder.SetFeatureType(plot, featureID, 1); -- if featureID is -1, no need for the added as last argument and will remove feature, need to check for flood plains.
 TerrainBuilder.GetRandomNumber(range, string);
+```
 
--- ResourceBuilder
+## ResourceBuilder
+```lua
 ResourceBuilder.SetResourceType(plot, resourceID, 1);
 ResourceBuilder.CanHaveResource(plot, resourceID); -- return bool
-    
--- Map
+```  
+
+## Map
+```lua
 Map.GetMapSize(); -- return map size from configs
 local width, height = Map.GetGridSize(); -- return grid size
 local count = Map.GetPlotCount(); -- return number of plots in the map
@@ -68,8 +85,10 @@ local plot = Map.GetAdjacentPlot(X, Y, index); -- What is index ?
 local distance = Map.GetPlotDistance(indexA, indexB); -- return distance between 2 plots
 local plot = Map.GetPlotXYWithRangeCheck(plotX, plotY, dx, dy, index) -- What is index ?
 local plot = Map.GetPlotXY(plotX, plotY, dx, dy, index); -- What is index ?
+```
 
--- Plot functions
+## Plot
+```lua
 -- from plot reference Types
 plot:GetFeatureType();
 plot:GetTerrainType();
@@ -95,4 +114,5 @@ plot:GetContinentType();
 -- Indexing / coords from plot
 plot:GetIndex();
 plot:GetX();
-plot:GetY();```
+plot:GetY();
+```
