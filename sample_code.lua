@@ -1,40 +1,39 @@
----------------------------------------------------------------------------------
--- definition of Globals --------------------------------------------------------
----------------------------------------------------------------------------------
-
+--------------------------------------------------------------------------------
+-- constant definition  --------------------------------------------------------
+--------------------------------------------------------------------------------
 -- Min distance definition
-local BBS_MAP_MAP_SCRIPT_TO_DISTANCE = {};
-BBS_MAP_MAP_SCRIPT_TO_DISTANCE["Highlands_XP2.lua"] = 15
-BBS_MAP_MAP_SCRIPT_TO_DISTANCE["Lakes.lua"] = 15
-BBS_MAP_MAP_SCRIPT_TO_DISTANCE["InlandSea.lua"] = 14
-BBS_MAP_MAP_SCRIPT_TO_DISTANCE["Seven_Seas.lua"] = 13
-BBS_MAP_MAP_SCRIPT_TO_DISTANCE["Primordial.lua"] = 13
-BBS_MAP_MAP_SCRIPT_TO_DISTANCE["Pangaea.lua"] = 12
-BBS_MAP_MAP_SCRIPT_TO_DISTANCE["DWPangaea.lua"] = 12
-BBS_MAP_MAP_SCRIPT_TO_DISTANCE["Shuffle.lua"] = 12
-BBS_MAP_MAP_SCRIPT_TO_DISTANCE["Tilted_Axis.lua"] = 12
-BBS_MAP_MAP_SCRIPT_TO_DISTANCE["Tilted_Axis.lua"] = 12
-BBS_MAP_MAP_SCRIPT_TO_DISTANCE["Fractal.lua"] = 10
-BBS_MAP_MAP_SCRIPT_TO_DISTANCE["Island_Plates.lua"] = 10
-BBS_MAP_MAP_SCRIPT_TO_DISTANCE["Small_Continents.lua"] = 10
-BBS_MAP_MAP_SCRIPT_TO_DISTANCE["Archipelago_XP2.lua" ] = 10
-BBS_MAP_MAP_SCRIPT_TO_DISTANCE["Continents.lua"] = 10
-BBS_MAP_MAP_SCRIPT_TO_DISTANCE["Wetlands_XP2.lua"] = 10
-BBS_MAP_MAP_SCRIPT_TO_DISTANCE["Continents_Islands.lua"] = 10
-BBS_MAP_MAP_SCRIPT_TO_DISTANCE["Splintered_Fractal.lua"] = 10
-BBS_MAP_MAP_SCRIPT_TO_DISTANCE["DWArchipelago.lua"] = 10
-BBS_MAP_MAP_SCRIPT_TO_DISTANCE["DWFractal.lua"] = 10
-BBS_MAP_MAP_SCRIPT_TO_DISTANCE["DWMixedLand.lua"] = 10
-BBS_MAP_MAP_SCRIPT_TO_DISTANCE["DWSmallContinents.lua"] = 10
-BBS_MAP_MAP_SCRIPT_TO_DISTANCE["DWMixedIslands.lua"] = 10
-BBS_MAP_MAP_SCRIPT_TO_DISTANCE["Terra.lua"] = 8
+local BBS_MAP_MAP_SCRIPT_TO_MIN_DISTANCE = {};
+BBS_MAP_MAP_SCRIPT_TO_MIN_DISTANCE["Highlands_XP2.lua"] = 15
+BBS_MAP_MAP_SCRIPT_TO_MIN_DISTANCE["Lakes.lua"] = 15
+BBS_MAP_MAP_SCRIPT_TO_MIN_DISTANCE["InlandSea.lua"] = 14
+BBS_MAP_MAP_SCRIPT_TO_MIN_DISTANCE["Seven_Seas.lua"] = 13
+BBS_MAP_MAP_SCRIPT_TO_MIN_DISTANCE["Primordial.lua"] = 13
+BBS_MAP_MAP_SCRIPT_TO_MIN_DISTANCE["Pangaea.lua"] = 12
+BBS_MAP_MAP_SCRIPT_TO_MIN_DISTANCE["DWPangaea.lua"] = 12
+BBS_MAP_MAP_SCRIPT_TO_MIN_DISTANCE["Shuffle.lua"] = 12
+BBS_MAP_MAP_SCRIPT_TO_MIN_DISTANCE["Tilted_Axis.lua"] = 12
+BBS_MAP_MAP_SCRIPT_TO_MIN_DISTANCE["Tilted_Axis.lua"] = 12
+BBS_MAP_MAP_SCRIPT_TO_MIN_DISTANCE["Fractal.lua"] = 10
+BBS_MAP_MAP_SCRIPT_TO_MIN_DISTANCE["Island_Plates.lua"] = 10
+BBS_MAP_MAP_SCRIPT_TO_MIN_DISTANCE["Small_Continents.lua"] = 10
+BBS_MAP_MAP_SCRIPT_TO_MIN_DISTANCE["Archipelago_XP2.lua"] = 10
+BBS_MAP_MAP_SCRIPT_TO_MIN_DISTANCE["Continents.lua"] = 10
+BBS_MAP_MAP_SCRIPT_TO_MIN_DISTANCE["Wetlands_XP2.lua"] = 10
+BBS_MAP_MAP_SCRIPT_TO_MIN_DISTANCE["Continents_Islands.lua"] = 10
+BBS_MAP_MAP_SCRIPT_TO_MIN_DISTANCE["Splintered_Fractal.lua"] = 10
+BBS_MAP_MAP_SCRIPT_TO_MIN_DISTANCE["DWArchipelago.lua"] = 10
+BBS_MAP_MAP_SCRIPT_TO_MIN_DISTANCE["DWFractal.lua"] = 10
+BBS_MAP_MAP_SCRIPT_TO_MIN_DISTANCE["DWMixedLand.lua"] = 10
+BBS_MAP_MAP_SCRIPT_TO_MIN_DISTANCE["DWSmallContinents.lua"] = 10
+BBS_MAP_MAP_SCRIPT_TO_MIN_DISTANCE["DWMixedIslands.lua"] = 10
+BBS_MAP_MAP_SCRIPT_TO_MIN_DISTANCE["Terra.lua"] = 8
 
 -- Special civilisation types
 BBS_LEADER_TYPE_SPECTATOR = "LEADER_SPECTATOR"
 
----------------------------------------------------------------------------------
--- Gather base game info and setup config ---------------------------------------
----------------------------------------------------------------------------------
+--------------------------------------------------------------------------------
+-- Gather base game info and setup config --------------------------------------
+--------------------------------------------------------------------------------
 
 -- Get map size and min distance data
 local Width, Height = Map.GetGridSize();
@@ -43,7 +42,7 @@ local mapScript = MapConfiguration.GetValue("MAP_SCRIPT");
 
 -- Set min distance if minDistance is nil or 0
 if ((minDistance == nil or minDistance == 0) and mapScript ~= nil) then
-    minDistance = BBS_MAP_MAP_SCRIPT_TO_DISTANCE[mapScript]
+    minDistance = BBS_MAP_MAP_SCRIPT_TO_MIN_DISTANCE[mapScript]
 end
 
 -- Adjust min distance in function of player number
@@ -64,7 +63,7 @@ for i = 1, PlayerManager.GetAliveMajorsCount() do
     table.insert(civilisations, {
         leader = leader,
         name = name,
-        team = team,
+        team = team
     });
 end
 
@@ -77,8 +76,8 @@ for i = 1, PlayerManager.GetAliveMinorsCount() do
     local name = PlayerConfigurations[citystatesIDs[i]]:GetCivilizationTypeName();
 
     table.insert(citystates, {
-        leader = leader, 
-        name = name,
+        leader = leader,
+        name = name
     });
 end
 
@@ -87,24 +86,24 @@ local g_negative_bias = {}
 local g_custom_bias = {}
 
 local ret = DB.Query("SELECT * from StartBiasNegatives");
-for key , value in pairs(ret) do
-    if v.CivilizationType ~= nil then
+for key, value in pairs(ret) do
+    if value.CivilizationType ~= nil then
         table.insert(g_negative_bias, {
-            CivilizationType = v.CivilizationType,
-            TerrainType = v.TerrainType,
-            FeatureType = v.FeatureType,
-            Tier = v.Tier,
-            Extra = v.Extra
+            CivilizationType = value.CivilizationType,
+            TerrainType = value.TerrainType,
+            FeatureType = value.FeatureType,
+            Tier = value.Tier,
+            Extra = value.Extra
         });
     end
 end
 
 local ret = DB.Query("SELECT * from StartBiasCustom");
-for key , value in pairs(ret) do
-    if v.CivilizationType ~= nil then
+for key, value in pairs(ret) do
+    if value.CivilizationType ~= nil then
         table.insert(g_custom_bias, {
-            CivilizationType = v.CivilizationType,
-            CustomPlacement = v.CustomPlacement,
+            CivilizationType = value.CivilizationType,
+            CustomPlacement = value.CustomPlacement
         });
     end
 end
