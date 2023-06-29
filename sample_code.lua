@@ -3,31 +3,31 @@
 ---------------------------------------------------------------------------------
 
 -- Min distance definition
-local bbs_mapTypeToDistance = {};
-bbs_mapTypeToDistance["Highlands_XP2.lua"] = 15
-bbs_mapTypeToDistance["Lakes.lua"] = 15
-bbs_mapTypeToDistance["InlandSea.lua"] = 14
-bbs_mapTypeToDistance["Seven_Seas.lua"] = 13
-bbs_mapTypeToDistance["Primordial.lua"] = 13
-bbs_mapTypeToDistance["Pangaea.lua"] = 12
-bbs_mapTypeToDistance["DWPangaea.lua"] = 12
-bbs_mapTypeToDistance["Shuffle.lua"] = 12
-bbs_mapTypeToDistance["Tilted_Axis.lua"] = 12
-bbs_mapTypeToDistance["Tilted_Axis.lua"] = 12
-bbs_mapTypeToDistance["Fractal.lua"] = 10
-bbs_mapTypeToDistance["Island_Plates.lua"] = 10
-bbs_mapTypeToDistance["Small_Continents.lua"] = 10
-bbs_mapTypeToDistance["Archipelago_XP2.lua" ] = 10
-bbs_mapTypeToDistance["Continents.lua"] = 10
-bbs_mapTypeToDistance["Wetlands_XP2.lua"] = 10
-bbs_mapTypeToDistance["Continents_Islands.lua"] = 10
-bbs_mapTypeToDistance["Splintered_Fractal.lua"] = 10
-bbs_mapTypeToDistance["DWArchipelago.lua"] = 10
-bbs_mapTypeToDistance["DWFractal.lua"] = 10
-bbs_mapTypeToDistance["DWMixedLand.lua"] = 10
-bbs_mapTypeToDistance["DWSmallContinents.lua"] = 10
-bbs_mapTypeToDistance["DWMixedIslands.lua"] = 10
-bbs_mapTypeToDistance["Terra.lua"] = 8
+local BBS_MAP_MAP_SCRIPT_TO_DISTANCE = {};
+BBS_MAP_MAP_SCRIPT_TO_DISTANCE["Highlands_XP2.lua"] = 15
+BBS_MAP_MAP_SCRIPT_TO_DISTANCE["Lakes.lua"] = 15
+BBS_MAP_MAP_SCRIPT_TO_DISTANCE["InlandSea.lua"] = 14
+BBS_MAP_MAP_SCRIPT_TO_DISTANCE["Seven_Seas.lua"] = 13
+BBS_MAP_MAP_SCRIPT_TO_DISTANCE["Primordial.lua"] = 13
+BBS_MAP_MAP_SCRIPT_TO_DISTANCE["Pangaea.lua"] = 12
+BBS_MAP_MAP_SCRIPT_TO_DISTANCE["DWPangaea.lua"] = 12
+BBS_MAP_MAP_SCRIPT_TO_DISTANCE["Shuffle.lua"] = 12
+BBS_MAP_MAP_SCRIPT_TO_DISTANCE["Tilted_Axis.lua"] = 12
+BBS_MAP_MAP_SCRIPT_TO_DISTANCE["Tilted_Axis.lua"] = 12
+BBS_MAP_MAP_SCRIPT_TO_DISTANCE["Fractal.lua"] = 10
+BBS_MAP_MAP_SCRIPT_TO_DISTANCE["Island_Plates.lua"] = 10
+BBS_MAP_MAP_SCRIPT_TO_DISTANCE["Small_Continents.lua"] = 10
+BBS_MAP_MAP_SCRIPT_TO_DISTANCE["Archipelago_XP2.lua" ] = 10
+BBS_MAP_MAP_SCRIPT_TO_DISTANCE["Continents.lua"] = 10
+BBS_MAP_MAP_SCRIPT_TO_DISTANCE["Wetlands_XP2.lua"] = 10
+BBS_MAP_MAP_SCRIPT_TO_DISTANCE["Continents_Islands.lua"] = 10
+BBS_MAP_MAP_SCRIPT_TO_DISTANCE["Splintered_Fractal.lua"] = 10
+BBS_MAP_MAP_SCRIPT_TO_DISTANCE["DWArchipelago.lua"] = 10
+BBS_MAP_MAP_SCRIPT_TO_DISTANCE["DWFractal.lua"] = 10
+BBS_MAP_MAP_SCRIPT_TO_DISTANCE["DWMixedLand.lua"] = 10
+BBS_MAP_MAP_SCRIPT_TO_DISTANCE["DWSmallContinents.lua"] = 10
+BBS_MAP_MAP_SCRIPT_TO_DISTANCE["DWMixedIslands.lua"] = 10
+BBS_MAP_MAP_SCRIPT_TO_DISTANCE["Terra.lua"] = 8
 
 -- Special civilisation types
 BBS_LEADER_TYPE_SPECTATOR = "LEADER_SPECTATOR"
@@ -40,12 +40,16 @@ BBS_LEADER_TYPE_SPECTATOR = "LEADER_SPECTATOR"
 local Width, Height = Map.GetGridSize();
 local minDistance = MapConfiguration.GetValue("BBSMinDistance");
 local mapScript = MapConfiguration.GetValue("MAP_SCRIPT");
+
 -- Set min distance if minDistance is nil or 0
 if ((minDistance == nil or minDistance == 0) and mapScript ~= nil) then
-    minDistance = bbs_mapTypeToDistance[mapScript]
+    minDistance = BBS_MAP_MAP_SCRIPT_TO_DISTANCE[mapScript]
 end
+
 -- Adjust min distance in function of player number
 minDistance = minDistance + BBS_DistanceFromPlayerCount()
+
+Game:SetProperty("BBS_MAJOR_DISTANCE", minDistance)
 
 -- Get map type
 
