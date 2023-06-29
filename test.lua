@@ -1,7 +1,7 @@
 math.randomseed(42)
 
-g_dW = 84
-g_dH = 54
+g_dW = 10
+g_dH = 10
 local list = {}
 
 function tInitRawMap(map)
@@ -60,19 +60,23 @@ function tIsValidCoords(iI, iJ)
     return not (iI < 0 or g_dH < iI or iJ < 0 or g_dW < iJ)
 end
 
-function tKernelRun(map, kernelSize, iI, iJ)
-    local size = kernelSize
+function tKernelRun(map, kernelSize, iI, iJ, roundMap)
     --[[
-        Case 1: even line
+    Case 1: even line
      -1 0 
     -1 0 1
      -1 0 
-        Case 2: odd line
+    Case 2: odd line
       0 1 
     -1 0 1
       0 1 
     ]]--
-    kernelvalue = 0
+    local size = kernelSize
+    local lI = nil
+    local lJ = nil
+    local kernelvalue = 0
+    local tilevalue = nil
+
     if not tIsValidCoords(iI, iJ) then
         return nil
     end
@@ -80,9 +84,18 @@ function tKernelRun(map, kernelSize, iI, iJ)
         for i = -size, size, 1 do
             for j = -size, size, 1 do
                 tilevalue = 0
-                if (tIsValidCoords(iI + i, iJ + j))  then
-                    tilevalue = map[iI + i][iJ + j]
+                lI = iI + i
+
+                if (roundMap) then 
+                    lJ = math.fmod(iJ + j + g_dW, g_dW) 
+                else 
+                    lJ = iJ + j 
                 end
+
+                if (tIsValidCoords(lI, lJ))  then
+                    tilevalue = map[lI][lJ]
+                end
+
                 if not (j == size and i ~= 0) then
                     kernelvalue = kernelvalue + tilevalue
                 end
@@ -92,8 +105,16 @@ function tKernelRun(map, kernelSize, iI, iJ)
         for i = -size, size, 1 do
             for j = -size, size, 1 do
                 tilevalue = 0
-                if (tIsValidCoords(iI + i, iJ + j))  then
-                    tilevalue = map[iI + i][iJ + j]
+                lI = iI + i
+
+                if (roundMap) then 
+                    lJ = math.fmod(iJ + j + g_dW, g_dW) 
+                else 
+                    lJ = iJ + j 
+                end
+
+                if (tIsValidCoords(lI, lJ))  then
+                    tilevalue = map[lI][lJ]
                 end
                 if not (j == -size and i ~= 0) then
                     kernelvalue = kernelvalue + tilevalue 
@@ -104,12 +125,12 @@ function tKernelRun(map, kernelSize, iI, iJ)
     return kernelvalue
 end
 
-function tConvolution2DMap(map, kernelSize)
+function tConvolution2DMap(map, kernelSize, roundMap)
     list = {}
     tmpmap = tInitRawMap(list)
     for i = 0, g_dH, 1 do
         for j = 0, g_dW, 1 do
-            tmpmap[i][j] = tKernelRun(map, kernelSize, i, j)
+            tmpmap[i][j] = tKernelRun(map, kernelSize, i, j, roundMap)
         end
     end
     return tmpmap
@@ -118,7 +139,8 @@ end
 
 map = tInitRawMap(list)
 map = tFillMapRandom(map, 0.95)
--- tOutputMap(map)
+tOutputMap(map)
 print()
-map = tConvolution2DMap(map, 5)
--- tOutputMap(map)
+map = tConvolution2DMap(map, 1, false)
+tOutputMap(map)
+
