@@ -64,7 +64,8 @@ PlayerManager.GetAliveMinorsCount();
 ## TerrainBuilder
 ```lua
 TerrainBuilder.SetTerrainType(plot, terrainID);
-TerrainBuilder.SetFeatureType(plot, featureID, 1); -- if featureID is -1, no need for the added as last argument and will remove feature, need to check for flood plains.
+TerrainBuilder.SetFeatureType(plot, featureID, 1);
+-- if featureID is -1, no need for the last argument and will remove feature, need to check for flood plains.
 TerrainBuilder.GetRandomNumber(range, string);
 ```
 
