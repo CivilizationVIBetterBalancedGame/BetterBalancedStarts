@@ -526,6 +526,11 @@ end
 -----------------------------------------------------------------------------------------------------------------------------------
 
 function BBS_Script()
+    if true then
+        print("Not Executing Balancing Spawn", os.date("%c"))
+        return 
+    end
+    
     print("Initialization Balancing Spawn", os.date("%c"))
     print("test autre scrip", CS_CS_MIN_DISTANCE);
 
@@ -2245,7 +2250,7 @@ function BBS_Script()
 
     end
 
-	__Debug("Talastaaaaa is alive");
+	print("Talastaaaaa is alive");
 end
 
 ------------------------------------------------------------------------------------------------------------------------------

@@ -13,7 +13,40 @@ include("NaturalWonderGenerator");
 include("ResourceGenerator");
 include("AssignStartingPlots");
 
-local bbs_version = "2.2.0"
+local BBS_VERSION = "2.2.0"
+
+--------------------------------------------------------------------------------
+-- constant definition  --------------------------------------------------------
+--------------------------------------------------------------------------------
+-- Min distance definition
+local BBS_MAP_MAP_SCRIPT_TO_MIN_DISTANCE = {};
+BBS_MAP_MAP_SCRIPT_TO_MIN_DISTANCE["Highlands_XP2.lua"] = 15
+BBS_MAP_MAP_SCRIPT_TO_MIN_DISTANCE["Lakes.lua"] = 15
+BBS_MAP_MAP_SCRIPT_TO_MIN_DISTANCE["InlandSea.lua"] = 14
+BBS_MAP_MAP_SCRIPT_TO_MIN_DISTANCE["Seven_Seas.lua"] = 13
+BBS_MAP_MAP_SCRIPT_TO_MIN_DISTANCE["Primordial.lua"] = 13
+BBS_MAP_MAP_SCRIPT_TO_MIN_DISTANCE["Pangaea.lua"] = 12
+BBS_MAP_MAP_SCRIPT_TO_MIN_DISTANCE["DWPangaea.lua"] = 12
+BBS_MAP_MAP_SCRIPT_TO_MIN_DISTANCE["Shuffle.lua"] = 12
+BBS_MAP_MAP_SCRIPT_TO_MIN_DISTANCE["Tilted_Axis.lua"] = 12
+BBS_MAP_MAP_SCRIPT_TO_MIN_DISTANCE["Tilted_Axis.lua"] = 12
+BBS_MAP_MAP_SCRIPT_TO_MIN_DISTANCE["Fractal.lua"] = 10
+BBS_MAP_MAP_SCRIPT_TO_MIN_DISTANCE["Island_Plates.lua"] = 10
+BBS_MAP_MAP_SCRIPT_TO_MIN_DISTANCE["Small_Continents.lua"] = 10
+BBS_MAP_MAP_SCRIPT_TO_MIN_DISTANCE["Archipelago_XP2.lua"] = 10
+BBS_MAP_MAP_SCRIPT_TO_MIN_DISTANCE["Continents.lua"] = 10
+BBS_MAP_MAP_SCRIPT_TO_MIN_DISTANCE["Wetlands_XP2.lua"] = 10
+BBS_MAP_MAP_SCRIPT_TO_MIN_DISTANCE["Continents_Islands.lua"] = 10
+BBS_MAP_MAP_SCRIPT_TO_MIN_DISTANCE["Splintered_Fractal.lua"] = 10
+BBS_MAP_MAP_SCRIPT_TO_MIN_DISTANCE["DWArchipelago.lua"] = 10
+BBS_MAP_MAP_SCRIPT_TO_MIN_DISTANCE["DWFractal.lua"] = 10
+BBS_MAP_MAP_SCRIPT_TO_MIN_DISTANCE["DWMixedLand.lua"] = 10
+BBS_MAP_MAP_SCRIPT_TO_MIN_DISTANCE["DWSmallContinents.lua"] = 10
+BBS_MAP_MAP_SCRIPT_TO_MIN_DISTANCE["DWMixedIslands.lua"] = 10
+BBS_MAP_MAP_SCRIPT_TO_MIN_DISTANCE["Terra.lua"] = 8
+
+-- Special civilisations types
+BBS_LEADER_TYPE_SPECTATOR = "LEADER_SPECTATOR"
 
 local bError_major = false;
 local bError_minor = false;
@@ -50,17 +83,20 @@ end
 ------------------------------------------------------------- BBS ----------------------------
 function BBS_AssignStartingPlots.Create(args)
 
+    if true then
+        print("BBS_AssignStartingPlots: To Many Attempts Failed - Go to Firaxis Placement")
+        Game:SetProperty("BBS_RESPAWN", false)
+        return AssignStartingPlots.Create(args)
+    end
+    
+    -- Get teamer spawn type
     if MapConfiguration.GetValue("BBS_Team_Spawn") ~= nil then
         Teamers_Config = MapConfiguration.GetValue("BBS_Team_Spawn")
     end
 
+    -- Get map script
     mapScript = MapConfiguration.GetValue("MAP_SCRIPT");
 
-    print("------------------------------------------------------------------------------")
-    print("------------------------------------------------------------------------------")
-    print("------------------------------- BBS", bbs_version, "------------------------------------")
-    print("------------------------------------------------------------------------------")
-    print("---------------------------- Game information --------------------------------")
     print("------------------------------------------------------------------------------")
     print("------------------------------------------------------------------------------")
 
