@@ -59,7 +59,6 @@ function ___Debug(...)
     print(...);
 end
 
-
 ------------------------------------------------------------- BBS ----------------------------
 function BBS_AssignStartingPlots.Create(args)
     bbs_game_config = {
@@ -69,7 +68,6 @@ function BBS_AssignStartingPlots.Create(args)
         BBS_GAME_SYNC_SEED = GameConfiguration.GetValue("GAME_SYNC_RANDOM_SEED"),
         BBS_MULTIPLAYER_GAME = GameConfiguration.IsAnyMultiplayer(),
         BBS_GAME_SEED = MapConfiguration.GetValue("RANDOM_SEED"),
-        BBS_GRID_SIZE = Map.GetGridSize(),
         BBS_BASE_TEMPERATURE = MapConfiguration.GetValue("temperature"),
         BBS_BOOL_TEMPERATURE = GameConfiguration.GetValue("BBStemp"),
         BBS_RAINFALL = MapConfiguration.GetValue("rainfall"),
@@ -120,6 +118,7 @@ function BBS_AssignStartingPlots.Create(args)
     local bbs_negative_bias = {}
     local bbs_custom_bias = {}
 
+    -- Custom negative bias located in StartBiasNegatives table
     local ret = DB.Query("SELECT * from StartBiasNegatives");
     for key, value in pairs(ret) do
         if value.CivilizationType ~= nil then
@@ -134,6 +133,7 @@ function BBS_AssignStartingPlots.Create(args)
         end
     end
 
+    -- Custom bias located in StartBiasNegatives table
     local ret = DB.Query("SELECT * from StartBiasCustom");
     for key, value in pairs(ret) do
         if value.CivilizationType ~= nil then
@@ -145,6 +145,7 @@ function BBS_AssignStartingPlots.Create(args)
         end
     end
 
+    -- Get min distance
     local bbs_min_distance = bbs_game_config.BBS_MIN_DISTANCE
     print("bbs_min_distance", bbs_min_distance)
     -- Set min distance if minDistance is nil or 0 via map settings
@@ -155,6 +156,7 @@ function BBS_AssignStartingPlots.Create(args)
     end
 
     -- Adjust min distance in function of player number
+    -- Count number of real players in the game
     total_players = 0
     for i = 1, PlayerManager.GetAliveMajorsCount() do
         player = PlayerConfigurations[civilisationsIDs[i]]
@@ -175,18 +177,17 @@ function BBS_AssignStartingPlots.Create(args)
     -- Set game properties
     Game:SetProperty("BBS_MAJOR_DISTANCE", bbs_min_distance)
 
+    instance = {
+        __InitStartingData = BBS_AssignStartingPlots.__InitStartingData,
+    }
+
+    instance:__InitStartingData()
+
     if true then
         print("BBS_AssignStartingPlots: To Many Attempts Failed - Go to Firaxis Placement")
         Game:SetProperty("BBS_RESPAWN", false)
         return AssignStartingPlots.Create(args)
     end
-
-
-    -- instance = {
-    --     __InitStartingData() = BBS.__InitStartingData
-    -- }
-
-    -- instance:__InitStartingData()
 
     -- print("BBS_AssignStartingPlots: Sending Data")
     -- return instance
@@ -194,6 +195,46 @@ end
 
 
 function BBS_AssignStartingPlots:__InitStartingData()
+    print("Start parsing map",  os.date("%c"))
+    bbs_map_resources = {}
+    bbs_map_features = {}
+    bbs_map_terrain = {}
+    bbs_map_wonder = {}
+    bbs_map_fresh_water = {}
+    bbs_map_costal_land = {}
+
+    width, height = Map.GetGridSize();
+    print("Map size", height, width); -- TODO: remove before production
+    for y = 0, height - 1 do
+        bbs_map_resources[y] = {}
+        bbs_map_features[y] = {}
+        bbs_map_terrain[y] = {}
+        bbs_map_wonder[y] = {}
+        bbs_map_fresh_water[y] = {}
+        bbs_map_costal_land[y] = {}
+        for x = 0, width - 1 do
+            plot = Map.GetPlot(x, y);
+            bbs_map_resources[y][x] = plot:GetResourceType();
+            bbs_map_features[y][x] = plot:GetFeatureType();
+            bbs_map_terrain[y][x] = plot:GetTerrainType();
+            bbs_map_wonder[y][x] = plot:IsNaturalWonder();
+            bbs_map_fresh_water[y][x] = plot:IsFreshWater();
+            bbs_map_costal_land[y][x] = plot:IsCoastalLand();
+        end
+    end
+    print("Done parsing map",  os.date("%c"))
+
+    for y = 0, height - 1 do
+        tmpTerrain = ""
+        tmpWater = ""
+        for x = 0, width - 1 do
+            plot = Map.GetPlot(x, y);
+            tmpWater = (tmpWater .. "," .. tostring(bbs_map_fresh_water[y][x]))
+            tmpTerrain = (tmpTerrain .. "," .. bbs_map_terrain[y][x])
+        end
+        print(tmpWater)
+        print(tmpTerrain)
+    end
 end
 
 
