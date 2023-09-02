@@ -19,6 +19,7 @@ include "CoastalLowlands"
 include "AssignStartingPlots"
 include "BBS_AssignStartingPlots"
 include "BBS_Balance"
+include "BBS_MapUtils"
 
 local g_iW, g_iH;
 local g_iFlags = {};
@@ -35,7 +36,7 @@ function BBS_Assign(args)
 	local start_plot_database = {};
 
 	start_plot_database = BBS_AssignStartingPlots.Create(args)
-
+	
 	return start_plot_database
 end
 -------------------------------------------------------------------------------

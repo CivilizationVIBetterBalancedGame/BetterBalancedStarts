@@ -12,6 +12,7 @@ include("TerrainGenerator");
 include("NaturalWonderGenerator");
 include("ResourceGenerator");
 include("AssignStartingPlots");
+include "BBS_MapUtils";
 
 local BBS_VERSION = "2.2.0"
 
@@ -53,6 +54,7 @@ BBS_LEADER_TYPE_SPECTATOR = "LEADER_SPECTATOR"
 --------------------------------------------------------------------------------
 
 BBS_AssignStartingPlots = {};
+BBS_HexMap = {};
 
 ------------------------------------------------------------------------------
 function ___Debug(...)
@@ -61,6 +63,7 @@ end
 
 ------------------------------------------------------------- BBS ----------------------------
 function BBS_AssignStartingPlots.Create(args)
+    print("bnz init");
     bbs_game_config = {
         BBS_TEAM_SPAWN = MapConfiguration.GetValue("BBS_Team_Spawn"),
         BBS_MAP_SCRIPT = MapConfiguration.GetValue("MAP_SCRIPT"),
@@ -186,13 +189,17 @@ function BBS_AssignStartingPlots.Create(args)
     if true then
         print("BBS_AssignStartingPlots: To Many Attempts Failed - Go to Firaxis Placement")
         Game:SetProperty("BBS_RESPAWN", false)
-        return AssignStartingPlots.Create(args)
+        local argSPlot = AssignStartingPlots.Create(args)
+        CheckSpawn();
+        return argSPlot;
     end
+    
 
     -- print("BBS_AssignStartingPlots: Sending Data")
     -- return instance
 end
 
+BBS_resources_count = {};
 
 function BBS_AssignStartingPlots:__InitStartingData()
     print("Start parsing map",  os.date("%c"))
@@ -202,9 +209,10 @@ function BBS_AssignStartingPlots:__InitStartingData()
     bbs_map_wonder = {}
     bbs_map_fresh_water = {}
     bbs_map_costal_land = {}
-
-    width, height = Map.GetGridSize();
-    print("Map size", height, width); -- TODO: remove before production
+    scanMap =  {}
+    local totalLandPlots = 0
+    local totalHillLand = 0
+    local width, height = Map.GetGridSize();
     for y = 0, height - 1 do
         bbs_map_resources[y] = {}
         bbs_map_features[y] = {}
@@ -220,10 +228,28 @@ function BBS_AssignStartingPlots:__InitStartingData()
             bbs_map_wonder[y][x] = plot:IsNaturalWonder();
             bbs_map_fresh_water[y][x] = plot:IsFreshWater();
             bbs_map_costal_land[y][x] = plot:IsCoastalLand();
+            local terrainType = plot:GetTerrainType();
+            if (terrainType ~= g_TERRAIN_TYPE_OCEAN and terrainType ~= g_TERRAIN_TYPE_COAST) then
+                totalLandPlots = totalLandPlots + 1;
+                if isHill(plot) then
+                    totalHillLand = totalHillLand + 1
+                end                
+            end
         end
     end
+    --HexMap Test
+    BBS_HexMap = HexMap.new(width, height, true);
+    BBS_HexMap:AlimenteHexMap();
+    BBS_HexMap:RunKmeans(16, 30);
+    print("Scan Map")
+    BBS_HexMap:PrintHexMap();
+  
+    print("totalLandPlots = "..tostring(totalLandPlots))
+    print("totalHillPlots = "..tostring(totalHillLand))
+    local hillpercent = (totalHillLand / totalLandPlots) * 100
+    print("Hill% = "..tostring(hillpercent))
+     --------------------
     print("Done parsing map",  os.date("%c"))
-
     for y = 0, height - 1 do
         tmpTerrain = ""
         tmpWater = ""
@@ -297,6 +323,43 @@ function BBS_AssignStartingPlots:__GetResourceIndex(resourceType)
     for row in GameInfo.Resources() do
         if (row.Name == resourceTypeName) then
             return row.Index;
+        end
+    end
+end
+
+function CheckSpawn()
+    print("CheckSpawn");
+    local tempMajorList = PlayerManager.GetAliveMajorIDs();
+    for i = 1, PlayerManager.GetAliveMajorsCount() do
+        local startPlot = Players[tempMajorList[i]]:GetStartingPlot();
+        if (startPlot == nil) then
+            bError_major = true
+            --___Debug("Error Major Player is missing:", tempMajorList[i]);
+            print("Error Major Player is missing:", tempMajorList[i]);
+        else
+            local civName = PlayerConfigurations[tempMajorList[i]]:GetCivilizationTypeName()
+            ___Debug("Major Start X: ", startPlot:GetX(), "Major Start Y: ", startPlot:GetY(), "ID:",civName);
+            local startingHex = BBS_HexMap:GetHexInMap(startPlot:GetX(), startPlot:GetY())
+            local nbPlotIle = startPlot:GetArea():GetPlotCount() --TODO in HexMap
+            print("Plot Area = "..tostring(startPlot:GetArea():GetID()).." et nb cases = "..nbPlotIle)    
+            local plotTotal = 0
+            local numberKO = 0
+            local hexesInRing7 = BBS_HexMap:GetAllHexInRing(startingHex, 7)
+            for _, hex in pairs(hexesInRing7) do
+                plotTotal = plotTotal + 1
+                if hex:IsImpassable() == true then
+                    numberKO = numberKO + 1
+                end
+            end
+            local workableHexPercent = (numberKO / plotTotal) * 100
+            local workableTileThreshold = 50
+            local islandThreshold = 50
+            if workableHexPercent > workableTileThreshold then
+                print("Starting tile ("..startingHex:GetX()..", "..startingHex:GetY()..") for "..civName.." has less than "..tostring(workableTileThreshold).." % of workable tiles in ring 7.")
+            end
+            if nbPlotIle < islandThreshold then
+                print("Starting tile ("..startingHex:GetX()..", "..startingHex:GetY()..") for "..civName.." is on a islands with less than "..tostring(islandThreshold).." tiles.")
+            end
         end
     end
 end

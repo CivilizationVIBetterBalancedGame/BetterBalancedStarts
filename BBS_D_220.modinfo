@@ -197,6 +197,7 @@
 	<File>Data/BBS Maps/Utility/BBS_TerrainGenerator.lua</File>
 	<File>Data/BBS Maps/Utility/BBS_ResourceGenerator.lua</File>
 	<File>Data/BBS Maps/Utility/BBS_Balance.lua</File>
+	<File>Data/BBS Maps/Utility/BBS_MapUtils.lua</File>
     </ImportFiles>
 
     	<UpdateDatabase id="BBS_Global_Parameters">
@@ -377,6 +378,7 @@
 	<File>Data/BBS Maps/Utility/BBS_TerrainGenerator.lua</File>
 	<File>Data/BBS Maps/Utility/BBS_ResourceGenerator.lua</File>
 	<File>Data/BBS Maps/Utility/BBS_Balance.lua</File>
+	<File>Data/BBS Maps/Utility/BBS_MapUtils.lua</File>
     <File>Data/BBS Maps/PerfectWorld6.lua</File>
 	<File>Data/BBS Maps/DWArchipelago.lua</File>
 	<File>Data/BBS Maps/DWContinents.lua</File>

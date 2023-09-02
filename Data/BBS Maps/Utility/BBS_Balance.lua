@@ -9,6 +9,7 @@ include "MapEnums"
 include "SupportFunctions"
 include "BBS_AssignStartingPlots"
 include("MapUtilities");
+include "BBS_MapUtils";
 
 local world_age = 2;
 local high_roll = 0.15;
@@ -22,3 +23,5 @@ function BBS_Script()
     print("Not Executing Balancing Spawn", os.date("%c"))
     return 
 end
+
+
