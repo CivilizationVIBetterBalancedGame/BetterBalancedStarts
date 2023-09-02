@@ -90,7 +90,7 @@ function Hex:Closest(hexMap, points)
 	local min_i
 	for i, point in ipairs(points) do
 		local dist = self:DistanceTo(point)
-        if hexMap.canCircumnavigate == true then
+        if hexMap.canCircumnavigate then
             local shiftedPoint = Hex.new(point.x + hexMap.width, point.y)
             local shiftedDist = self:DistanceTo(shiftedPoint)
             if shiftedDist < dist then
@@ -122,8 +122,36 @@ end
 
 
 ---------------------------------------
+-- Firaxis constants maps scripts
+---------------------------------------
+MAP_HIGHLANDS = "Highlands_XP2.lua"
+MAP_LAKES = "Lakes.lua"
+MAP_INLAND_SEA = "InlandSea.lua"
+MAP_SEVEN_SEAS = "Seven_Seas.lua"
+MAP_PRIMORDIAL = "Primordial.lua"
+MAP_PANGAEA = "Pangaea.lua"
+MAP_DW_PANGAEA = "DWPangaea.lua"
+MAP_SHUFFLE = "Shuffle.lua"
+MAP_TILTED_AXIS = "Tilted_Axis.lua"
+MAP_FRACTAL = "Fractal.lua"
+MAP_ISLAND_PLATES = "Island_Plates.lua"
+MAP_SMALL_CONTINENTS = "Small_Continents.lua"
+MAP_ARCHIPELAGO = "Archipelago_XP2.lua"
+MAP_CONTINENTS = "Continents.lua"
+MAP_WETLANDS = "Wetlands_XP2.lua"
+MAP_CONTINENTS_ISLANDS = "Continents_Islands.lua"
+MAP_SPLINTERED_FRACTAL = "Splintered_Fractal.lua"
+MAP_DW_ARCHIPELAGO = "DWArchipelago.lua"
+MAP_DW_FRACTAL = "DWFractal.lua"
+MAP_DW_MIXED_LANDS = "DWMixedLand.lua"
+MAP_DW_SMALL_CONTINENTS = "DWSmallContinents.lua"
+MAP_DW_MIXEDISLANDS = "DWMixedIslands.lua"
+MAP_TERRA = "Terra.lua"
+
+---------------------------------------
 -- HexMap
 ---------------------------------------
+
 
 HexMap = {}
 
@@ -136,11 +164,12 @@ function HexMap.new(_width, _height, mapScript)
     instance:CanCircumnavigate(mapScript)
     instance.map = {}
     instance.centroidsArray = {}
+    -- Put maps parameters here ? (world age, temperature, rainfall etc)
     return instance;
 end
 
 function HexMap:CanCircumnavigate()
-    self.canCircumnavigate = self.mapScript ~= "InlandSea.lua" and self.mapScript ~= "Tilted_Axis.lua";
+    self.canCircumnavigate = self.mapScript ~= MAP_INLAND_SEA and self.mapScript ~= MAP_TILTED_AXIS;
 end
 
 -- Put datas of every hex in map
@@ -167,7 +196,7 @@ function HexMap:GetHexInMap(pX, pY)
     return hex
 end
 
--- Return a addition of two hex 
+-- Return the sum of two hex vectors - do not check if the result is on map or not
 function HexMap:GetHexSum(hex, vec)
     local newX = hex.x + vec.x
     local newY = hex.y + vec.y
@@ -178,11 +207,12 @@ function HexMap:GetHexSum(hex, vec)
     return Hex.new(newX, newY)
 end
 
+-- Return multiplication of hex vector times the factor in param
 function HexMap:GetHexScale(hex, factor)
     return Hex.new(hex.x * factor, hex.y * factor)
 end
 
--- Loop through all tiles in ringRadius in parameter
+-- Loop through all tiles in the specified ringRadius in parameter
 function HexMap:GetHexInRing(hexCenter, ringRadius)
     local hexList = {};
     -- Starting from the hex to the left
@@ -234,7 +264,7 @@ function HexMap:GetAdjDirection(directionIndex)
     end
 end
 
--- Print Map in logs
+-- TEMP - Print Map in logs with centroid id 
 function HexMap:PrintHexMap()
     local scanMap = {}
     for y = 0, self.height - 1 do
@@ -258,6 +288,7 @@ function HexMap:PrintHexMap()
     end
 end
 
+-- TEMP print map for logs
 function Hex:PrintCentroidIdMap()
     local printed = ""
     if self:IsWater() == true then
@@ -310,7 +341,6 @@ function HexMap:LookForHills(map)
                 end
             end    
         end
-    
     else
         for i = 10, #map do
             -- check is Hex
@@ -339,7 +369,7 @@ function HexMap:RunKmeans(n, iters)
     end
     print("k-means - nbLandTiles = "..tostring(nbLandTiles))
 	local centroids = {}
-    for i = 1, n + 1 do
+    for i = 1, n do
         -- Put random hex as centroids
         local randX = TerrainBuilder.GetRandomNumber(self.width, "cX")
         local randY = TerrainBuilder.GetRandomNumber(self.height, "cY")
@@ -352,9 +382,9 @@ function HexMap:RunKmeans(n, iters)
 	for i = 1, iters do
         print("RunKmeans - Iteration "..tostring(i))
 		centroids = self:UpdateCentroids(points, centroids)
-        centroids = self:UpdateCentroidsIndex(centroids)
+        centroids = self:UpdateCentroidsSortedIndex(centroids)
 	end
-    
+    -- TODO find better name - contains table with centroid table as key and list of hexes as value
     self.groupByCentroid = self:CentroidGroupby(points, centroids)
     print("End k-means ", os.date("%c"))
 end
@@ -391,19 +421,18 @@ function HexMap:CentroidGroupby(points, centroids)
 end
 
 -- Update indexes of centroids, to put them in a new array after sorting by x
-function HexMap:UpdateCentroidsIndex(centroids) 
+function HexMap:UpdateCentroidsSortedIndex(centroids) 
     table.sort(centroids, function (c1, c2) return c1.x < c2.x end)
     local new_centroids = {}
     for i = 1, #centroids do
         local centroid = centroids[i]
-        new_centroids[i] = cent
+        new_centroids[i] = centroid
         centroid.id = i
         self.centroidsArray[i] = centroid
         local correspondingHex = self:GetHexInMap(centroid.x, centroid.y)
         correspondingHex.isCentroid = true
     end
-    centroids = new_centroids
-    return centroids
+    return new_centroids
 end
 
 function HexMap:ClearCentroidsInMap()
@@ -418,11 +447,10 @@ end
 -- TODO error management
 function HexMap:GetHexListInCentroidId(centroidId)
     local listHexByCentroid= {};
-    local grouped = self.groupByCentroid;
     -- The Centroid object is used as key for groupByCentroid, need to get it from id first
     local centroid = self.centroidsArray[centroidId];
     -- Get the list of Hexes linked to that centroid by HexMap:CentroidGroupby
-    local listHexCentroid = grouped[centroid];
+    local listHexCentroid = self.groupByCentroid[centroid];
     for _, hex in ipairs(listHexCentroid) do
         table.insert(listHexByCentroid, hex);
     end

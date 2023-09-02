@@ -30,7 +30,6 @@ BBS_MAP_MAP_SCRIPT_TO_MIN_DISTANCE["Pangaea.lua"] = 12
 BBS_MAP_MAP_SCRIPT_TO_MIN_DISTANCE["DWPangaea.lua"] = 12
 BBS_MAP_MAP_SCRIPT_TO_MIN_DISTANCE["Shuffle.lua"] = 12
 BBS_MAP_MAP_SCRIPT_TO_MIN_DISTANCE["Tilted_Axis.lua"] = 12
-BBS_MAP_MAP_SCRIPT_TO_MIN_DISTANCE["Tilted_Axis.lua"] = 12
 BBS_MAP_MAP_SCRIPT_TO_MIN_DISTANCE["Fractal.lua"] = 10
 BBS_MAP_MAP_SCRIPT_TO_MIN_DISTANCE["Island_Plates.lua"] = 10
 BBS_MAP_MAP_SCRIPT_TO_MIN_DISTANCE["Small_Continents.lua"] = 10
@@ -229,15 +228,15 @@ function BBS_AssignStartingPlots:__InitStartingData()
             bbs_map_costal_land[y][x] = plot:IsCoastalLand();
         end
     end
-    -- TEST HexMap
+    -- TEMP HexMap init
     BBS_HexMap = HexMap.new(width, height, bbs_game_config.BBS_MAP_SCRIPT);
     BBS_HexMap:AlimenteHexMap();
     BBS_HexMap:RunKmeans(16, 30);
     print("Scan Map")
     BBS_HexMap:PrintHexMap();
-    -- TEST get hexes from a region (same centroid)
+    -- TEMP get hexes from a region (same centroid)
     local hexCentroid1 = BBS_HexMap:GetHexListInCentroidId(1);
-    -- TEST count % of hills in a region
+    -- TEMP count % of hills in a region
     local numberHillsInCentroid1, _ = BBS_HexMap:LookForHills(hexCentroid1);
     print("Number of hill c1 = "..tostring(numberHillsInCentroid1).." for a total of "..tostring(#hexCentroid1).." tiles")
 
@@ -327,6 +326,7 @@ function BBS_AssignStartingPlots:__GetResourceIndex(resourceType)
     end
 end
 
+-- TEMP Testing methods for HexMap functions and ideas
 function CheckSpawn()
     print("CheckSpawn testing custom methods");
     local tempMajorList = PlayerManager.GetAliveMajorIDs();
