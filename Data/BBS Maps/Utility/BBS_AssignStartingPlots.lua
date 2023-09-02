@@ -63,7 +63,6 @@ end
 
 ------------------------------------------------------------- BBS ----------------------------
 function BBS_AssignStartingPlots.Create(args)
-    print("bnz init");
     bbs_game_config = {
         BBS_TEAM_SPAWN = MapConfiguration.GetValue("BBS_Team_Spawn"),
         BBS_MAP_SCRIPT = MapConfiguration.GetValue("MAP_SCRIPT"),
@@ -228,25 +227,26 @@ function BBS_AssignStartingPlots:__InitStartingData()
             bbs_map_wonder[y][x] = plot:IsNaturalWonder();
             bbs_map_fresh_water[y][x] = plot:IsFreshWater();
             bbs_map_costal_land[y][x] = plot:IsCoastalLand();
-            local terrainType = plot:GetTerrainType();
-            if (terrainType ~= g_TERRAIN_TYPE_OCEAN and terrainType ~= g_TERRAIN_TYPE_COAST) then
-                totalLandPlots = totalLandPlots + 1;
-                if isHill(plot) then
-                    totalHillLand = totalHillLand + 1
-                end                
-            end
         end
     end
-    --HexMap Test
-    BBS_HexMap = HexMap.new(width, height, true);
+    -- TEST HexMap
+    BBS_HexMap = HexMap.new(width, height, bbs_game_config.BBS_MAP_SCRIPT);
     BBS_HexMap:AlimenteHexMap();
     BBS_HexMap:RunKmeans(16, 30);
     print("Scan Map")
     BBS_HexMap:PrintHexMap();
-  
-    print("totalLandPlots = "..tostring(totalLandPlots))
-    print("totalHillPlots = "..tostring(totalHillLand))
-    local hillpercent = (totalHillLand / totalLandPlots) * 100
+    -- TEST get hexes from a region (same centroid)
+    local hexCentroid1 = BBS_HexMap:GetHexListInCentroidId(1);
+    -- TEST count % of hills in a region
+    local numberHillsInCentroid1, _ = BBS_HexMap:LookForHills(hexCentroid1);
+    print("Number of hill c1 = "..tostring(numberHillsInCentroid1).." for a total of "..tostring(#hexCentroid1).." tiles")
+
+    -- Count % of hills on the land map
+    local countHills, _ = BBS_HexMap:LookForHills();
+    local countLandTiles, _ = BBS_HexMap:GetLandHexList();
+    print("totalLandPlots = "..tostring(countLandTiles))
+    print("totalHillPlots = "..tostring(countHills))
+    local hillpercent = (countHills / countLandTiles) * 100
     print("Hill% = "..tostring(hillpercent))
      --------------------
     print("Done parsing map",  os.date("%c"))
@@ -328,7 +328,7 @@ function BBS_AssignStartingPlots:__GetResourceIndex(resourceType)
 end
 
 function CheckSpawn()
-    print("CheckSpawn");
+    print("CheckSpawn testing custom methods");
     local tempMajorList = PlayerManager.GetAliveMajorIDs();
     for i = 1, PlayerManager.GetAliveMajorsCount() do
         local startPlot = Players[tempMajorList[i]]:GetStartingPlot();
@@ -344,18 +344,18 @@ function CheckSpawn()
             print("Plot Area = "..tostring(startPlot:GetArea():GetID()).." et nb cases = "..nbPlotIle)    
             local plotTotal = 0
             local numberKO = 0
-            local hexesInRing7 = BBS_HexMap:GetAllHexInRing(startingHex, 7)
-            for _, hex in pairs(hexesInRing7) do
+            local hexesInRing7 = BBS_HexMap:GetAllHexInRing(startingHex, 7) --TODO ignore spectator
+            for i = 1, #hexesInRing7 do
                 plotTotal = plotTotal + 1
-                if hex:IsImpassable() == true then
+                if hexesInRing7[i]:IsImpassable() then
                     numberKO = numberKO + 1
                 end
             end
-            local workableHexPercent = (numberKO / plotTotal) * 100
+            local unworkableHexPercent = (numberKO / plotTotal) * 100
             local workableTileThreshold = 50
             local islandThreshold = 50
-            if workableHexPercent > workableTileThreshold then
-                print("Starting tile ("..startingHex:GetX()..", "..startingHex:GetY()..") for "..civName.." has less than "..tostring(workableTileThreshold).." % of workable tiles in ring 7.")
+            if unworkableHexPercent > workableTileThreshold then
+                print("Starting tile ("..startingHex:GetX()..", "..startingHex:GetY()..") for "..civName.." has more than "..tostring(unworkableHexPercent).." percent of unworkable tiles in ring 7.")
             end
             if nbPlotIle < islandThreshold then
                 print("Starting tile ("..startingHex:GetX()..", "..startingHex:GetY()..") for "..civName.." is on a islands with less than "..tostring(islandThreshold).." tiles.")
