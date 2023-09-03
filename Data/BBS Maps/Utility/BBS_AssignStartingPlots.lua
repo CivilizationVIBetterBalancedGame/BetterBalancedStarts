@@ -235,10 +235,16 @@ function BBS_AssignStartingPlots:__InitStartingData()
     print("Scan Map")
     BBS_HexMap:PrintHexMap();
     -- TEMP get hexes from a region (same centroid)
-    local hexCentroid1 = BBS_HexMap:GetHexListInCentroidId(1);
     -- TEMP count % of hills in a region
-    local numberHillsInCentroid1, _ = BBS_HexMap:LookForHills(hexCentroid1);
-    print("Number of hill c1 = "..tostring(numberHillsInCentroid1).." for a total of "..tostring(#hexCentroid1).." tiles")
+    for index, centroid in ipairs(BBS_HexMap.centroidsArray) do
+        local count = centroid:GetHillsInCluster();
+        local hillPercent = (count / #centroid.HexCluster) * 100
+        print("Number of hill in centroid "..tostring(index).." = "..tostring(count).." for a total of "..tostring(#centroid.HexCluster).." tiles (="..tostring(hillPercent).."%)")
+        local luxCount, bonusCount, strategicsCount = centroid:GetTotalResourcesCountInCluster();
+        print("Number of lux resource in centroid "..tostring(index).." = "..tostring(luxCount))
+        print("Number of bonus resource in centroid "..tostring(index).." = "..tostring(bonusCount))
+        print("Number of strat resource in centroid "..tostring(index).." = "..tostring(strategicsCount))
+    end
 
     -- Count % of hills on the land map
     local countHills, _ = BBS_HexMap:LookForHills();
