@@ -324,6 +324,58 @@ function Hex:Closest(hexMap, points)
 end
 
 ---------------------------------------
+-- Terraforming methods 
+---------------------------------------
+function Hex:TerraformSetTerrain(terrainId) 
+    -- Conditions here ?
+    local plot = Map.GetPlot(self.x, self.y);
+    print("From "..tostring(self.TerrainType).." to "..tostring(terrainId))
+    TerrainBuilder.SetTerrainType(plot, terrainId);
+    self.TerrainType = terrainId
+end
+
+function Hex:TerraformSetResource(resourceId) 
+    -- Conditions here ?
+    local plot = Map.GetPlot(self.x, self.y);
+    TerrainBuilder.SetResourceType(plot, resourceId);
+    self.ResourceType = resourceId
+    self.HexResource = HexResource.new(self.ResourceType)
+end
+
+function Hex:TerraformSetFeature(featureId)
+    local plot = Map.GetPlot(self.x, self.y);
+    TerrainBuilder.SetFeatureType(plot, featureId)
+    self.FeatureType = featureId
+end
+
+function Hex:TerraformToHill()
+    if self.TerrainType == g_TERRAIN_TYPE_GRASS then
+        self:TerraformSetTerrain(g_TERRAIN_TYPE_GRASS_HILLS)
+    elseif self.TerrainType == g_TERRAIN_TYPE_PLAINS then
+        self:TerraformSetTerrain(g_TERRAIN_TYPE_PLAINS_HILLS)
+    elseif self.TerrainType == g_TERRAIN_TYPE_DESERT then
+        self:TerraformSetTerrain(g_TERRAIN_TYPE_DESERT_HILLS)
+    elseif self.TerrainType == g_TERRAIN_TYPE_TUNDRA then
+        self:TerraformSetTerrain(g_TERRAIN_TYPE_TUNDRA_HILLS)
+    elseif self.TerrainType == g_TERRAIN_TYPE_SNOW then
+        self:TerraformSetTerrain(g_TERRAIN_TYPE_SNOW_HILLS)
+    end
+end
+
+function Hex:TerraformToFlat()
+    if self.TerrainType == g_TERRAIN_TYPE_GRASS_HILLS then
+        self:TerraformSetTerrain(g_TERRAIN_TYPE_GRASS)
+    elseif self.TerrainType == g_TERRAIN_TYPE_PLAINS_HILLS then
+        self:TerraformSetTerrain(g_TERRAIN_TYPE_PLAINS)
+    elseif self.TerrainType == g_TERRAIN_TYPE_DESERT_HILLS then
+        self:TerraformSetTerrain(g_TERRAIN_TYPE_DESERT)
+    elseif self.TerrainType == g_TERRAIN_TYPE_TUNDRA_HILLS then
+        self:TerraformSetTerrain(g_TERRAIN_TYPE_TUNDRA)
+    elseif self.TerrainType == g_TERRAIN_TYPE_SNOW_HILLS then
+        self:TerraformSetTerrain(g_TERRAIN_TYPE_SNOW)
+    end
+end
+---------------------------------------
 -- HexResource
 -- Contains resources data as categories - fill as needed
 ---------------------------------------
