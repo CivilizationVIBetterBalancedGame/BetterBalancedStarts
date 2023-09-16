@@ -229,9 +229,9 @@ function BBS_AssignStartingPlots:__InitStartingData()
         end
     end
     -- TEMP HexMap init
+    local width, height = Map.GetGridSize();
     BBS_HexMap = HexMap.new(width, height, bbs_game_config.BBS_MAP_SCRIPT);
-    BBS_HexMap:AlimenteHexMap();
-    BBS_HexMap:RunKmeans(16, 30);
+    BBS_HexMap:RunKmeans(16, 50);
     print("Scan Map")
     BBS_HexMap:PrintHexMap();
     -- TEMP get hexes from a region (same centroid)

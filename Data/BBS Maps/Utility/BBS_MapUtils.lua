@@ -25,6 +25,11 @@ MAP_DW_SMALL_CONTINENTS = "DWSmallContinents.lua"
 MAP_DW_MIXEDISLANDS = "DWMixedIslands.lua"
 MAP_TERRA = "Terra.lua"
 
+g_FEATURE_VOLCANO			    = GetGameInfoIndex("Features", "FEATURE_VOLCANO");
+g_FEATURE_VOLCANIC_SOIL			= GetGameInfoIndex("Features", "FEATURE_VOLCANIC_SOIL");
+g_FEATURE_GEOTHERMAL_FISSURE	= GetGameInfoIndex("Features", "FEATURE_GEOTHERMAL_FISSURE");
+
+
 g_RESOURCE_NONE				    = -1;
 g_RESOURCE_BANANAS				= GetGameInfoIndex("Resources", "RESOURCE_BANANAS");--0
 g_RESOURCE_CATTLE				= GetGameInfoIndex("Resources", "RESOURCE_CATTLE");
@@ -210,7 +215,6 @@ end
 function Hex:FillHexDatas()
     local plot = Map.GetPlot(self:GetX(), self:GetY()); 
     if plot ~= nil then
-        -- TODO to fill
         self.ResourceType = plot:GetResourceType();
         self.HexResource = HexResource.new(self.ResourceType)
         self.FeatureType = plot:GetFeatureType();
@@ -252,26 +256,31 @@ end
 function Hex:IsPlainLand()
     return self.TerrainType == g_TERRAIN_TYPE_PLAINS_HILLS
         or self.TerrainType == g_TERRAIN_TYPE_PLAINS
+        or self.TerrainType == g_TERRAIN_TYPE_PLAINS_MOUNTAIN
 end
 
 function Hex:IsGrassLand()
     return self.TerrainType == g_TERRAIN_TYPE_GRASS_HILLS
         or self.TerrainType == g_TERRAIN_TYPE_GRASS
+        or self.TerrainType == g_TERRAIN_TYPE_GRASS_MOUNTAIN
 end
 
 function Hex:IsDesertLand()
     return self.TerrainType == g_TERRAIN_TYPE_DESERT_HILLS
         or self.TerrainType == g_TERRAIN_TYPE_DESERT
+        or self.TerrainType == g_TERRAIN_TYPE_DESERT_MOUNTAIN
 end
 
 function Hex:IsTundraLand()
     return self.TerrainType == g_TERRAIN_TYPE_TUNDRA_HILLS
         or self.TerrainType == g_TERRAIN_TYPE_TUNDRA
+        or self.TerrainType == g_TERRAIN_TYPE_TUNDRA_MOUNTAIN
 end
 
 function Hex:IsSnowLand()
     return self.TerrainType == g_TERRAIN_TYPE_SNOW_HILLS
         or self.TerrainType == g_TERRAIN_TYPE_SNOW
+        or self.TerrainType == g_TERRAIN_TYPE_SNOW_MOUNTAIN
 end
 
 function Hex:IsImpassable() 
@@ -327,25 +336,30 @@ end
 -- Terraforming methods 
 ---------------------------------------
 function Hex:TerraformSetTerrain(terrainId) 
-    -- Conditions here ?
     local plot = Map.GetPlot(self.x, self.y);
-    print("From "..tostring(self.TerrainType).." to "..tostring(terrainId))
     TerrainBuilder.SetTerrainType(plot, terrainId);
     self.TerrainType = terrainId
 end
 
 function Hex:TerraformSetResource(resourceId) 
-    -- Conditions here ?
     local plot = Map.GetPlot(self.x, self.y);
-    TerrainBuilder.SetResourceType(plot, resourceId);
-    self.ResourceType = resourceId
-    self.HexResource = HexResource.new(self.ResourceType)
+    if ResourceBuilder.CanHaveResource(plot, resourceId) then
+        ResourceBuilder.SetResourceType(plot, resourceId, 1);
+        self.ResourceType = resourceId;
+        self.HexResource = HexResource.new(self.ResourceType);
+        return true;
+    end
+    return false;
 end
 
 function Hex:TerraformSetFeature(featureId)
     local plot = Map.GetPlot(self.x, self.y);
-    TerrainBuilder.SetFeatureType(plot, featureId)
-    self.FeatureType = featureId
+    if TerrainBuilder.CanHaveFeature(plot, featureId) then
+        TerrainBuilder.SetFeatureType(plot, featureId);
+        self.FeatureType = featureId;
+        return true;
+    end 
+    return false;
 end
 
 function Hex:TerraformToHill()
@@ -375,6 +389,7 @@ function Hex:TerraformToFlat()
         self:TerraformSetTerrain(g_TERRAIN_TYPE_SNOW)
     end
 end
+
 ---------------------------------------
 -- HexResource
 -- Contains resources data as categories - fill as needed
@@ -500,7 +515,11 @@ function HexMap.new(_width, _height, mapScript)
     instance.mapScript = mapScript;
     instance:CanCircumnavigate(mapScript);
     instance.map = {};
+    instance.mapFreshWater = {};
+    instance.mapResources = {};
+    instance.mapCostal = {};
     instance.centroidsArray = {};
+    instance:FillHexMapDatas();
     -- Put maps parameters here ? (world age, temperature, rainfall etc)
     return instance;
 end
@@ -510,13 +529,22 @@ function HexMap:CanCircumnavigate()
 end
 
 -- Put datas of every hex in map
-function HexMap:AlimenteHexMap()
+function HexMap:FillHexMapDatas()
     for y = 0, self.height - 1 do
         self.map[y] = {};
         for x = 0, self.width - 1 do
             local newHex = Hex.new(x,y);
             newHex:FillHexDatas();
             self.map[y][x] = newHex;
+            if newHex.ResourceType ~= nil then
+                self.mapResources[newHex.ResourceType] = newHex
+            end
+            if newHex.IsFreshWater then
+                table.insert(self.mapFreshWater, newHex)    
+            end
+            if newHex.IsCoastal then
+                table.insert(self.mapCostal, newHex)    
+            end
         end
     end
 end
@@ -526,7 +554,7 @@ function HexMap:GetHexInMap(pX, pY)
     if self.canCircumnavigate then 
         pX = pX % self.width;
     end
-    if (self.canCircumnavigate == false and pX < 0 or pX > self.width) or  (pY < 0 or pY > self.height) then
+    if (self.canCircumnavigate == false and (pX < 0 or pX > self.width)) or (pY < 0 or pY > self.height) then
         return nil
     end
     local hex = self.map[pY][pX];
@@ -634,12 +662,11 @@ function Hex:PrintCentroidIdMap()
         return "~~"
     end
     if self.Centroid == nil then
-        print("PrintCentroidIdMap - Centroid not found for hex ("..self.Centroid.x..", "..self.Centroid.y..")")
-        return printed
+        return "00"
     end
     local idCentroid = self.Centroid.id
     printed = tostring(idCentroid)
-    if idCentroid < 10 then
+    if idCentroid ~= nil and idCentroid < 10 then
         printed = "0"..tostring(idCentroid)
     end
     if self.isCentroid == true then
@@ -655,7 +682,7 @@ function HexMap:GetLandHexList()
     for y = 0, self.height - 1 do
         for x = 0, self.width - 1 do
             local hex = self.map[y][x]
-            if hex:IsWater() == false then
+            if hex:IsWater() == false and hex:IsSnowLand() == false then
                 countLandtiles = countLandtiles + 1
                 table.insert(landTiles, hex)
             end
@@ -692,6 +719,13 @@ function HexMap:LookForHills(map)
     return count, mappedHex
 end
 
+function HexMap:getRandomHex()
+    local randX = TerrainBuilder.GetRandomNumber(self.width, "cX");
+    local randY = TerrainBuilder.GetRandomNumber(self.height, "cY");
+    return self:GetHexInMap(randX, randY);
+end
+
+
 ----------------------------
 -- K-means
 ----------------------------
@@ -707,63 +741,74 @@ function HexMap:RunKmeans(n, iters)
     print("k-means - nbLandTiles = "..tostring(nbLandTiles))
 	local centroids = {}
     for i = 1, n do
-        -- Put random hex as centroids
-        local randX = TerrainBuilder.GetRandomNumber(self.width, "cX")
-        local randY = TerrainBuilder.GetRandomNumber(self.height, "cY")
-        local randomHex = Centroid.new(randX, randY, i)
-        print("Init random at centroid ("..tostring(randomHex.x)..", "..tostring(randomHex.y)..")")
+        local randomHex = self:getRandomHex();
+        local randomHexIsNotLand = true
+        -- init random centroids anywhere on land 
+        while (randomHexIsNotLand) do
+            if randomHex:IsWater() == false then
+                randomHexIsNotLand = false
+            else
+                randomHex = self:getRandomHex();
+            end
+        end 
+        local newCentroid = Centroid.new(randomHex.x, randomHex.y, i)
+        print("Init random at centroid ("..tostring(newCentroid.x)..", "..tostring(newCentroid.y)..")")
         table.insert(centroids, randomHex)
     end
-
+    self.centroidsArray = centroids
     -- Run interations
 	for i = 1, iters do
         print("RunKmeans - Iteration "..tostring(i))
-		centroids = self:UpdateCentroids(points, centroids)
-        centroids = self:UpdateCentroidsSortedIndex(centroids)
+		self:UpdateCentroids(points)
 	end
-    self:CentroidGroupby(points, centroids)
+    self:CentroidGroupby(points)
+    self:UpdateCentroidsSortedIndex()
     print("End k-means ", os.date("%c"))
 end
 
 -- Mean of hex coord linked to the selected centroid
-function HexMap:UpdateCentroids(points, centroids)
-	local groupedHexes = self:CentroidGroupby(points, centroids);
-	local result = {};
-	local i = 1;
+function HexMap:UpdateCentroids(points)
+    self:CentroidGroupby(points);
     self:ClearCentroidsInMap();
-	for _, g in pairs(groupedHexes) do
-        local sumX, sumY = sum(g, 0);
-        local newX = math.floor(sumX / len(g));
-        local newY= math.floor(sumY / len(g));
-		result[i] = Centroid.new(newX, newY, i);
-		i = i + 1;
+	for i, centroid in pairs(self.centroidsArray) do
+        if #centroid.HexCluster > 0 then
+            local totalX = 0
+            local totalY = 0
+            for _, h in pairs(centroid.HexCluster) do
+                totalX = totalX + h.x
+                totalY = totalY + h.y
+            end
+            local newX = math.floor(totalX / #centroid.HexCluster);
+            local newY= math.floor(totalY / #centroid.HexCluster);
+            centroid = Centroid.new(newX, newY, i);
+            self.centroidsArray[i] = centroid
+            local correspondingHex = self:GetHexInMap(centroid.x, centroid.y)
+            correspondingHex.isCentroid = true
+        end
 	end
-	return result;
 end
 
 -- Group a list of hex to a centroid as index of the g table
-function HexMap:CentroidGroupby(points, centroids)
+function HexMap:CentroidGroupby(points)
 	local g = {};
 	for _, p in pairs(points) do
-		local centroid = p:Closest(self, centroids);
+		local centroid = p:Closest(self, self.centroidsArray);
 		g[centroid] = g[centroid] or {};
-        p:SetCentroid(centroid);
+        p.Centroid = centroid
 		table.insert(g[centroid], p);
 	end
     -- put the list directly in Centroid table c.HexCluster = { list of hexes}
-    for _, c in pairs(centroids) do
+    for _, c in pairs(self.centroidsArray) do
         c.HexCluster = g[c]
-
     end
-	return g;
 end
 
 -- Update indexes of centroids, to put them in a new array after sorting by x
-function HexMap:UpdateCentroidsSortedIndex(centroids) 
-    table.sort(centroids, function (c1, c2) return c1.x < c2.x end)
-    local new_centroids = {}
-    for i = 1, #centroids do
-        local centroid = centroids[i]
+function HexMap:UpdateCentroidsSortedIndex()
+    local new_centroids = self.centroidsArray
+    table.sort(new_centroids, function (c1, c2) return c1.x < c2.x end)
+    for i = 1, #new_centroids do
+        local centroid = new_centroids[i]
         new_centroids[i] = centroid
         centroid.id = i
         self.centroidsArray[i] = centroid
@@ -771,7 +816,6 @@ function HexMap:UpdateCentroidsSortedIndex(centroids)
         correspondingHex.isCentroid = true
         print("Updated new Centroid "..tostring(i).." at ("..tostring(centroid.x)..", "..tostring(centroid.y)..")");
     end
-    return new_centroids
 end
 
 function HexMap:ClearCentroidsInMap()
@@ -794,24 +838,6 @@ function HexMap:GetHexListInCentroid(centroid)
     return centroid.HexCluster;
 end
 
-function sum(t, start)
-	local total = start or 0
-    local totalX = 0
-    local totalY = 0
-	for k, i in ipairs(t) do
-		totalX = totalX + i.x
-        totalY = totalY + i.y
-	end
-	return totalX, totalY
-end
-
-function len(t)
-	local l = 0
-	for _ in pairs(t) do
-		l = l + 1
-	end
-	return l
-end
 
 function even(test)
 	if (test % 2 == 0) then
