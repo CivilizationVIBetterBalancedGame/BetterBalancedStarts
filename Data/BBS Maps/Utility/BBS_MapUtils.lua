@@ -222,8 +222,25 @@ function Hex:FillHexDatas()
         self.IsNaturalWonder = plot:IsNaturalWonder();
         self.IsFreshWater = plot:IsFreshWater();
         self.IsCoastal = plot:IsCoastalLand();
+        self.IslandId = plot:GetArea();
+        self.IslandSize = plot:GetArea():GetPlotCount();
+        self.ContinentId = plot:GetContinentType(); --return id of continent
+        self.IsOnSplit = Map.FindSecondContinent(plot, 1);
+        self:UpdateYields();
         return;
     end
+end
+
+function Hex:UpdateYields()
+    local plot = Map.GetPlot(self.x, self.y);
+    self.Food = plot:GetYield(g_YIELD_FOOD);
+    self.Prod = plot:GetYield(g_YIELD_PRODUCTION);
+    self.Gold = plot:GetYield(g_YIELD_GOLD);
+    self.Science = plot:GetYield(g_YIELD_SCIENCE);
+    self.Culture = plot:GetYield(g_YIELD_CULTURE);
+    self.Faith = plot:GetYield(g_YIELD_FAITH);
+    self.Is22 = self.Food == 2 and self.Prod == 2
+    self.Is31 = self.Food == 3 and self.Prod == 1
 end
 
 function Hex:IsMountain()
@@ -291,6 +308,12 @@ function Hex:HasLux()
     return self.HexResource.isLux;
 end
 
+-- Test if a different continent is present in the range (ring in parameter). Return boolean
+function Hex:HasContinentInRange(range) 
+    local plot = Map.GetPlot(self.x, self.y); 
+    return Map.FindSecondContinent(pPlot, range);
+end
+
 function Hex:HexAdd(vec)
     if vec.getmetatable == Hex then
         local newX = self:GetX() + vec.x;
@@ -339,6 +362,7 @@ function Hex:TerraformSetTerrain(terrainId)
     local plot = Map.GetPlot(self.x, self.y);
     TerrainBuilder.SetTerrainType(plot, terrainId);
     self.TerrainType = terrainId
+    self:UpdateYields()
 end
 
 function Hex:TerraformSetResource(resourceId) 
@@ -347,6 +371,7 @@ function Hex:TerraformSetResource(resourceId)
         ResourceBuilder.SetResourceType(plot, resourceId, 1);
         self.ResourceType = resourceId;
         self.HexResource = HexResource.new(self.ResourceType);
+        self:UpdateYields()
         return true;
     end
     return false;
@@ -357,12 +382,17 @@ function Hex:TerraformSetFeature(featureId)
     if TerrainBuilder.CanHaveFeature(plot, featureId) then
         TerrainBuilder.SetFeatureType(plot, featureId);
         self.FeatureType = featureId;
+        self:UpdateYields()
         return true;
     end 
     return false;
 end
 
-function Hex:TerraformToHill()
+function Hex:TerraformToHill(cleanTile)
+    if (cleanTile) then
+        self:TerraformSetFeature(g_FEATURE_NONE);
+        self:TerraformSetResource(g_RESOURCE_NONE);
+    end
     if self.TerrainType == g_TERRAIN_TYPE_GRASS then
         self:TerraformSetTerrain(g_TERRAIN_TYPE_GRASS_HILLS)
     elseif self.TerrainType == g_TERRAIN_TYPE_PLAINS then
@@ -374,9 +404,14 @@ function Hex:TerraformToHill()
     elseif self.TerrainType == g_TERRAIN_TYPE_SNOW then
         self:TerraformSetTerrain(g_TERRAIN_TYPE_SNOW_HILLS)
     end
+    self:UpdateYields()
 end
 
-function Hex:TerraformToFlat()
+function Hex:TerraformToFlat(cleanTile)
+    if (cleanTile) then
+        self:TerraformSetFeature(g_FEATURE_NONE);
+        self:TerraformSetResource(g_RESOURCE_NONE);
+    end
     if self.TerrainType == g_TERRAIN_TYPE_GRASS_HILLS then
         self:TerraformSetTerrain(g_TERRAIN_TYPE_GRASS)
     elseif self.TerrainType == g_TERRAIN_TYPE_PLAINS_HILLS then
@@ -388,6 +423,7 @@ function Hex:TerraformToFlat()
     elseif self.TerrainType == g_TERRAIN_TYPE_SNOW_HILLS then
         self:TerraformSetTerrain(g_TERRAIN_TYPE_SNOW)
     end
+    self:UpdateYields()
 end
 
 ---------------------------------------
@@ -518,6 +554,9 @@ function HexMap.new(_width, _height, mapScript)
     instance.mapFreshWater = {};
     instance.mapResources = {};
     instance.mapCostal = {};
+    instance.mapContinents = {};
+    instance.mapOnSplit = {}
+    instance.map22 = {}
     instance.centroidsArray = {};
     instance:FillHexMapDatas();
     -- Put maps parameters here ? (world age, temperature, rainfall etc)
@@ -537,17 +576,41 @@ function HexMap:FillHexMapDatas()
             newHex:FillHexDatas();
             self.map[y][x] = newHex;
             if newHex.ResourceType ~= nil then
-                self.mapResources[newHex.ResourceType] = newHex
+                self.mapResources[newHex.ResourceType] = newHex;
             end
             if newHex.IsFreshWater then
-                table.insert(self.mapFreshWater, newHex)    
+                table.insert(self.mapFreshWater, newHex);   
             end
             if newHex.IsCoastal then
-                table.insert(self.mapCostal, newHex)    
+                table.insert(self.mapCostal, newHex);
+            end
+            if newHex.ContinentId ~= nil then
+                self.mapContinents[newHex.ContinentId] = newHex;
+            end
+            if newHex.IsOnSplit == true then
+                table.insert(self.mapOnSplit, newHex);
+            end
+           
+        end
+    end
+    self:UpdateYieldMap();
+end
+
+function HexMap:UpdateYieldMap()
+    -- Temp - 2f 2p tiles are mapped 
+    self.map22 = {}
+    for y = 0, self.height - 1 do
+        for x = 0, self.width - 1 do
+            local h = self.map[y][x]
+            h:UpdateYields();
+            if h.Is22 == true then
+                table.insert(self.map22, h);
             end
         end
     end
+
 end
+
 
 -- Return the hex at the coord in parameter. nil if out of bound
 function HexMap:GetHexInMap(pX, pY)
@@ -628,7 +691,18 @@ function HexMap:GetAdjDirection(directionIndex)
     end
 end
 
--- TEMP - Print Map in logs with centroid id 
+function HexMap:ContinentsInRange(hex, range)
+    local hexes = self:GetAllHexInRing(hex, range)
+    local continentsInRange = 1
+    for _ , h in pairs(hexes) do
+        if h.ContinentId ~= hex.ContinentId then
+            continentsInRange = continentsInRange + 1
+        end
+    end
+    return continentsInRange;
+end
+
+-- TEMP DEBUG - Print Map in logs with centroid id 
 function HexMap:PrintHexMap()
     local scanMap = {}
     for y = 0, self.height - 1 do
@@ -652,7 +726,7 @@ function HexMap:PrintHexMap()
     end
 end
 
--- TEMP print map for logs
+-- TEMP DEBUG print map for logs
 function Hex:PrintCentroidIdMap()
     local printed = ""
     if self:IsWater() == true then
@@ -675,7 +749,7 @@ function Hex:PrintCentroidIdMap()
     return printed
 end
 
--- Returnthe count and all the hex in the map that are not water
+-- Return the count and all the hexes in the map that are not water and not snow
 function HexMap:GetLandHexList()
     local landTiles = {}
     local countLandtiles = 0
@@ -743,7 +817,7 @@ function HexMap:RunKmeans(n, iters)
     for i = 1, n do
         local randomHex = self:getRandomHex();
         local randomHexIsNotLand = true
-        -- init random centroids anywhere on land 
+        -- init random centroids anywhere on land to avoid isolated centroids on water
         while (randomHexIsNotLand) do
             if randomHex:IsWater() == false then
                 randomHexIsNotLand = false
@@ -782,13 +856,14 @@ function HexMap:UpdateCentroids(points)
             local newY= math.floor(totalY / #centroid.HexCluster);
             centroid = Centroid.new(newX, newY, i);
             self.centroidsArray[i] = centroid
+            -- For display purpose in log 
             local correspondingHex = self:GetHexInMap(centroid.x, centroid.y)
             correspondingHex.isCentroid = true
         end
 	end
 end
 
--- Group a list of hex to a centroid as index of the g table
+-- Group a list of hex to a centroid (in centroidsArray) as index of the g table
 function HexMap:CentroidGroupby(points)
 	local g = {};
 	for _, p in pairs(points) do
@@ -803,13 +878,12 @@ function HexMap:CentroidGroupby(points)
     end
 end
 
--- Update indexes of centroids, to put them in a new array after sorting by x
+-- Update indexes of centroids, sorting by x value (for display purpose - might remove later)
 function HexMap:UpdateCentroidsSortedIndex()
     local new_centroids = self.centroidsArray
     table.sort(new_centroids, function (c1, c2) return c1.x < c2.x end)
     for i = 1, #new_centroids do
         local centroid = new_centroids[i]
-        new_centroids[i] = centroid
         centroid.id = i
         self.centroidsArray[i] = centroid
         local correspondingHex = self:GetHexInMap(centroid.x, centroid.y)
