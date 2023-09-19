@@ -201,37 +201,10 @@ BBS_resources_count = {};
 
 function BBS_AssignStartingPlots:__InitStartingData()
     print("Start parsing map",  os.date("%c"))
-    bbs_map_resources = {}
-    bbs_map_features = {}
-    bbs_map_terrain = {}
-    bbs_map_wonder = {}
-    bbs_map_fresh_water = {}
-    bbs_map_costal_land = {}
-    scanMap =  {}
-    local totalLandPlots = 0
-    local totalHillLand = 0
-    local width, height = Map.GetGridSize();
-    for y = 0, height - 1 do
-        bbs_map_resources[y] = {}
-        bbs_map_features[y] = {}
-        bbs_map_terrain[y] = {}
-        bbs_map_wonder[y] = {}
-        bbs_map_fresh_water[y] = {}
-        bbs_map_costal_land[y] = {}
-        for x = 0, width - 1 do
-            plot = Map.GetPlot(x, y);
-            bbs_map_resources[y][x] = plot:GetResourceType();
-            bbs_map_features[y][x] = plot:GetFeatureType();
-            bbs_map_terrain[y][x] = plot:GetTerrainType();
-            bbs_map_wonder[y][x] = plot:IsNaturalWonder();
-            bbs_map_fresh_water[y][x] = plot:IsFreshWater();
-            bbs_map_costal_land[y][x] = plot:IsCoastalLand();
-        end
-    end
-    -- TEMP HexMap init
+    -- Datas stored in HexMap object
     local width, height = Map.GetGridSize();
     BBS_HexMap = HexMap.new(width, height, bbs_game_config.BBS_MAP_SCRIPT);
-    BBS_HexMap:RunKmeans(16, 50);
+    BBS_HexMap:RunKmeans(8, 50);
     print("Scan Map")
     BBS_HexMap:PrintHexMap();
     -- TEMP get hexes from a region (same centroid)
@@ -245,7 +218,6 @@ function BBS_AssignStartingPlots:__InitStartingData()
         print("Number of bonus resource in centroid "..tostring(index).." = "..tostring(bonusCount))
         print("Number of strat resource in centroid "..tostring(index).." = "..tostring(strategicsCount))
     end
-
     -- Count % of hills on the land map
     local countHills, _ = BBS_HexMap:LookForHills();
     local countLandTiles, _ = BBS_HexMap:GetLandHexList();
@@ -255,17 +227,6 @@ function BBS_AssignStartingPlots:__InitStartingData()
     print("Hill% = "..tostring(hillpercent))
      --------------------
     print("Done parsing map",  os.date("%c"))
-    for y = 0, height - 1 do
-        tmpTerrain = ""
-        tmpWater = ""
-        for x = 0, width - 1 do
-            plot = Map.GetPlot(x, y);
-            tmpWater = (tmpWater .. "," .. tostring(bbs_map_fresh_water[y][x]))
-            tmpTerrain = (tmpTerrain .. "," .. bbs_map_terrain[y][x])
-        end
-        print(tmpWater)
-        print(tmpTerrain)
-    end
 end
 
 

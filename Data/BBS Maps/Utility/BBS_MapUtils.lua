@@ -78,10 +78,12 @@ g_RESOURCE_IRON                 = GetGameInfoIndex("Resources", "RESOURCE_IRON")
 g_RESOURCE_NITER                = GetGameInfoIndex("Resources", "RESOURCE_NITER");
 g_RESOURCE_OIL                  = GetGameInfoIndex("Resources", "RESOURCE_OIL");--45
 g_RESOURCE_URANIUM              = GetGameInfoIndex("Resources", "RESOURCE_URANIUM");
+g_RESOURCE_ANTIQUITY_SITE       = GetGameInfoIndex("Resources", "RESOURCE_ANTIQUITY_SITE");
+g_RESOURCE_SHIPWRECK            = GetGameInfoIndex("Resources", "RESOURCE_SHIPWRECK");
 g_RESOURCE_AMBER                = GetGameInfoIndex("Resources", "RESOURCE_AMBER");
-g_RESOURCE_OLIVES               = GetGameInfoIndex("Resources", "RESOURCE_OLIVES");
+g_RESOURCE_OLIVES               = GetGameInfoIndex("Resources", "RESOURCE_OLIVES");--50
 g_RESOURCE_TURTLES              = GetGameInfoIndex("Resources", "RESOURCE_TURTLES");
-g_RESOURCE_MAIZE                = GetGameInfoIndex("Resources", "RESOURCE_MAIZE");--50
+g_RESOURCE_MAIZE                = GetGameInfoIndex("Resources", "RESOURCE_MAIZE");
 g_RESOURCE_HONEY                = GetGameInfoIndex("Resources", "RESOURCE_HONEY");
 
 g_RESOURCES_LUX_LIST = {}
@@ -151,6 +153,11 @@ g_RESOURCES_MINE_LIST[g_RESOURCE_NITER]= true;
 g_RESOURCES_MINE_LIST[g_RESOURCE_COAL]= true;
 g_RESOURCES_MINE_LIST[g_RESOURCE_ALUMINUM]= true;
 g_RESOURCES_MINE_LIST[g_RESOURCE_URANIUM]= true;
+
+g_RESOURCES_QUARRY_LIST = {};
+g_RESOURCES_QUARRY_LIST[g_RESOURCE_STONE] = true;
+g_RESOURCES_QUARRY_LIST[g_RESOURCE_MARBLE] = true;
+g_RESOURCES_QUARRY_LIST[g_RESOURCE_GYPSUM] = true;
 
 g_RESOURCES_PASTURE_LIST = {}
 g_RESOURCES_PASTURE_LIST[g_RESOURCE_HORSES]= true;
@@ -224,7 +231,7 @@ function Hex:FillHexDatas()
         self.IsCoastal = plot:IsCoastalLand();
         self.IslandId = plot:GetArea();
         self.IslandSize = plot:GetArea():GetPlotCount();
-        self.ContinentId = plot:GetContinentType(); --return id of continent
+        self.IdContinent = plot:GetContinentType(); 
         self.IsOnSplit = Map.FindSecondContinent(plot, 1);
         self:UpdateYields();
         return;
@@ -356,77 +363,6 @@ function Hex:Closest(hexMap, points)
 end
 
 ---------------------------------------
--- Terraforming methods 
----------------------------------------
-function Hex:TerraformSetTerrain(terrainId) 
-    local plot = Map.GetPlot(self.x, self.y);
-    TerrainBuilder.SetTerrainType(plot, terrainId);
-    self.TerrainType = terrainId
-    self:UpdateYields()
-end
-
-function Hex:TerraformSetResource(resourceId) 
-    local plot = Map.GetPlot(self.x, self.y);
-    if ResourceBuilder.CanHaveResource(plot, resourceId) then
-        ResourceBuilder.SetResourceType(plot, resourceId, 1);
-        self.ResourceType = resourceId;
-        self.HexResource = HexResource.new(self.ResourceType);
-        self:UpdateYields()
-        return true;
-    end
-    return false;
-end
-
-function Hex:TerraformSetFeature(featureId)
-    local plot = Map.GetPlot(self.x, self.y);
-    if TerrainBuilder.CanHaveFeature(plot, featureId) then
-        TerrainBuilder.SetFeatureType(plot, featureId);
-        self.FeatureType = featureId;
-        self:UpdateYields()
-        return true;
-    end 
-    return false;
-end
-
-function Hex:TerraformToHill(cleanTile)
-    if (cleanTile) then
-        self:TerraformSetFeature(g_FEATURE_NONE);
-        self:TerraformSetResource(g_RESOURCE_NONE);
-    end
-    if self.TerrainType == g_TERRAIN_TYPE_GRASS then
-        self:TerraformSetTerrain(g_TERRAIN_TYPE_GRASS_HILLS)
-    elseif self.TerrainType == g_TERRAIN_TYPE_PLAINS then
-        self:TerraformSetTerrain(g_TERRAIN_TYPE_PLAINS_HILLS)
-    elseif self.TerrainType == g_TERRAIN_TYPE_DESERT then
-        self:TerraformSetTerrain(g_TERRAIN_TYPE_DESERT_HILLS)
-    elseif self.TerrainType == g_TERRAIN_TYPE_TUNDRA then
-        self:TerraformSetTerrain(g_TERRAIN_TYPE_TUNDRA_HILLS)
-    elseif self.TerrainType == g_TERRAIN_TYPE_SNOW then
-        self:TerraformSetTerrain(g_TERRAIN_TYPE_SNOW_HILLS)
-    end
-    self:UpdateYields()
-end
-
-function Hex:TerraformToFlat(cleanTile)
-    if (cleanTile) then
-        self:TerraformSetFeature(g_FEATURE_NONE);
-        self:TerraformSetResource(g_RESOURCE_NONE);
-    end
-    if self.TerrainType == g_TERRAIN_TYPE_GRASS_HILLS then
-        self:TerraformSetTerrain(g_TERRAIN_TYPE_GRASS)
-    elseif self.TerrainType == g_TERRAIN_TYPE_PLAINS_HILLS then
-        self:TerraformSetTerrain(g_TERRAIN_TYPE_PLAINS)
-    elseif self.TerrainType == g_TERRAIN_TYPE_DESERT_HILLS then
-        self:TerraformSetTerrain(g_TERRAIN_TYPE_DESERT)
-    elseif self.TerrainType == g_TERRAIN_TYPE_TUNDRA_HILLS then
-        self:TerraformSetTerrain(g_TERRAIN_TYPE_TUNDRA)
-    elseif self.TerrainType == g_TERRAIN_TYPE_SNOW_HILLS then
-        self:TerraformSetTerrain(g_TERRAIN_TYPE_SNOW)
-    end
-    self:UpdateYields()
-end
-
----------------------------------------
 -- HexResource
 -- Contains resources data as categories - fill as needed
 ---------------------------------------
@@ -540,7 +476,6 @@ end
 -- HexMap
 ---------------------------------------
 
-
 HexMap = {}
 
 function HexMap.new(_width, _height, mapScript)
@@ -552,13 +487,27 @@ function HexMap.new(_width, _height, mapScript)
     instance:CanCircumnavigate(mapScript);
     instance.map = {};
     instance.mapFreshWater = {};
-    instance.mapResources = {};
     instance.mapCostal = {};
+    instance.mapResources = {};
+    instance.mapFeatures = {};
+    instance.mapTerrains = {};
+    instance.mapWater = {};
     instance.mapContinents = {};
     instance.mapOnSplit = {}
+    instance.mapWonders = {};
     instance.map22 = {}
     instance.centroidsArray = {};
+    instance.mapResourcesLux = instance:GetMapResourcesLux();
+    instance.mapResourcesBonus = instance:GetMapResourcesBonus();
+    instance.mapResourcesStrategics = instance:GetMapResourcesStrategics();
+    instance.mapResourcesFarms =instance:GetMapResourcesFarms();
+    instance.mapResourcesPastures = instance:GetMapResourcesPastures();
+    instance.mapResourcesPlantations = instance:GetMapResourcesPlantations();
+    instance.mapResourcesMines = instance:GetMapResourcesMines();
+    instance.mapResourcesQuarries = instance:GetMapResourcesQuarries();
+    instance.mapResourcesFishings = instance:GetMapResourcesFishings();
     instance:FillHexMapDatas();
+
     -- Put maps parameters here ? (world age, temperature, rainfall etc)
     return instance;
 end
@@ -575,22 +524,28 @@ function HexMap:FillHexMapDatas()
             local newHex = Hex.new(x,y);
             newHex:FillHexDatas();
             self.map[y][x] = newHex;
-            if newHex.ResourceType ~= nil then
-                self.mapResources[newHex.ResourceType] = newHex;
-            end
             if newHex.IsFreshWater then
                 table.insert(self.mapFreshWater, newHex);   
             end
             if newHex.IsCoastal then
                 table.insert(self.mapCostal, newHex);
             end
-            if newHex.ContinentId ~= nil then
-                self.mapContinents[newHex.ContinentId] = newHex;
+            self:InsertMapResources(newHex.x, newHex.y);
+            self:InsertMapFeatures(newHex.x, newHex.y);
+            self:InsertMapTerrains(newHex.x, newHex.y);
+            if newHex.IdContinent ~= nil then
+                self.mapContinents[newHex.IdContinent] = self.mapContinents[newHex.IdContinent] or {}
+                table.insert(self.mapContinents[newHex.IdContinent], newHex);
             end
             if newHex.IsOnSplit == true then
                 table.insert(self.mapOnSplit, newHex);
             end
-           
+            if newHex.IsNaturalWonder == true then
+                table.insert(self.mapWonders, newHex);
+            end
+            if newHex:IsWater() == true then
+                table.insert(self.mapWater, newHex);
+            end
         end
     end
     self:UpdateYieldMap();
@@ -608,7 +563,196 @@ function HexMap:UpdateYieldMap()
             end
         end
     end
+end
+-- Remove from the map the hex with current resource 
+-- Amber can be mine ressource (on land) and fishing (on water) - have to deal with that during mapping
+function HexMap:RemoveMapResources(x, y)
+    local hex = self:GetHexInMap(x, y)
+    if hex ~= nil and hex.ResourceType ~= g_RESOURCE_NONE then
+        -- Remove previous resource from map
+        table.remove(self.mapResources[hex.ResourceType], hex)
+        -- Remove from map to corresponding type of resources
+        if g_RESOURCES_LUX_LIST[hex.ResourceType] ~= nil then
+            table.remove(self.mapResourcesLux, hex);
+        elseif g_RESOURCES_BONUS_LIST[hex.ResourceType] ~= nil then
+            table.remove(self.mapResourcesBonus, hex);
+        elseif g_RESOURCES_STRATEGICS[hex.ResourceType] ~= nil then
+            table.remove(self.mapResourcesStrategics, hex);
+        elseif g_RESOURCES_MINE_LIST[hex.ResourceType] ~= nil and hex:IsWater() == false then
+            table.remove(self.mapResourcesMines, hex);
+        elseif g_RESOURCES_PASTURE_LIST[hex.ResourceType] ~= nil then
+            table.remove(self.mapResourcesPastures, hex);
+        elseif g_RESOURCES_FARM_LIST[hex.ResourceType] ~= nil then
+            table.remove(self.mapResourcesFarms, hex);
+        elseif g_RESOURCES_QUARRY_LIST[hex.ResourceType] ~= nil then
+            table.remove(self.mapResourcesQuarries, hex);
+        elseif g_RESOURCES_PLANTATION_LIST[hex.ResourceType] ~= nil then
+            table.remove(self.mapResourcesPlantations, hex);
+        elseif g_RESOURCES_FISHINGBOAT_LIST[hex.ResourceType] ~= nil and hex:IsWater() == true then
+            table.remove(self.mapResourcesFishings, hex);
+        end
+    end
+end
 
+function HexMap:InsertMapResources(x, y)   
+    local hex = self:GetHexInMap(x, y)
+    if hex ~= nil and hex.ResourceType ~= g_RESOURCE_NONE then
+        self.mapResources[hex.ResourceType] = self.mapResources[hex.ResourceType] or {}
+        table.insert(self.mapResources[hex.ResourceType], hex);
+        if g_RESOURCES_LUX_LIST[hex.ResourceType] ~= nil then
+            table.insert(self.mapResourcesLux, hex);
+        elseif g_RESOURCES_BONUS_LIST[hex.ResourceType] ~= nil then
+            table.insert(self.mapResourcesBonus, hex);
+        elseif g_RESOURCES_STRATEGICS[hex.ResourceType] ~= nil then
+            table.insert(self.mapResourcesStrategics, hex);
+        elseif g_RESOURCES_MINE_LIST[hex.ResourceType] ~= nil and hex:IsWater() == false then
+            table.insert(self.mapResourcesMines, hex);
+        elseif g_RESOURCES_FARM_LIST[hex.ResourceType] ~= nil then
+            table.insert(self.mapResourcesFarms, hex);
+        elseif g_RESOURCES_PASTURE_LIST[hex.ResourceType] ~= nil then
+            table.insert(self.mapResourcesPastures, hex);
+        elseif g_RESOURCES_QUARRY_LIST[hex.ResourceType] ~= nil then
+            table.insert(self.mapResourcesQuarries, hex);
+        elseif g_RESOURCES_PLANTATION_LIST[hex.ResourceType] ~= nil then
+            table.insert(self.mapResourcesPlantations, hex);
+        elseif g_RESOURCES_FISHINGBOAT_LIST[hex.ResourceType] ~= nil and hex:IsWater() == true then
+            table.insert(self.mapResourcesFishings, hex);
+        end
+    end
+end
+
+function HexMap:InsertMapFeatures(x, y)   
+    local hex = self:GetHexInMap(x, y)
+    if hex ~= nil and hex.FeatureType ~= g_FEATURE_NONE then
+        self.mapFeatures[hex.FeatureType] = self.mapFeatures[hex.FeatureType] or {};
+        table.insert(self.mapFeatures[hex.FeatureType], hex)
+    end
+end
+
+function HexMap:InsertMapTerrains(x, y)   
+    local hex = self:GetHexInMap(x, y)
+    if hex ~= nil and hex.TerrainType ~= g_TERRAIN_TYPE_NONE then
+        self.mapTerrains[hex.TerrainType] = self.mapTerrains[hex.TerrainType] or {};
+        table.insert(self.mapTerrains[hex.TerrainType], hex)
+    end
+end
+
+
+function HexMap:GetMapResourcesLux()
+    local resourceLuxList = {}
+    for idRes, t in pairs(self.mapResources) do
+        if g_RESOURCES_LUX_LIST[idRes] ~= nil then
+            local mapResourceIndex = self.mapResources[idRes];
+            for _, hex in ipairs(mapResourceIndex) do
+                table.insert(resourceLuxList, hex);
+            end
+        end
+    end
+    return resourceLuxList;
+end
+
+function HexMap:GetMapResourcesBonus()
+    local resourceBonusList = {}
+    for idRes, t in pairs(self.mapResources) do
+        if g_RESOURCES_BONUS_LIST[idRes] ~= nil then
+            local mapResourceIndex = self.mapResources[idRes];
+            for _, hex in ipairs(mapResourceIndex) do
+                table.insert(resourceBonusList, hex);
+            end
+        end
+    end
+    return resourceBonusList;
+end
+
+function HexMap:GetMapResourcesStrategics()
+    local resourceStratList = {}
+    for idRes, t in pairs(self.mapResources) do
+        if g_RESOURCES_STRATEGICS[idRes] ~= nil then
+            local mapResourceIndex = self.mapResources[idRes];
+            for _, hex in ipairs(mapResourceIndex) do
+                table.insert(resourceStratList, hex);
+            end
+        end
+    end
+    return resourceStratList;
+end
+
+function HexMap:GetMapResourcesFarms()
+    local resourceFarmsList = {}
+    for idRes, t in pairs(self.mapResources) do
+        if g_RESOURCES_FARM_LIST[idRes] ~= nil then
+            local mapResourceIndex = self.mapResources[idRes];
+            for _, hex in ipairs(mapResourceIndex) do
+                table.insert(resourceFarmsList, hex);
+            end
+        end
+    end
+    return resourceFarmsList;
+end
+
+function HexMap:GetMapResourcesPastures()
+    local resourcePasturesList = {}
+    for idRes, t in pairs(self.mapResources) do
+        if g_RESOURCES_PASTURE_LIST[idRes] ~= nil then
+            local mapResourceIndex = self.mapResources[idRes];
+            for _, hex in ipairs(mapResourceIndex) do
+                table.insert(resourcePasturesList, hex);
+            end
+        end
+    end
+    return resourcePasturesList;
+end
+
+function HexMap:GetMapResourcesMines()
+    local resourceMinesList = {}
+    for idRes, t in pairs(self.mapResources) do
+        if g_RESOURCES_MINE_LIST[idRes] ~= nil then
+            local mapResourceIndex = self.mapResources[idRes];
+            for _, hex in ipairs(mapResourceIndex) do
+                table.insert(resourceMinesList, hex);
+            end
+        end
+    end
+    return resourceMinesList;
+end
+
+function HexMap:GetMapResourcesQuarries()
+    local resourceQuarriesList = {}
+    for idRes, t in pairs(self.mapResources) do
+        if g_RESOURCES_QUARRY_LIST[idRes] ~= nil then
+            local mapResourceIndex = self.mapResources[idRes];
+            for _, hex in ipairs(mapResourceIndex) do
+                table.insert(resourceQuarriesList, hex);
+            end
+        end
+    end
+    return resourceQuarriesList;
+end
+
+function HexMap:GetMapResourcesPlantations()
+    local resourcePlantationsList = {}
+    for idRes, t in pairs(self.mapResources) do
+        if g_RESOURCES_PLANTATION_LIST[idRes] ~= nil then
+            local mapResourceIndex = self.mapResources[idRes];
+            for _, hex in ipairs(mapResourceIndex) do
+                table.insert(resourcePlantationsList, hex);
+            end
+        end
+    end
+    return resourcePlantationsList;
+end
+
+function HexMap:GetMapResourcesFishings()
+    local resourcesFishingsList = {}
+    for idRes, t in pairs(self.mapResources) do
+        if g_RESOURCES_FISHINGBOAT_LIST[idRes] ~= nil then
+            local mapResourceIndex = self.mapResources[idRes];
+            for _, hex in ipairs(mapResourceIndex) do
+                table.insert(resourcesFishingsList, hex);
+            end
+        end
+    end
+    return resourcesFishingsList;
 end
 
 
@@ -695,14 +839,145 @@ function HexMap:ContinentsInRange(hex, range)
     local hexes = self:GetAllHexInRing(hex, range)
     local continentsInRange = 1
     for _ , h in pairs(hexes) do
-        if h.ContinentId ~= hex.ContinentId then
+        if h.IdContinent ~= hex.IdContinent then
             continentsInRange = continentsInRange + 1
         end
     end
     return continentsInRange;
 end
 
--- TEMP DEBUG - Print Map in logs with centroid id 
+function HexMap:getRandomHex()
+    local randX = TerrainBuilder.GetRandomNumber(self.width, "randX");
+    local randY = TerrainBuilder.GetRandomNumber(self.height, "randY");
+    return self:GetHexInMap(randX, randY);
+end
+
+
+---------------------------------------
+-- Terraforming methods 
+---------------------------------------
+
+---------------------------------------
+-- Terrains
+-- Should never be none
+---------------------------------------
+function HexMap:TerraformSetTerrain(hex, terrainId) 
+    local plot = Map.GetPlot(hex.x, hex.y);
+    if plot ~= nil and hex.TerrainType ~= g_TERRAIN_TYPE_NONE then
+        table.remove(self.mapTerrains[hex.TerrainType], hex);
+        TerrainBuilder.SetTerrainType(plot, terrainId);
+        hex.TerrainType = terrainId
+        hex:UpdateYields();
+        self:InsertMapTerrains(hex.x, hex.y);
+    end
+end
+
+---------------------------------------
+-- Resources
+---------------------------------------
+function HexMap:TerraformSetResource(hex, resourceId) 
+    local plot = Map.GetPlot(hex.x, hex.y);
+    if plot ~= nil and ResourceBuilder.CanHaveResource(plot, resourceId) then
+        self:RemoveMapResources(x, y);
+        ResourceBuilder.SetResourceType(plot, resourceId, 1);
+        hex.ResourceType = resourceId;
+        hex.HexResource = HexResource.new(self.ResourceType);
+        hex:UpdateYields()
+        self:InsertMapResources(hex.x, hex.y);
+        return true;
+    end
+    return false;
+end
+
+---------------------------------------
+-- Features
+---------------------------------------
+function HexMap:TerraformSetFeature(hex,featureId)
+    local plot = Map.GetPlot(hex.x, hex.y);
+    if plot ~= nil and TerrainBuilder.CanHaveFeature(plot, featureId) then
+        if hex.FeatureType ~= g_FEATURE_NONE then
+            table.remove(self.mapFeatures[hex.FeatureType], hex)
+        end
+        TerrainBuilder.SetFeatureType(plot, featureId);
+        hex.FeatureType = featureId;
+        hex:UpdateYields()
+        self:InsertMapFeatures(hex.x, hex.y);
+        return true;
+    end 
+    return false;
+end
+
+---------------------------------------
+-- Hills
+-- Info : not currently mapped, see if needed
+---------------------------------------
+function Hex:TerraformToHill(cleanTile)
+    if (cleanTile) then
+        self:TerraformSetFeature(g_FEATURE_NONE);
+        self:TerraformSetResource(g_RESOURCE_NONE);
+    end
+    if self.TerrainType == g_TERRAIN_TYPE_GRASS then
+        self:TerraformSetTerrain(g_TERRAIN_TYPE_GRASS_HILLS)
+    elseif self.TerrainType == g_TERRAIN_TYPE_PLAINS then
+        self:TerraformSetTerrain(g_TERRAIN_TYPE_PLAINS_HILLS)
+    elseif self.TerrainType == g_TERRAIN_TYPE_DESERT then
+        self:TerraformSetTerrain(g_TERRAIN_TYPE_DESERT_HILLS)
+    elseif self.TerrainType == g_TERRAIN_TYPE_TUNDRA then
+        self:TerraformSetTerrain(g_TERRAIN_TYPE_TUNDRA_HILLS)
+    elseif self.TerrainType == g_TERRAIN_TYPE_SNOW then
+        self:TerraformSetTerrain(g_TERRAIN_TYPE_SNOW_HILLS)
+    end
+    self:UpdateYields()
+end
+
+function Hex:TerraformToFlat(cleanTile)
+    if (cleanTile) then
+        self:TerraformSetFeature(g_FEATURE_NONE);
+        self:TerraformSetResource(g_RESOURCE_NONE);
+    end
+    if self.TerrainType == g_TERRAIN_TYPE_GRASS_HILLS then
+        self:TerraformSetTerrain(g_TERRAIN_TYPE_GRASS)
+    elseif self.TerrainType == g_TERRAIN_TYPE_PLAINS_HILLS then
+        self:TerraformSetTerrain(g_TERRAIN_TYPE_PLAINS)
+    elseif self.TerrainType == g_TERRAIN_TYPE_DESERT_HILLS then
+        self:TerraformSetTerrain(g_TERRAIN_TYPE_DESERT)
+    elseif self.TerrainType == g_TERRAIN_TYPE_TUNDRA_HILLS then
+        self:TerraformSetTerrain(g_TERRAIN_TYPE_TUNDRA)
+    elseif self.TerrainType == g_TERRAIN_TYPE_SNOW_HILLS then
+        self:TerraformSetTerrain(g_TERRAIN_TYPE_SNOW)
+    end
+    self:UpdateYields()
+end
+
+---------------------------------------
+-- DEBUGGING prints
+---------------------------------------
+-- DEBUGGING - map for every resources 
+function HexMap:PrintMaps() 
+    -- Loop through every resources index
+    for idRes, t in pairs(self.mapResources) do
+        local mapResourceIndex = self.mapResources[idRes]
+        -- Through all resources, then through all hexes 
+        for _, hex in ipairs(mapResourceIndex) do
+            print("Index resource = "..tostring(idRes).." at plot ("..tostring(hex.x)..", "..tostring(hex.y)..")")
+        end
+    end
+end
+-- DEBUGGING - Lux - can use any resource list
+function HexMap:PrintMapsLux() 
+    -- Loop through every resources index - only print if they are luxes 
+    for idRes, t in pairs(self.mapResources) do
+        if g_RESOURCES_LUX_LIST[idRes] ~= nil then
+            local mapResourceIndex = self.mapResources[idRes]
+            -- Through all resources, then through all hexes 
+            for _, hex in ipairs(mapResourceIndex) do
+                print("Index resource = "..tostring(idRes).." at plot ("..tostring(hex.x)..", "..tostring(hex.y)..")")
+            end
+        end
+    end
+end
+
+-- DEBUGGING - Print Map in logs with centroid id 
 function HexMap:PrintHexMap()
     local scanMap = {}
     for y = 0, self.height - 1 do
@@ -793,15 +1068,11 @@ function HexMap:LookForHills(map)
     return count, mappedHex
 end
 
-function HexMap:getRandomHex()
-    local randX = TerrainBuilder.GetRandomNumber(self.width, "cX");
-    local randY = TerrainBuilder.GetRandomNumber(self.height, "cY");
-    return self:GetHexInMap(randX, randY);
-end
-
 
 ----------------------------
 -- K-means
+-- Centroids data currently stored in HexMap, if multiples centroids and run configs needed, 
+-- change the methods to return the list of centroids instead of directly change HexMap.centroidsArray 
 ----------------------------
 function HexMap:RunKmeans(n, iters)
     iters = iters or 30
