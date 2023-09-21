@@ -199,6 +199,13 @@ end
 
 BBS_resources_count = {};
 
+-- Check bias in cluster
+-- Check closest water tile from center of cluster
+-- Exclude distance to player
+
+-- 1: Min distance between civilisations
+-- 2: Spawn bias
+-- 3: Fresh water settle
 function BBS_AssignStartingPlots:__InitStartingData()
     print("Start parsing map",  os.date("%c"))
     -- Datas stored in HexMap object
