@@ -1014,7 +1014,7 @@ function HexMap:PrintHexSpawnableMap()
             if hex:IsWater() then
                 logX = logX.."~~".." ";
             else
-                logX = logX..tostring(hex.CostalScore).." ";
+                logX = logX.."0"..tostring(hex.CostalScore).." ";
             end
             
         end
