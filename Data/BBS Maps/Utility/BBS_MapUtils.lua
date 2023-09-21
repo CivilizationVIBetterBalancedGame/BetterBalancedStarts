@@ -788,7 +788,7 @@ end
 function HexMap:GetHexInRing(hexCenter, ringRadius)
     local hexList = {};
     -- Starting from the hex to the left
-    local hexWest = self:GetHexSum(hexCenter, self:GetHexScale(self:GetAdjDirection(DirectionTypes.DIRECTION_WEST), ringRadius));
+    local hexWest = self:GetHexSum(hexCenter, self:GetHexScale(hexCenter:GetAdjDirection(DirectionTypes.DIRECTION_WEST), ringRadius));
     local testHex = hexWest;
     for i=0, DirectionTypes.NUM_DIRECTION_TYPES - 1 do
         for r = 0, ringRadius - 1 do
@@ -800,7 +800,7 @@ function HexMap:GetHexInRing(hexCenter, ringRadius)
                 -- print("GetHexInRing - "..tostring(ringRadius).." ("..tostring(hexToAdd.x)..", "..tostring(hexToAdd.y)..")")            
             end
             -- in every cases we move to the next tile 
-            local hexDir = self:GetAdjDirection(i);
+            local hexDir = testHex:GetAdjDirection(i);
             testHex = self:GetHexSum(testHex, hexDir)
         end
     end
@@ -834,6 +834,38 @@ function HexMap:GetAdjDirection(directionIndex)
     elseif directionIndex == DirectionTypes.DIRECTION_NORTHWEST then
         return Hex.new(-1, 1);
     end
+end
+
+function Hex:GetAdjDirection(directionIndex)
+    if self.y % 2 == 0 then
+        if directionIndex == DirectionTypes.DIRECTION_NORTHEAST then
+            return Hex.new(0, 1);
+        elseif directionIndex == DirectionTypes.DIRECTION_EAST then
+            return Hex.new(1, 0);
+        elseif directionIndex == DirectionTypes.DIRECTION_SOUTHEAST then
+            return Hex.new(0, -1);
+        elseif directionIndex == DirectionTypes.DIRECTION_SOUTHWEST then
+            return Hex.new(-1, -1);
+        elseif directionIndex == DirectionTypes.DIRECTION_WEST then
+            return Hex.new(-1, 0);
+        elseif directionIndex == DirectionTypes.DIRECTION_NORTHWEST then
+            return Hex.new(-1, 1);
+        end
+    elseif self.y % 2 == 1 then
+        if directionIndex == DirectionTypes.DIRECTION_NORTHEAST then
+            return Hex.new(1, 1);
+        elseif directionIndex == DirectionTypes.DIRECTION_EAST then
+           return Hex.new(1, 0);
+        elseif directionIndex == DirectionTypes.DIRECTION_SOUTHEAST then
+           return Hex.new(1, -1);
+        elseif directionIndex == DirectionTypes.DIRECTION_SOUTHWEST then
+           return Hex.new(0, -1);
+        elseif directionIndex == DirectionTypes.DIRECTION_WEST then
+           return Hex.new(-1, 0);
+        elseif directionIndex == DirectionTypes.DIRECTION_NORTHWEST then
+           return Hex.new(0, 1);
+        end
+   end
 end
 
 function HexMap:ContinentsInRange(hex, range)

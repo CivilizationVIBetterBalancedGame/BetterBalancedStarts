@@ -251,7 +251,7 @@ function BBS_AssignStartingPlots:__InitStartingData()
                             hex.CostalScore = hex.CostalScore + score[i]
                         end
                     end
-                    print("("..tostring(hex.x)..", "..tostring(hex.y)..") - "..tostring(hex.CostalScore))     
+                    --print("("..tostring(hex.x)..", "..tostring(hex.y)..") - "..tostring(hex.CostalScore))     
                 end
             end
         end
@@ -264,6 +264,14 @@ function BBS_AssignStartingPlots:__InitStartingData()
     local r3 = BBS_HexMap:GetHexInRing(hex1030, 3);
     print("("..tostring(hex1030.x)..", "..tostring(hex1030.y)..")")
     for _, h in pairs(r1) do
+        print("("..tostring(h.x)..", "..tostring(h.y)..") - "..tostring(h.TerrainType).." - "..tostring(h:IsWater()))     
+    end
+    print("Ring 2")
+    for _, h in pairs(r2) do
+        print("("..tostring(h.x)..", "..tostring(h.y)..") - "..tostring(h.TerrainType).." - "..tostring(h:IsWater()))     
+    end
+    print("Ring 3")
+    for _, h in pairs(r3) do
         print("("..tostring(h.x)..", "..tostring(h.y)..") - "..tostring(h.TerrainType).." - "..tostring(h:IsWater()))     
     end
 end
