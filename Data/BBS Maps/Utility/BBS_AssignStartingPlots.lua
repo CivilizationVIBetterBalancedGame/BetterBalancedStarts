@@ -278,6 +278,14 @@ function BBS_AssignStartingPlots:__InitStartingData()
     for _, h in pairs(r1) do
         print("("..tostring(h.x)..", "..tostring(h.y)..") - "..tostring(h.TerrainType).." - "..tostring(h:IsWater()))     
     end
+    print("Ring 2")
+    for _, h in pairs(r2) do
+        print("("..tostring(h.x)..", "..tostring(h.y)..") - "..tostring(h.TerrainType).." - "..tostring(h:IsWater()))     
+    end
+    print("Ring 3")
+    for _, h in pairs(r3) do
+        print("("..tostring(h.x)..", "..tostring(h.y)..") - "..tostring(h.TerrainType).." - "..tostring(h:IsWater()))     
+    end
 end
 
 

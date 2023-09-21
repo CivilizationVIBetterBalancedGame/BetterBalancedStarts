@@ -784,6 +784,10 @@ function HexMap:GetHexScale(hex, factor)
     return Hex.new(hex.x * factor, hex.y * factor)
 end
 
+-- 1 -> 0 
+-- 2 -> 1
+-- 3 -> 2
+-- 4 -> 3
 -- Loop through all tiles in the specified ring in parameter
 function HexMap:GetHexInRing(hexCenter, ringRadius)
     local hexList = {};
