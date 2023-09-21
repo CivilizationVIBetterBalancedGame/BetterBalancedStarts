@@ -204,7 +204,7 @@ function BBS_AssignStartingPlots:__InitStartingData()
     -- Datas stored in HexMap object
     local width, height = Map.GetGridSize();
     BBS_HexMap = HexMap.new(width, height, bbs_game_config.BBS_MAP_SCRIPT);
-    BBS_HexMap:RunKmeans(8, 50);
+    BBS_HexMap:RunKmeans(20, 50);
     print("Scan Map")
     BBS_HexMap:PrintHexMap();
     -- TEMP get hexes from a region (same centroid)
@@ -223,10 +223,49 @@ function BBS_AssignStartingPlots:__InitStartingData()
     local countLandTiles, _ = BBS_HexMap:GetLandHexList();
     print("totalLandPlots = "..tostring(countLandTiles))
     print("totalHillPlots = "..tostring(countHills))
+    print("totalCostal = "..tostring(#BBS_HexMap.mapCostal))
     local hillpercent = (countHills / countLandTiles) * 100
     print("Hill% = "..tostring(hillpercent))
      --------------------
     print("Done parsing map",  os.date("%c"))
+    print("Height = "..tostring(BBS_HexMap.height))
+    print("Start Conv2D map",  os.date("%c"))
+    local score = {}
+    score[1] = 1
+    score[2] = 1
+    score[3] = 1
+    score[4] = 1
+    score[5] = 1
+    score[6] = 1
+    score[7] = 1
+    for y = 0, BBS_HexMap.height - 1 do
+        for x = 0, BBS_HexMap.width - 1 do 
+            local hex = BBS_HexMap:GetHexInMap(x, y)
+            hex.CostalScore = 0
+            if hex:IsWater() == false then
+                for i=1, 7, 1 do
+                    local t = BBS_HexMap:GetHexInRing(hex, i);
+                    for _, h in pairs(t) do
+                        if h:IsWater() then
+                            --print(tostring(i).." "..tostring(score[i]).."("..tostring(h.x)..", "..tostring(h.y)..") ")
+                            hex.CostalScore = hex.CostalScore + score[i]
+                        end
+                    end
+                    print("("..tostring(hex.x)..", "..tostring(hex.y)..") - "..tostring(hex.CostalScore))     
+                end
+            end
+        end
+    end
+    BBS_HexMap:PrintHexSpawnableMap();
+    print("Done Conv2D map",  os.date("%c"))
+    local hex1030 = BBS_HexMap:GetHexInMap(10, 30)
+    local r1 = BBS_HexMap:GetHexInRing(hex1030, 1);
+    local r2 = BBS_HexMap:GetHexInRing(hex1030, 2);
+    local r3 = BBS_HexMap:GetHexInRing(hex1030, 3);
+    print("("..tostring(hex1030.x)..", "..tostring(hex1030.y)..")")
+    for _, h in pairs(r1) do
+        print("("..tostring(h.x)..", "..tostring(h.y)..") - "..tostring(h.TerrainType).." - "..tostring(h:IsWater()))     
+    end
 end
 
 

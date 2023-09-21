@@ -233,6 +233,7 @@ function Hex:FillHexDatas()
         self.IslandSize = plot:GetArea():GetPlotCount();
         self.IdContinent = plot:GetContinentType(); 
         self.IsOnSplit = Map.FindSecondContinent(plot, 1);
+        self.IsSpawnable = not self:IsWater();
         self:UpdateYields();
         return;
     end
@@ -761,7 +762,7 @@ function HexMap:GetHexInMap(pX, pY)
     if self.canCircumnavigate then 
         pX = pX % self.width;
     end
-    if (self.canCircumnavigate == false and (pX < 0 or pX > self.width)) or (pY < 0 or pY > self.height) then
+    if (self.canCircumnavigate == false and (pX < 0 or pX >= self.width)) or (pY < 0 or pY >= self.height) then
         return nil
     end
     local hex = self.map[pY][pX];
@@ -821,11 +822,11 @@ end
 -- Transform DirectionTypes index to Hex vector
 function HexMap:GetAdjDirection(directionIndex)
     if directionIndex == DirectionTypes.DIRECTION_NORTHEAST then
-         return Hex.new(1, 1);
+         return Hex.new(0, 1);
     elseif directionIndex == DirectionTypes.DIRECTION_EAST then
         return Hex.new(1, 0);
     elseif directionIndex == DirectionTypes.DIRECTION_SOUTHEAST then
-        return Hex.new(0, -1);
+        return Hex.new(1, -1);
     elseif directionIndex == DirectionTypes.DIRECTION_SOUTHWEST then
         return Hex.new(-1, -1);
     elseif directionIndex == DirectionTypes.DIRECTION_WEST then
@@ -1001,6 +1002,33 @@ function HexMap:PrintHexMap()
     end
 end
 
+function HexMap:PrintHexSpawnableMap()
+    local scanMap = {}
+    for y = 0, self.height - 1 do
+        local logX = ""
+        if y % 2 == 1 then
+            logX = " "
+        end
+        for x = 0, self.width - 1 do
+            local hex = self.map[y][x]
+            if hex:IsWater() then
+                logX = logX.."~~".." ";
+            else
+                logX = logX..tostring(hex.CostalScore).." ";
+            end
+            
+        end
+        scanMap[self.height - y] = logX
+    end
+    local skeys = {}
+    for k in pairs(scanMap) do
+        table.insert(skeys, k)
+    end
+    table.sort(skeys)
+    for _,v in ipairs(skeys) do
+        print(v, scanMap[v])
+    end
+end
 -- TEMP DEBUG print map for logs
 function Hex:PrintCentroidIdMap()
     local printed = ""
@@ -1094,6 +1122,11 @@ function HexMap:RunKmeans(n, iters)
                 randomHexIsNotLand = false
             else
                 randomHex = self:getRandomHex();
+                for _, c in pairs(centroids) do
+                    if c.x == randomHex.x and c.y == randomHex.y then
+                        randomHexIsNotLand = false
+                    end
+                end
             end
         end 
         local newCentroid = Centroid.new(randomHex.x, randomHex.y, i)
