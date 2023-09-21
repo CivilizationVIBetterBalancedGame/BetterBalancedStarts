@@ -276,23 +276,7 @@ function BBS_AssignStartingPlots:__InitStartingData()
         end
     end
     BBS_HexMap:PrintHexSpawnableMap();
-    print("Done Conv2D map",  os.date("%c"))
-    local hex1030 = BBS_HexMap:GetHexInMap(10, 30)
-    local r1 = BBS_HexMap:GetHexInRing(hex1030, 1);
-    local r2 = BBS_HexMap:GetHexInRing(hex1030, 2);
-    local r3 = BBS_HexMap:GetHexInRing(hex1030, 3);
-    print("("..tostring(hex1030.x)..", "..tostring(hex1030.y)..")")
-    for _, h in pairs(r1) do
-        print("("..tostring(h.x)..", "..tostring(h.y)..") - "..tostring(h.TerrainType).." - "..tostring(h:IsWater()))     
-    end
-    print("Ring 2")
-    for _, h in pairs(r2) do
-        print("("..tostring(h.x)..", "..tostring(h.y)..") - "..tostring(h.TerrainType).." - "..tostring(h:IsWater()))     
-    end
-    print("Ring 3")
-    for _, h in pairs(r3) do
-        print("("..tostring(h.x)..", "..tostring(h.y)..") - "..tostring(h.TerrainType).." - "..tostring(h:IsWater()))     
-    end
+    print("Done Conv2D map",  os.date("%c"));
 end
 
 

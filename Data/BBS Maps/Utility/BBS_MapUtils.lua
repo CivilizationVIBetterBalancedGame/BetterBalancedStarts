@@ -229,7 +229,7 @@ function Hex:FillHexDatas()
         self.IsNaturalWonder = plot:IsNaturalWonder();
         self.IsFreshWater = plot:IsFreshWater();
         self.IsCoastal = plot:IsCoastalLand();
-        self.IslandId = plot:GetArea();
+        self.IslandId = plot:GetArea():GetID();
         self.IslandSize = plot:GetArea():GetPlotCount();
         self.IdContinent = plot:GetContinentType(); 
         self.IsOnSplit = Map.FindSecondContinent(plot, 1);
@@ -571,7 +571,12 @@ function HexMap:RemoveMapResources(x, y)
     local hex = self:GetHexInMap(x, y)
     if hex ~= nil and hex.ResourceType ~= g_RESOURCE_NONE then
         -- Remove previous resource from map
-        table.remove(self.mapResources[hex.ResourceType], hex)
+        for i , h in ipairs(self.mapResources[hex.ResourceType]) do
+            if self.mapResources[hex.ResourceType] == hex then
+                table.remove(self.mapResources[hex.ResourceType], i)
+                break;
+            end
+        end
         -- Remove from map to corresponding type of resources
         if g_RESOURCES_LUX_LIST[hex.ResourceType] ~= nil then
             table.remove(self.mapResourcesLux, hex);
@@ -792,7 +797,7 @@ end
 function HexMap:GetHexInRing(hexCenter, ringRadius)
     local hexList = {};
     -- Starting from the hex to the left
-    local hexWest = self:GetHexSum(hexCenter, self:GetHexScale(self:GetAdjDirection(DirectionTypes.DIRECTION_WEST), ringRadius));
+    local hexWest = self:GetHexSum(hexCenter, self:GetHexScale(hexCenter:GetAdjDirection(DirectionTypes.DIRECTION_WEST), ringRadius));
     local testHex = hexWest;
     for i=0, DirectionTypes.NUM_DIRECTION_TYPES - 1 do
         for r = 0, ringRadius - 1 do
@@ -804,7 +809,7 @@ function HexMap:GetHexInRing(hexCenter, ringRadius)
                 -- print("GetHexInRing - "..tostring(ringRadius).." ("..tostring(hexToAdd.x)..", "..tostring(hexToAdd.y)..")")            
             end
             -- in every cases we move to the next tile 
-            local hexDir = self:GetAdjDirection(i);
+            local hexDir = testHex:GetAdjDirection(i);
             testHex = self:GetHexSum(testHex, hexDir)
         end
     end
@@ -840,6 +845,38 @@ function HexMap:GetAdjDirection(directionIndex)
     end
 end
 
+function Hex:GetAdjDirection(directionIndex)
+    if self.y % 2 == 0 then
+        if directionIndex == DirectionTypes.DIRECTION_NORTHEAST then
+            return Hex.new(0, 1);
+        elseif directionIndex == DirectionTypes.DIRECTION_EAST then
+            return Hex.new(1, 0);
+        elseif directionIndex == DirectionTypes.DIRECTION_SOUTHEAST then
+            return Hex.new(0, -1);
+        elseif directionIndex == DirectionTypes.DIRECTION_SOUTHWEST then
+            return Hex.new(-1, -1);
+        elseif directionIndex == DirectionTypes.DIRECTION_WEST then
+            return Hex.new(-1, 0);
+        elseif directionIndex == DirectionTypes.DIRECTION_NORTHWEST then
+            return Hex.new(-1, 1);
+        end
+    elseif self.y % 2 == 1 then
+        if directionIndex == DirectionTypes.DIRECTION_NORTHEAST then
+            return Hex.new(1, 1);
+        elseif directionIndex == DirectionTypes.DIRECTION_EAST then
+           return Hex.new(1, 0);
+        elseif directionIndex == DirectionTypes.DIRECTION_SOUTHEAST then
+           return Hex.new(1, -1);
+        elseif directionIndex == DirectionTypes.DIRECTION_SOUTHWEST then
+           return Hex.new(0, -1);
+        elseif directionIndex == DirectionTypes.DIRECTION_WEST then
+           return Hex.new(-1, 0);
+        elseif directionIndex == DirectionTypes.DIRECTION_NORTHWEST then
+           return Hex.new(0, 1);
+        end
+   end
+end
+
 function HexMap:ContinentsInRange(hex, range)
     local hexes = self:GetAllHexInRing(hex, range)
     local continentsInRange = 1
@@ -869,7 +906,13 @@ end
 function HexMap:TerraformSetTerrain(hex, terrainId) 
     local plot = Map.GetPlot(hex.x, hex.y);
     if plot ~= nil and hex.TerrainType ~= g_TERRAIN_TYPE_NONE then
-        table.remove(self.mapTerrains[hex.TerrainType], hex);
+        print("TerraformSetTerrain "..tostring(terrainId))
+        for i , h in ipairs(self.mapTerrains[hex.TerrainType]) do
+            if self.mapTerrains[hex.TerrainType] == hex then
+                table.remove(self.mapTerrains[hex.TerrainType], i)
+                break;
+            end
+        end
         TerrainBuilder.SetTerrainType(plot, terrainId);
         hex.TerrainType = terrainId
         hex:UpdateYields();
@@ -897,13 +940,18 @@ end
 ---------------------------------------
 -- Features
 ---------------------------------------
-function HexMap:TerraformSetFeature(hex,featureId)
+function HexMap:TerraformSetFeature(hex, featureId)
     local plot = Map.GetPlot(hex.x, hex.y);
-    if plot ~= nil and TerrainBuilder.CanHaveFeature(plot, featureId) then
-        if hex.FeatureType ~= g_FEATURE_NONE then
-            table.remove(self.mapFeatures[hex.FeatureType], hex)
+    local i = hex.y * self.width + hex.x;
+	local plotindex = Map.GetPlotByIndex(i);
+    if plot ~= nil and TerrainBuilder.CanHaveFeature(plotindex, featureId) then
+        for i , h in ipairs(self.mapFeatures[hex.FeatureType]) do
+            if self.mapFeatures[hex.FeatureType] == hex then
+                table.remove(self.mapFeatures[hex.FeatureType], i)
+                break;
+            end
         end
-        TerrainBuilder.SetFeatureType(plot, featureId);
+        TerrainBuilder.SetFeatureType(plotindex, featureId);
         hex.FeatureType = featureId;
         hex:UpdateYields()
         self:InsertMapFeatures(hex.x, hex.y);
@@ -952,6 +1000,25 @@ function Hex:TerraformToFlat(cleanTile)
         self:TerraformSetTerrain(g_TERRAIN_TYPE_SNOW)
     end
     self:UpdateYields()
+end
+
+function HexMap:RemoveVolcano(hex)
+    if (hex:IsMountain() == true and hex.FeatureType == g_FEATURE_VOLCANO) then
+        self:TerraformSetFeature(hex, g_FEATURE_NONE);
+        if hex.TerrainType == g_TERRAIN_TYPE_DESERT_MOUNTAIN then
+            self:TerraformSetTerrain(hex, g_TERRAIN_TYPE_DESERT_HILLS)
+        elseif hex.TerrainType == g_TERRAIN_TYPE_GRASS_MOUNTAIN  then
+            self:TerraformSetTerrain(hex, g_TERRAIN_TYPE_GRASS_HILLS)
+        elseif hex.TerrainType == g_TERRAIN_TYPE_PLAINS_MOUNTAIN  then
+            self:TerraformSetTerrain(hex, g_TERRAIN_TYPE_PLAINS_HILLS)
+        elseif hex.TerrainType == g_TERRAIN_TYPE_SNOW_MOUNTAIN  then
+            self:TerraformSetTerrain(hex, g_TERRAIN_TYPE_SNOW_HILLS)
+        elseif hex.TerrainType == g_TERRAIN_TYPE_TUNDRA_MOUNTAIN  then
+            self:TerraformSetTerrain(hex, g_TERRAIN_TYPE_TUNDRA_HILLS)
+        end
+        print("Removed volcano"..tostring(hex.x).." "..tostring(hex.y));
+    end  
+    hex:UpdateYields()
 end
 
 ---------------------------------------
@@ -1122,15 +1189,10 @@ function HexMap:RunKmeans(n, iters)
         local randomHexIsNotLand = true
         -- init random centroids anywhere on land to avoid isolated centroids on water
         while (randomHexIsNotLand) do
-            if randomHex:IsWater() == false then
+            if randomHex:IsWater() == false and self:CheckHexInCentroid(randomHex, centroids) == false then
                 randomHexIsNotLand = false
             else
-                randomHex = self:getRandomHex();
-                for _, c in pairs(centroids) do
-                    if c.x == randomHex.x and c.y == randomHex.y then
-                        randomHexIsNotLand = false
-                    end
-                end
+                randomHex = self:getRandomHex();  
             end
         end 
         local newCentroid = Centroid.new(randomHex.x, randomHex.y, i)
@@ -1146,6 +1208,15 @@ function HexMap:RunKmeans(n, iters)
     self:CentroidGroupby(points)
     self:UpdateCentroidsSortedIndex()
     print("End k-means ", os.date("%c"))
+end
+
+function HexMap:CheckHexInCentroid(hex, centroids)
+    for _, c in pairs(centroids) do
+        if c.x == hex.x and c.y == hex.y then
+            return true;
+        end
+    end
+    return false;
 end
 
 -- Mean of hex coord linked to the selected centroid
