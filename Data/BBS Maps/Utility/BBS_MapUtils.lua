@@ -552,6 +552,40 @@ function HexMap:FillHexMapDatas()
     self:UpdateYieldMap();
 end
 
+function HexMap:ComputeCostalNonSpawnable()
+    local score = {}
+    local ring_distance = 6
+    local min_land_tiles = 0
+    local start_ring = 2
+    for i = start_ring, ring_distance do
+        min_land_tiles = min_land_tiles + 6 * i * (ring_distance + 1 - i)
+        score[i] = ring_distance + 1 - i
+    end
+    min_land_tiles = min_land_tiles * 0.4 -- 40% of land tiles
+    for y = 0, self.height - 1 do
+        for x = 0, self.width - 1 do 
+            local hex = self:GetHexInMap(x, y)
+            hex.CostalScore = 0
+            if hex:IsWater() == false then
+                for i = start_ring, ring_distance, 1 do
+                    local t = self:GetHexInRing(hex, i);
+                    for _, h in pairs(t) do
+                        if h:IsWater() == false and (h.IslandSize > 31 or h:IsMountain()) then
+                            hex.CostalScore = hex.CostalScore + score[i]
+                        end
+                    end
+                end
+                if (hex.CostalScore / min_land_tiles) >= 1 then
+                    hex.CostalScore = 1
+                else
+                    hex.CostalScore = 0
+                end
+            end
+        end
+    end
+end
+
+
 function HexMap:UpdateYieldMap()
     -- Temp - 2f 2p tiles are mapped 
     self.map22 = {}
@@ -1124,6 +1158,24 @@ function Hex:PrintCentroidIdMap()
 end
 
 -- Return the count and all the hexes in the map that are not water and not snow
+function HexMap:GetNonExtremCostalTiles()
+    local landTiles = {}
+    local countLandtiles = 0
+    for y = 0, self.height - 1 do
+        for x = 0, self.width - 1 do
+            local hex = self.map[y][x]
+            if hex:IsWater() == false and hex:IsSnowLand() == false and hex.CostalScore == 1  and hx:IsMountain() == false then
+                countLandtiles = countLandtiles + 1
+                table.insert(landTiles, hex)
+            end
+        end
+    end
+    return countLandtiles, landTiles;
+end
+
+
+
+-- Return the count and all the hexes in the map that are not water and not snow
 function HexMap:GetLandHexList()
     local landTiles = {}
     local countLandtiles = 0
@@ -1177,7 +1229,7 @@ function HexMap:RunKmeans(n, iters)
     iters = iters or 30
     n = n or 16
     print("Start k-means "..tostring(n).." centroids for "..tostring(iters).." iterations. ", os.date("%c"))
-    local _, points = self:GetLandHexList()
+    local _, points = self:GetNonExtremCostalTiles()
     local nbLandTiles = 0
     for _, p in pairs(points) do
         nbLandTiles = nbLandTiles + 1
@@ -1202,6 +1254,7 @@ function HexMap:RunKmeans(n, iters)
     self.centroidsArray = centroids
     -- Run interations
 	for i = 1, iters do
+        
         print("RunKmeans - Iteration "..tostring(i))
 		self:UpdateCentroids(points)
 	end
@@ -1253,7 +1306,7 @@ function HexMap:CentroidGroupby(points)
 	end
     -- put the list directly in Centroid table c.HexCluster = { list of hexes}
     for _, c in pairs(self.centroidsArray) do
-        c.HexCluster = g[c]
+        c.HexCluster = g[c] or {}
     end
 end
 

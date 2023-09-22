@@ -237,44 +237,7 @@ function BBS_AssignStartingPlots:__InitStartingData()
     print("Done parsing map",  os.date("%c"))
     print("Height = "..tostring(BBS_HexMap.height))
     print("Start Conv2D map",  os.date("%c"))
-    local score = {}
-    local distance = 6
-    local min_land_tiles = 0
-    local start_ring = 2
-    for i = start_ring, distance do
-        min_land_tiles = min_land_tiles + 6 * i * (distance + 1 - i)
-        score[i] = distance + 1 - i
-    end
-    min_land_tiles = min_land_tiles * 0.4 -- 40% of land tiles
-    print("Min land weight = "..tostring(min_land_tiles))
-    -- score[1] = 1
-    -- score[2] = 1
-    -- score[3] = 1
-    -- score[4] = 1
-    -- score[5] = 1
-    -- score[6] = 1
-    for y = 0, BBS_HexMap.height - 1 do
-        for x = 0, BBS_HexMap.width - 1 do 
-            local hex = BBS_HexMap:GetHexInMap(x, y)
-            hex.CostalScore = 0
-            if hex:IsWater() == false then
-                for i = start_ring, distance, 1 do
-                    local t = BBS_HexMap:GetHexInRing(hex, i);
-                    for _, h in pairs(t) do
-                        if h:IsWater() == false then
-                            --print(tostring(i).." "..tostring(score[i]).."("..tostring(h.x)..", "..tostring(h.y)..") ")
-                            hex.CostalScore = hex.CostalScore + score[i]
-                        end
-                    end
-                end
-                if (hex.CostalScore / min_land_tiles) >= 1 then
-                    hex.CostalScore = 1
-                else
-                    hex.CostalScore = 0
-                end
-            end
-        end
-    end
+    BBS_HexMap:ComputeCostalNonSpawnable()
     BBS_HexMap:PrintHexSpawnableMap();
     print("Done Conv2D map",  os.date("%c"));
 end
