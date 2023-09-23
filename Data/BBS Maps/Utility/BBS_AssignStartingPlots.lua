@@ -211,8 +211,13 @@ function BBS_AssignStartingPlots:__InitStartingData()
     -- Datas stored in HexMap object
     local width, height = Map.GetGridSize();
     BBS_HexMap = HexMap.new(width, height, bbs_game_config.BBS_MAP_SCRIPT);
+
+    print("Start Conv2D map",  os.date("%c"))
+    BBS_HexMap:ComputeCostalNonSpawnable()
+    BBS_HexMap:PrintHexSpawnableMap();
+    print("Done Conv2D map",  os.date("%c"));
+
     BBS_HexMap:RunKmeans(20, 50);
-    print("Scan Map")
     BBS_HexMap:PrintHexMap();
     -- TEMP get hexes from a region (same centroid)
     -- TEMP count % of hills in a region
@@ -232,14 +237,9 @@ function BBS_AssignStartingPlots:__InitStartingData()
     print("totalHillPlots = "..tostring(countHills))
     print("totalCostal = "..tostring(#BBS_HexMap.mapCostal))
     local hillpercent = (countHills / countLandTiles) * 100
-    print("Hill% = "..tostring(hillpercent))
+    print("Hill% = "..tostring(hillpercent).." %")
      --------------------
     print("Done parsing map",  os.date("%c"))
-    print("Height = "..tostring(BBS_HexMap.height))
-    print("Start Conv2D map",  os.date("%c"))
-    BBS_HexMap:ComputeCostalNonSpawnable()
-    BBS_HexMap:PrintHexSpawnableMap();
-    print("Done Conv2D map",  os.date("%c"));
 end
 
 

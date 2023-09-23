@@ -599,40 +599,6 @@ function HexMap:UpdateYieldMap()
         end
     end
 end
--- Remove from the map the hex with current resource 
--- Amber can be mine ressource (on land) and fishing (on water) - have to deal with that during mapping
-function HexMap:RemoveMapResources(x, y)
-    local hex = self:GetHexInMap(x, y)
-    if hex ~= nil and hex.ResourceType ~= g_RESOURCE_NONE then
-        -- Remove previous resource from map
-        for i , h in ipairs(self.mapResources[hex.ResourceType]) do
-            if self.mapResources[hex.ResourceType] == hex then
-                table.remove(self.mapResources[hex.ResourceType], i)
-                break;
-            end
-        end
-        -- Remove from map to corresponding type of resources
-        if g_RESOURCES_LUX_LIST[hex.ResourceType] ~= nil then
-            table.remove(self.mapResourcesLux, hex);
-        elseif g_RESOURCES_BONUS_LIST[hex.ResourceType] ~= nil then
-            table.remove(self.mapResourcesBonus, hex);
-        elseif g_RESOURCES_STRATEGICS[hex.ResourceType] ~= nil then
-            table.remove(self.mapResourcesStrategics, hex);
-        elseif g_RESOURCES_MINE_LIST[hex.ResourceType] ~= nil and hex:IsWater() == false then
-            table.remove(self.mapResourcesMines, hex);
-        elseif g_RESOURCES_PASTURE_LIST[hex.ResourceType] ~= nil then
-            table.remove(self.mapResourcesPastures, hex);
-        elseif g_RESOURCES_FARM_LIST[hex.ResourceType] ~= nil then
-            table.remove(self.mapResourcesFarms, hex);
-        elseif g_RESOURCES_QUARRY_LIST[hex.ResourceType] ~= nil then
-            table.remove(self.mapResourcesQuarries, hex);
-        elseif g_RESOURCES_PLANTATION_LIST[hex.ResourceType] ~= nil then
-            table.remove(self.mapResourcesPlantations, hex);
-        elseif g_RESOURCES_FISHINGBOAT_LIST[hex.ResourceType] ~= nil and hex:IsWater() == true then
-            table.remove(self.mapResourcesFishings, hex);
-        end
-    end
-end
 
 function HexMap:InsertMapResources(x, y)   
     local hex = self:GetHexInMap(x, y)
@@ -661,11 +627,59 @@ function HexMap:InsertMapResources(x, y)
     end
 end
 
+-- Remove from the map the hex with current resource 
+-- Amber can be mine ressource (on land) and fishing (on water) - have to deal with that during mapping
+function HexMap:RemoveMapResources(x, y)
+    local hex = self:GetHexInMap(x, y)
+    if hex ~= nil and hex.ResourceType ~= g_RESOURCE_NONE then
+        -- Remove previous resource from map
+        for i , h in ipairs(self.mapResources[hex.ResourceType]) do
+            if h == hex then
+                table.remove(self.mapResources[hex.ResourceType], i)
+                break;
+            end
+        end
+        -- Remove from map to corresponding type of resources
+        if g_RESOURCES_LUX_LIST[hex.ResourceType] ~= nil then
+            table.remove(self.mapResourcesLux, hex);
+        elseif g_RESOURCES_BONUS_LIST[hex.ResourceType] ~= nil then
+            table.remove(self.mapResourcesBonus, hex);
+        elseif g_RESOURCES_STRATEGICS[hex.ResourceType] ~= nil then
+            table.remove(self.mapResourcesStrategics, hex);
+        elseif g_RESOURCES_MINE_LIST[hex.ResourceType] ~= nil and hex:IsWater() == false then
+            table.remove(self.mapResourcesMines, hex);
+        elseif g_RESOURCES_PASTURE_LIST[hex.ResourceType] ~= nil then
+            table.remove(self.mapResourcesPastures, hex);
+        elseif g_RESOURCES_FARM_LIST[hex.ResourceType] ~= nil then
+            table.remove(self.mapResourcesFarms, hex);
+        elseif g_RESOURCES_QUARRY_LIST[hex.ResourceType] ~= nil then
+            table.remove(self.mapResourcesQuarries, hex);
+        elseif g_RESOURCES_PLANTATION_LIST[hex.ResourceType] ~= nil then
+            table.remove(self.mapResourcesPlantations, hex);
+        elseif g_RESOURCES_FISHINGBOAT_LIST[hex.ResourceType] ~= nil and hex:IsWater() == true then
+            table.remove(self.mapResourcesFishings, hex);
+        end
+    end
+end
+
+
 function HexMap:InsertMapFeatures(x, y)   
     local hex = self:GetHexInMap(x, y)
     if hex ~= nil and hex.FeatureType ~= g_FEATURE_NONE then
         self.mapFeatures[hex.FeatureType] = self.mapFeatures[hex.FeatureType] or {};
         table.insert(self.mapFeatures[hex.FeatureType], hex)
+    end
+end
+
+function HexMap:RemoveMapFeatures(x, y)   
+    local hex = self:GetHexInMap(x, y)
+    if hex ~= nil and hex.FeatureType ~= g_FEATURE_NONE then
+        for i , h in ipairs(self.mapFeatures[hex.FeatureType]) do
+            if h == hex then
+                table.remove(self.mapFeatures[hex.FeatureType], i)
+                break;
+            end
+        end
     end
 end
 
@@ -677,6 +691,14 @@ function HexMap:InsertMapTerrains(x, y)
     end
 end
 
+function HexMap:RemoveMapTerrains(x, y)   
+    for i , h in ipairs(self.mapTerrains[hex.TerrainType]) do
+        if h == hex then
+            table.remove(self.mapTerrains[hex.TerrainType], i)
+            break;
+        end
+    end
+end
 
 function HexMap:GetMapResourcesLux()
     local resourceLuxList = {}
@@ -862,23 +884,6 @@ function HexMap:GetAllHexInRing(hexCenter, ringRadius)
     return hexList;
 end
 
--- Transform DirectionTypes index to Hex vector
-function HexMap:GetAdjDirection(directionIndex)
-    if directionIndex == DirectionTypes.DIRECTION_NORTHEAST then
-         return Hex.new(0, 1);
-    elseif directionIndex == DirectionTypes.DIRECTION_EAST then
-        return Hex.new(1, 0);
-    elseif directionIndex == DirectionTypes.DIRECTION_SOUTHEAST then
-        return Hex.new(1, -1);
-    elseif directionIndex == DirectionTypes.DIRECTION_SOUTHWEST then
-        return Hex.new(-1, -1);
-    elseif directionIndex == DirectionTypes.DIRECTION_WEST then
-        return Hex.new(-1, 0);
-    elseif directionIndex == DirectionTypes.DIRECTION_NORTHWEST then
-        return Hex.new(-1, 1);
-    end
-end
-
 function Hex:GetAdjDirection(directionIndex)
     if self.y % 2 == 0 then
         if directionIndex == DirectionTypes.DIRECTION_NORTHEAST then
@@ -941,12 +946,7 @@ function HexMap:TerraformSetTerrain(hex, terrainId)
     local plot = Map.GetPlot(hex.x, hex.y);
     if plot ~= nil and hex.TerrainType ~= g_TERRAIN_TYPE_NONE then
         print("TerraformSetTerrain "..tostring(terrainId))
-        for i , h in ipairs(self.mapTerrains[hex.TerrainType]) do
-            if self.mapTerrains[hex.TerrainType] == hex then
-                table.remove(self.mapTerrains[hex.TerrainType], i)
-                break;
-            end
-        end
+        self:RemoveMapTerrains(hex.x, hex.y);
         TerrainBuilder.SetTerrainType(plot, terrainId);
         hex.TerrainType = terrainId
         hex:UpdateYields();
@@ -960,7 +960,7 @@ end
 function HexMap:TerraformSetResource(hex, resourceId) 
     local plot = Map.GetPlot(hex.x, hex.y);
     if plot ~= nil and ResourceBuilder.CanHaveResource(plot, resourceId) then
-        self:RemoveMapResources(x, y);
+        self:RemoveMapResources(hex.x, hex.y);
         ResourceBuilder.SetResourceType(plot, resourceId, 1);
         hex.ResourceType = resourceId;
         hex.HexResource = HexResource.new(self.ResourceType);
@@ -979,12 +979,7 @@ function HexMap:TerraformSetFeature(hex, featureId)
     local i = hex.y * self.width + hex.x;
 	local plotindex = Map.GetPlotByIndex(i);
     if plot ~= nil and TerrainBuilder.CanHaveFeature(plotindex, featureId) then
-        for i , h in ipairs(self.mapFeatures[hex.FeatureType]) do
-            if self.mapFeatures[hex.FeatureType] == hex then
-                table.remove(self.mapFeatures[hex.FeatureType], i)
-                break;
-            end
-        end
+        self:RemoveMapFeatures(hex.x, hex.y)
         TerrainBuilder.SetFeatureType(plotindex, featureId);
         hex.FeatureType = featureId;
         hex:UpdateYields()
@@ -1134,6 +1129,7 @@ function HexMap:PrintHexSpawnableMap()
         print(v, scanMap[v])
     end
 end
+
 -- TEMP DEBUG print map for logs
 function Hex:PrintCentroidIdMap()
     local printed = ""
@@ -1164,7 +1160,7 @@ function HexMap:GetNonExtremCostalTiles()
     for y = 0, self.height - 1 do
         for x = 0, self.width - 1 do
             local hex = self.map[y][x]
-            if hex:IsWater() == false and hex:IsSnowLand() == false and hex.CostalScore == 1  and hx:IsMountain() == false then
+            if hex:IsWater() == false and hex:IsSnowLand() == false and hex.CostalScore == 1  and hex:IsMountain() == false then
                 countLandtiles = countLandtiles + 1
                 table.insert(landTiles, hex)
             end

@@ -382,7 +382,7 @@ function AddVolcanos(plotTypes,world_age,iW, iH)
 			local index = (iY * iW) + iX;
 			if (plotTypes[index] ~= g_PLOT_TYPE_OCEAN) then
 				local bVolcanoHere = false;
-				if (plotTypes[index] == g_PLOT_TYPE_MOUNTAIN) and VolcanoNextToCoast(iX, iY) == false then
+				if (plotTypes[index] == g_PLOT_TYPE_MOUNTAIN) then
 					local pPlot = Map.GetPlotByIndex(index);
 					local rng = TerrainBuilder.GetRandomNumber(100, "Volcano") / 100
 					if rng > 0.9 and iVolcanoesPlaced < iDesiredVolcanoes then
