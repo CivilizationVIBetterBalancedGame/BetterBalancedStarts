@@ -554,9 +554,9 @@ end
 
 function HexMap:ComputeCostalNonSpawnable()
     local score = {}
-    local ring_distance = 6
+    local ring_distance = 3
     local min_land_tiles = 0
-    local start_ring = 2
+    local start_ring = 1
     for i = start_ring, ring_distance do
         min_land_tiles = min_land_tiles + 6 * i * (ring_distance + 1 - i)
         score[i] = ring_distance + 1 - i
@@ -566,7 +566,7 @@ function HexMap:ComputeCostalNonSpawnable()
         for x = 0, self.width - 1 do 
             local hex = self:GetHexInMap(x, y)
             hex.CostalScore = 0
-            if hex:IsWater() == false then
+            if hex:IsWater() == false and (hex.IslandSize > 31 or hex:IsMountain()) then
                 for i = start_ring, ring_distance, 1 do
                     local t = self:GetHexInRing(hex, i);
                     for _, h in pairs(t) do
@@ -1160,7 +1160,7 @@ function HexMap:GetNonExtremCostalTiles()
     for y = 0, self.height - 1 do
         for x = 0, self.width - 1 do
             local hex = self.map[y][x]
-            if hex:IsWater() == false and hex:IsSnowLand() == false and hex.CostalScore == 1  and hex:IsMountain() == false then
+            if hex:IsWater() == false and hex:IsSnowLand() == false and hex.CostalScore == 1 then
                 countLandtiles = countLandtiles + 1
                 table.insert(landTiles, hex)
             end
@@ -1215,7 +1215,6 @@ function HexMap:LookForHills(map)
     return count, mappedHex
 end
 
-
 ----------------------------
 -- K-means
 -- Centroids data currently stored in HexMap, if multiples centroids and run configs needed, 
@@ -1231,26 +1230,11 @@ function HexMap:RunKmeans(n, iters)
         nbLandTiles = nbLandTiles + 1
     end
     print("k-means - nbLandTiles = "..tostring(nbLandTiles))
-	local centroids = {}
-    for i = 1, n do
-        local randomHex = self:getRandomHex();
-        local randomHexIsNotLand = true
-        -- init random centroids anywhere on land to avoid isolated centroids on water
-        while (randomHexIsNotLand) do
-            if randomHex:IsWater() == false and self:CheckHexInCentroid(randomHex, centroids) == false then
-                randomHexIsNotLand = false
-            else
-                randomHex = self:getRandomHex();  
-            end
-        end 
-        local newCentroid = Centroid.new(randomHex.x, randomHex.y, i)
-        print("Init random at centroid ("..tostring(newCentroid.x)..", "..tostring(newCentroid.y)..")")
-        table.insert(centroids, randomHex)
-    end
-    self.centroidsArray = centroids
+    -- Init centroids for Kmean
+    self:InitKmeanCentroids(n, points)
+
     -- Run interations
 	for i = 1, iters do
-        
         print("RunKmeans - Iteration "..tostring(i))
 		self:UpdateCentroids(points)
 	end
@@ -1266,6 +1250,44 @@ function HexMap:CheckHexInCentroid(hex, centroids)
         end
     end
     return false;
+end
+
+-- Init n centroids for Kmean clustering using naive sharding sampling
+-- https://www.kdnuggets.com/2017/03/naive-sharding-centroid-initialization-method.html
+function HexMap:InitKmeanCentroids(n, spawnableHex)
+    print("InitKmeanCentroids:")
+    for _, hex in pairs(spawnableHex) do
+        hex._mean = hex.x + hex.y
+    end
+    table.sort(spawnableHex, function (c1, c2) return c1._mean < c2._mean end)
+
+    local sample_size = math.floor(#spawnableHex / n)
+    local centroids = {}
+    for i = 0, n - 1 do
+        local index = TerrainBuilder.GetRandomNumber(sample_size, "pick random centroid");
+        local randomHex = spawnableHex[sample_size * i + index] 
+        print("Init random at centroid ("..tostring(randomHex.x)..", "..tostring(randomHex.y)..")")
+        table.insert(centroids, randomHex)
+    end
+
+    -- OUTDATED random centroid selection
+    -- local centroids = {}
+    -- for i = 1, n do
+    --     local randomHex = self:getRandomHex();
+    --     local randomHexIsNotLand = true
+    --     -- init random centroids anywhere on land to avoid isolated centroids on water
+    --     while (randomHexIsNotLand) do
+    --         if randomHex:IsWater() == false and self:CheckHexInCentroid(randomHex, centroids) == false then
+    --             randomHexIsNotLand = false
+    --         else
+    --             randomHex = self:getRandomHex();  
+    --         end
+    --     end 
+    --     local newCentroid = Centroid.new(randomHex.x, randomHex.y, i)
+    --     print("Init random at centroid ("..tostring(newCentroid.x)..", "..tostring(newCentroid.y)..")")
+    --     table.insert(centroids, randomHex)
+    -- end
+    self.centroidsArray = centroids
 end
 
 -- Mean of hex coord linked to the selected centroid
