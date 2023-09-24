@@ -585,6 +585,59 @@ function HexMap:ComputeCostalNonSpawnable()
     end
 end
 
+function HexMap:ComputePeninsuleNonSpawnable(thresholdPercent)
+    print("Start ComputePeninsuleNonSpawnable "..tostring(thresholdPercent),  os.date("%c"))
+    for y = 0, self.height - 1 do
+        for x = 0, self.width - 1 do 
+            local hex = self:GetHexInMap(x, y)
+            hex.PeninsuleScore = 0
+            if hex:IsImpassable() == false and self:IsHexNextTo4ImpassableTiles(hex) == false then
+                local allRing6 = self:GetAllHexInRing(hex, 6)
+                local threshold = #allRing6 * thresholdPercent
+                local visitedRing = {}
+                local visitedHex = {}
+                local totalVisited = 0
+                visitedRing[0] = {}
+                table.insert(visitedRing[0], hex)
+                for n = 1, 6 do
+                    visitedRing[n] = {}
+                    local n1 = n - 1
+                    for i, h in pairs(visitedRing[n1]) do
+                        local ring1 = self:GetHexInRing(h, 1)
+                        for _, neighbor  in pairs(ring1) do
+                            if neighbor:IsImpassable() == false and visitedHex[neighbor] == nil then
+                                visitedHex[neighbor] = true;
+                                table.insert(visitedRing[n], neighbor)
+                                totalVisited = totalVisited + 1
+                            end
+                        end 
+                    end 
+                end
+                --print("ComputePeninsuleNonSpawnable - Number of visitable tiles in 7 rings for ("..tostring(hex.x)..", "..tostring(hex.y)..") is "..tostring(totalVisited).." sur "..tostring(allRing6))               
+                if totalVisited > threshold then
+                    hex.PeninsuleScore = 1
+                end
+            end
+        end
+    end 
+    print("End ComputePeninsuleNonSpawnable ",  os.date("%c"))
+    self:PrintHexPeninsuleMap();
+end
+
+function HexMap:IsHexNextTo4ImpassableTiles(hex)
+    local ring1 = self:GetAllHexInRing(hex, 1)
+    local impassableRing1 = 0
+    for _, r1 in pairs(ring1) do
+        if r1:IsImpassable() then
+            impassableRing1 = impassableRing1 + 1
+        end
+        if impassableRing1 > 3 then
+            return true;
+        end
+    end
+    return false;
+end
+
 
 function HexMap:UpdateYieldMap()
     -- Temp - 2f 2p tiles are mapped 
@@ -1115,6 +1168,34 @@ function HexMap:PrintHexSpawnableMap()
                 logX = logX.."~~".." ";
             else
                 logX = logX.."0"..tostring(hex.CostalScore).." ";
+            end
+            
+        end
+        scanMap[self.height - y] = logX
+    end
+    local skeys = {}
+    for k in pairs(scanMap) do
+        table.insert(skeys, k)
+    end
+    table.sort(skeys)
+    for _,v in ipairs(skeys) do
+        print(v, scanMap[v])
+    end
+end
+
+function HexMap:PrintHexPeninsuleMap()
+    local scanMap = {}
+    for y = 0, self.height - 1 do
+        local logX = ""
+        if y % 2 == 1 then
+            logX = " "
+        end
+        for x = 0, self.width - 1 do
+            local hex = self.map[y][x]
+            if hex:IsWater() then
+                logX = logX.."~~".." ";
+            else
+                logX = logX.."0"..tostring(hex.PeninsuleScore).." ";
             end
             
         end

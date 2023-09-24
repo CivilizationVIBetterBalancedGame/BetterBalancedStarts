@@ -217,18 +217,22 @@ function BBS_AssignStartingPlots:__InitStartingData()
     BBS_HexMap:PrintHexSpawnableMap();
     print("Done Conv2D map",  os.date("%c"));
 
+    BBS_HexMap:ComputePeninsuleNonSpawnable(0.3);
+
     BBS_HexMap:RunKmeans(20, 50);
     BBS_HexMap:PrintHexMap();
     -- TEMP get hexes from a region (same centroid)
     -- TEMP count % of hills in a region
     for index, centroid in ipairs(BBS_HexMap.centroidsArray) do
-        local count = centroid:GetHillsInCluster();
-        local hillPercent = (count / #centroid.HexCluster) * 100
-        print("Number of hill in centroid "..tostring(index).." = "..tostring(count).." for a total of "..tostring(#centroid.HexCluster).." tiles (="..tostring(hillPercent).."%)")
-        local luxCount, bonusCount, strategicsCount = centroid:GetTotalResourcesCountInCluster();
-        print("Number of lux resource in centroid "..tostring(index).." = "..tostring(luxCount))
-        print("Number of bonus resource in centroid "..tostring(index).." = "..tostring(bonusCount))
-        print("Number of strat resource in centroid "..tostring(index).." = "..tostring(strategicsCount))
+        if centroid.HexCluster ~= nil and #centroid.HexCluster > 0 then 
+            local count = centroid:GetHillsInCluster();
+            local hillPercent = (count / #centroid.HexCluster) * 100
+            print("Number of hill in centroid "..tostring(index).." = "..tostring(count).." for a total of "..tostring(#centroid.HexCluster).." tiles (="..tostring(hillPercent).."%)")
+            local luxCount, bonusCount, strategicsCount = centroid:GetTotalResourcesCountInCluster();
+            print("Number of lux resource in centroid "..tostring(index).." = "..tostring(luxCount))
+            print("Number of bonus resource in centroid "..tostring(index).." = "..tostring(bonusCount))
+            print("Number of strat resource in centroid "..tostring(index).." = "..tostring(strategicsCount))
+        end
     end
     -- Count % of hills on the land map
     local countHills, _ = BBS_HexMap:LookForHills();
