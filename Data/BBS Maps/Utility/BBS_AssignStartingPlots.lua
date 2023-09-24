@@ -212,14 +212,10 @@ function BBS_AssignStartingPlots:__InitStartingData()
     local width, height = Map.GetGridSize();
     BBS_HexMap = HexMap.new(width, height, bbs_game_config.BBS_MAP_SCRIPT);
 
-    print("Start Conv2D map",  os.date("%c"))
-    BBS_HexMap:ComputeCostalNonSpawnable()
     BBS_HexMap:PrintHexSpawnableMap();
-    print("Done Conv2D map",  os.date("%c"));
+    BBS_HexMap:PrintHexPeninsuleMap();
 
-    BBS_HexMap:ComputePeninsuleNonSpawnable(0.3);
-
-    BBS_HexMap:RunKmeans(20, 50);
+    BBS_HexMap:RunKmeans(20, 30);
     BBS_HexMap:PrintHexMap();
     -- TEMP get hexes from a region (same centroid)
     -- TEMP count % of hills in a region

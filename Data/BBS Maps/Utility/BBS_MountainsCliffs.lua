@@ -385,7 +385,7 @@ function AddVolcanos(plotTypes,world_age,iW, iH)
 				if (plotTypes[index] == g_PLOT_TYPE_MOUNTAIN) then
 					local pPlot = Map.GetPlotByIndex(index);
 					local rng = TerrainBuilder.GetRandomNumber(100, "Volcano") / 100
-					if rng > 0.9 and iVolcanoesPlaced < iDesiredVolcanoes then
+					if rng > 0.9 and iVolcanoesPlaced < iDesiredVolcanoes and VolcanoNextToCoast(iX, iY) == false then
 						TerrainBuilder.SetFeatureType(pPlot, g_FEATURE_VOLCANO);
 						if pPlot:GetTerrainType() ~= 2 and pPlot:GetTerrainType() ~= 5 and pPlot:GetTerrainType() ~= 8 and pPlot:GetTerrainType() ~= 11 then
 							TerrainBuilder.SetTerrainType(pPlot, 5);
@@ -402,7 +402,7 @@ end
 function VolcanoNextToCoast(iX, iY)
     for direction = 0, DirectionTypes.NUM_DIRECTION_TYPES - 1, 1 do
         local adjacentPlot = Map.GetAdjacentPlot(iX, iY, direction);
-        if adjacentPlot:GetTerrainType() == g_TERRAIN_TYPE_COAST then
+        if adjacentPlot~= nil and adjacentPlot:GetTerrainType() == g_TERRAIN_TYPE_COAST then
             return true
         end
     end

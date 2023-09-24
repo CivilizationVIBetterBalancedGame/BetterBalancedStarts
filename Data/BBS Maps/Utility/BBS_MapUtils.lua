@@ -498,6 +498,7 @@ function HexMap.new(_width, _height, mapScript)
     instance.mapWonders = {};
     instance.map22 = {}
     instance.centroidsArray = {};
+    instance.PeninsuleScoreOK = {}
     instance.mapResourcesLux = instance:GetMapResourcesLux();
     instance.mapResourcesBonus = instance:GetMapResourcesBonus();
     instance.mapResourcesStrategics = instance:GetMapResourcesStrategics();
@@ -508,7 +509,8 @@ function HexMap.new(_width, _height, mapScript)
     instance.mapResourcesQuarries = instance:GetMapResourcesQuarries();
     instance.mapResourcesFishings = instance:GetMapResourcesFishings();
     instance:FillHexMapDatas();
-
+    instance:StoreHexRings();
+    instance:ComputeScoreHex();
     -- Put maps parameters here ? (world age, temperature, rainfall etc)
     return instance;
 end
@@ -552,7 +554,31 @@ function HexMap:FillHexMapDatas()
     self:UpdateYieldMap();
 end
 
-function HexMap:ComputeCostalNonSpawnable()
+-- Pre store rings data for each hex for later uses  
+function HexMap:StoreHexRings()
+    for y = 0, self.height - 1 do
+        for x = 0, self.width - 1 do
+            local hex = self:GetHexInMap(x, y);
+            hex.Ring1 = self:GetHexInRing(hex, 1);
+            hex.AllRing6 = self:GetAllHexInRing(hex, 6);
+        end
+    end
+end
+
+function HexMap:ComputeScoreHex() 
+    print("Start ComputeScoreHex",  os.date("%c"))
+    for y = 0, self.height - 1 do
+        for x = 0, self.width - 1 do 
+            local hex = self:GetHexInMap(x, y)
+            self:ComputeCostalScore(hex)
+            self:ComputePeninsulaScore(hex)
+            --self:ComputeResourcesScore(hex)
+        end
+    end
+    print("End ComputeScoreHex",  os.date("%c"))
+end
+
+function HexMap:ComputeCostalScore(hex)
     local score = {}
     local ring_distance = 3
     local min_land_tiles = 0
@@ -562,66 +588,66 @@ function HexMap:ComputeCostalNonSpawnable()
         score[i] = ring_distance + 1 - i
     end
     min_land_tiles = min_land_tiles * 0.4 -- 40% of land tiles
-    for y = 0, self.height - 1 do
-        for x = 0, self.width - 1 do 
-            local hex = self:GetHexInMap(x, y)
-            hex.CostalScore = 0
-            if hex:IsWater() == false and (hex.IslandSize > 31 or hex:IsMountain()) then
-                for i = start_ring, ring_distance, 1 do
-                    local t = self:GetHexInRing(hex, i);
-                    for _, h in pairs(t) do
-                        if h:IsWater() == false and (h.IslandSize > 31 or h:IsMountain()) then
-                            hex.CostalScore = hex.CostalScore + score[i]
-                        end
-                    end
-                end
-                if (hex.CostalScore / min_land_tiles) >= 1 then
-                    hex.CostalScore = 1
-                else
-                    hex.CostalScore = 0
+    hex.CostalScore = 0
+    if hex:IsWater() == false and (hex.IslandSize > 31 or hex:IsMountain()) then
+        for i = start_ring, ring_distance, 1 do
+            local t = self:GetHexInRing(hex, i);
+            for _, h in pairs(t) do
+                if h:IsWater() == false and (h.IslandSize > 31 or h:IsMountain()) then
+                    hex.CostalScore = hex.CostalScore + score[i]
                 end
             end
+        end
+        if (hex.CostalScore / min_land_tiles) >= 1 then
+            hex.CostalScore = 1
+        else
+            hex.CostalScore = 0
         end
     end
 end
 
-function HexMap:ComputePeninsuleNonSpawnable(thresholdPercent)
-    print("Start ComputePeninsuleNonSpawnable "..tostring(thresholdPercent),  os.date("%c"))
-    for y = 0, self.height - 1 do
-        for x = 0, self.width - 1 do 
-            local hex = self:GetHexInMap(x, y)
-            hex.PeninsuleScore = 0
-            if hex:IsImpassable() == false and self:IsHexNextTo4ImpassableTiles(hex) == false then
-                local allRing6 = self:GetAllHexInRing(hex, 6)
-                local threshold = #allRing6 * thresholdPercent
-                local visitedRing = {}
-                local visitedHex = {}
-                local totalVisited = 0
-                visitedRing[0] = {}
-                table.insert(visitedRing[0], hex)
-                for n = 1, 6 do
-                    visitedRing[n] = {}
-                    local n1 = n - 1
-                    for i, h in pairs(visitedRing[n1]) do
-                        local ring1 = self:GetHexInRing(h, 1)
-                        for _, neighbor  in pairs(ring1) do
-                            if neighbor:IsImpassable() == false and visitedHex[neighbor] == nil then
-                                visitedHex[neighbor] = true;
-                                table.insert(visitedRing[n], neighbor)
-                                totalVisited = totalVisited + 1
-                            end
-                        end 
-                    end 
-                end
-                --print("ComputePeninsuleNonSpawnable - Number of visitable tiles in 7 rings for ("..tostring(hex.x)..", "..tostring(hex.y)..") is "..tostring(totalVisited).." sur "..tostring(allRing6))               
-                if totalVisited > threshold then
-                    hex.PeninsuleScore = 1
-                end
-            end
+-- Calculate number of reachable tiles in ring 6 to avoid peninsula spawns
+function HexMap:ComputePeninsulaScore(hex)
+    hex.PeninsuleScore = 0
+    if hex:IsImpassable() == false and self:IsHexNextTo4ImpassableTiles(hex) == false and hex:IsSnowLand() == false then
+        print(tostring(#hex.AllRing6))
+        local threshold = #hex.AllRing6 * 0.33
+        local visitedRing = {}
+        local visitedHex = {}
+        local totalVisited = 0
+        visitedRing[0] = {}
+        table.insert(visitedRing[0], hex)
+        for n = 1, 6 do
+            visitedRing[n] = {}
+            local n1 = n - 1
+            for i, h in pairs(visitedRing[n1]) do
+                for _, neighbor in pairs(h.Ring1) do
+                    if neighbor:IsImpassable() == false and visitedHex[neighbor] == nil then
+                        visitedHex[neighbor] = true;
+                        table.insert(visitedRing[n], neighbor)
+                        totalVisited = totalVisited + 1
+                    end
+                end 
+            end 
         end
-    end 
-    print("End ComputePeninsuleNonSpawnable ",  os.date("%c"))
-    self:PrintHexPeninsuleMap();
+        print("ComputePeninsuleNonSpawnable - Number of visitable tiles in 6 rings for ("..tostring(hex.x)..", "..tostring(hex.y)..") is "..tostring(totalVisited).." sur "..tostring(#hex.AllRing6))               
+        if totalVisited > threshold then
+            hex.PeninsuleScore = math.floor((totalVisited / #hex.AllRing6) * 100 )
+            table.insert(self.PeninsuleScoreOK, hex)
+        end
+    end
+end
+
+--TODO
+function HexMap:ComputeResourcesScore(hex)
+    for _, h in pairs(hex.AllRing6) do
+        local ressource = h.ResourceType
+        if ressource ~= g_RESOURCE_NONE then
+            local score = hex.RessourceScore[h.ResourceType] or 0 --init
+            score = score + 1
+            hex.RessourceScore[h.ResourceType] = score
+        end
+    end
 end
 
 function HexMap:IsHexNextTo4ImpassableTiles(hex)
@@ -894,6 +920,7 @@ function HexMap:GetHexSum(hex, vec)
 end
 
 -- Return multiplication of hex vector times the factor in param
+-- TODO : Warning - does not work with directions dependent to Y, for the moment only use with West or East direction
 function HexMap:GetHexScale(hex, factor)
     return Hex.new(hex.x * factor, hex.y * factor)
 end
@@ -914,8 +941,7 @@ function HexMap:GetHexInRing(hexCenter, ringRadius)
             local hexToAdd = self:GetHexInMap(testHex.x, testHex.y)
             -- if yes we add it to the table
             if hexToAdd ~= nil then
-                table.insert(hexList, self:GetHexInMap(hexToAdd.x, hexToAdd.y));
-                -- print("GetHexInRing - "..tostring(ringRadius).." ("..tostring(hexToAdd.x)..", "..tostring(hexToAdd.y)..")")            
+                table.insert(hexList, self:GetHexInMap(hexToAdd.x, hexToAdd.y));    
             end
             -- in every cases we move to the next tile 
             local hexDir = testHex:GetAdjDirection(i);
@@ -1195,7 +1221,16 @@ function HexMap:PrintHexPeninsuleMap()
             if hex:IsWater() then
                 logX = logX.."~~".." ";
             else
-                logX = logX.."0"..tostring(hex.PeninsuleScore).." ";
+                local printScore = ""
+                local score = hex.PeninsuleScore
+                if score == 0 then
+                    score = "00"
+                elseif score == 100 then
+                    score = "99"
+                else
+                    score = tostring(hex.PeninsuleScore)
+                end
+                logX = logX..score.." ";
             end
             
         end
@@ -1313,10 +1348,8 @@ function HexMap:RunKmeans(n, iters)
     print("k-means - nbLandTiles = "..tostring(nbLandTiles))
     -- Init centroids for Kmean
     self:InitKmeanCentroids(n, points)
-
     -- Run interations
 	for i = 1, iters do
-        print("RunKmeans - Iteration "..tostring(i))
 		self:UpdateCentroids(points)
 	end
     self:CentroidGroupby(points)
