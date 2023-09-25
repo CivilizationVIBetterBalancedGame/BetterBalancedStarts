@@ -212,8 +212,9 @@ function BBS_AssignStartingPlots:__InitStartingData()
     local width, height = Map.GetGridSize();
     BBS_HexMap = HexMap.new(width, height, bbs_game_config.BBS_MAP_SCRIPT);
 
-    BBS_HexMap:PrintHexSpawnableMap();
+    --BBS_HexMap:PrintHexSpawnableMap();
     BBS_HexMap:PrintHexPeninsuleMap();
+    BBS_HexMap:PrintHorseDensity();
 
     BBS_HexMap:RunKmeans(20, 30);
     BBS_HexMap:PrintHexMap();

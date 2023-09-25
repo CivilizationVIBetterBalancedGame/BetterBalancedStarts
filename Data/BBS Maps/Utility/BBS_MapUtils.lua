@@ -218,6 +218,11 @@ function Hex:GetY()
     return self.y;
 end
 
+function Hex:PrintXY()
+    return "("..tostring(self.x)..", "..tostring(self.y)..")"
+end
+
+
 -- Fill the data for selected hex through firaxis datas
 function Hex:FillHexDatas()
     local plot = Map.GetPlot(self:GetX(), self:GetY()); 
@@ -572,7 +577,7 @@ function HexMap:ComputeScoreHex()
             local hex = self:GetHexInMap(x, y)
             self:ComputeCostalScore(hex)
             self:ComputePeninsulaScore(hex)
-            --self:ComputeResourcesScore(hex)
+            self:ComputeResourcesScore(hex)
         end
     end
     print("End ComputeScoreHex",  os.date("%c"))
@@ -610,7 +615,6 @@ end
 function HexMap:ComputePeninsulaScore(hex)
     hex.PeninsuleScore = 0
     if hex:IsImpassable() == false and self:IsHexNextTo4ImpassableTiles(hex) == false and hex:IsSnowLand() == false then
-        print(tostring(#hex.AllRing6))
         local threshold = #hex.AllRing6 * 0.33
         local visitedRing = {}
         local visitedHex = {}
@@ -630,7 +634,7 @@ function HexMap:ComputePeninsulaScore(hex)
                 end 
             end 
         end
-        print("ComputePeninsuleNonSpawnable - Number of visitable tiles in 6 rings for ("..tostring(hex.x)..", "..tostring(hex.y)..") is "..tostring(totalVisited).." sur "..tostring(#hex.AllRing6))               
+        --print("ComputePeninsuleNonSpawnable - Number of visitable tiles in 6 rings for ("..tostring(hex.x)..", "..tostring(hex.y)..") is "..tostring(totalVisited).." sur "..tostring(#hex.AllRing6))               
         if totalVisited > threshold then
             hex.PeninsuleScore = math.floor((totalVisited / #hex.AllRing6) * 100 )
             table.insert(self.PeninsuleScoreOK, hex)
@@ -640,15 +644,60 @@ end
 
 --TODO
 function HexMap:ComputeResourcesScore(hex)
+    hex.RessourceScore = {}
     for _, h in pairs(hex.AllRing6) do
         local ressource = h.ResourceType
-        if ressource ~= g_RESOURCE_NONE then
-            local score = hex.RessourceScore[h.ResourceType] or 0 --init
+        if h:IsImpassable() == false and ressource ~= g_RESOURCE_NONE then
+            local score = hex.RessourceScore[ressource] or 0 --init
             score = score + 1
-            hex.RessourceScore[h.ResourceType] = score
+            hex.RessourceScore[ressource] = score
         end
     end
+    -- Include the tile itself
+    if hex.ResourceType ~= g_RESOURCE_NONE then
+        local hexScore = hex.RessourceScore[hex.ResourceType] or 0
+        hexScore = hexScore + 1
+        hex.RessourceScore[hex.ResourceType] = hexScore
+    end
 end
+
+function HexMap:PrintHorseDensity()
+    print("PrintHorseDensity")
+    local scanMap = {}
+    for y = 0, self.height - 1 do
+        local logX = ""
+        if y % 2 == 1 then
+            logX = " "
+        end
+        for x = 0, self.width - 1 do
+            local hex = self:GetHexInMap(x, y)
+            if hex:IsWater() then
+                logX = logX.."~~".." ";
+            else
+                local printScore = ""
+                local score = hex.RessourceScore[g_RESOURCE_HORSES]
+                
+                if score == nil then
+                    score = "00"
+                else
+                    score = "0"..tostring(hex.RessourceScore[g_RESOURCE_HORSES])
+                end
+                logX = logX..score.." ";
+            end
+            
+        end
+        scanMap[self.height - y] = logX
+    end
+    local skeys = {}
+    for k in pairs(scanMap) do
+        table.insert(skeys, k)
+    end
+    table.sort(skeys)
+    for _,v in ipairs(skeys) do
+        print(v, scanMap[v])
+    end
+end
+
 
 function HexMap:IsHexNextTo4ImpassableTiles(hex)
     local ring1 = self:GetAllHexInRing(hex, 1)
