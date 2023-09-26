@@ -559,25 +559,31 @@ function HexMap:FillHexMapDatas()
     self:UpdateYieldMap();
 end
 
--- Pre store rings data for each hex for later uses  
+-- Pre store rings data for each hex for later uses and improve performances
 function HexMap:StoreHexRings()
     for y = 0, self.height - 1 do
         for x = 0, self.width - 1 do
             local hex = self:GetHexInMap(x, y);
             hex.Ring1 = self:GetHexInRing(hex, 1);
+            hex.Ring2 = self:GetHexInRing(hex, 2);
             hex.AllRing6 = self:GetAllHexInRing(hex, 6);
+            -- Fill as needed 
         end
     end
 end
 
-function HexMap:ComputeScoreHex() 
+-- For each tile, store the score density for each ressource/feature/terrain - use for civ biases
+-- TODO : how to calculate a score 
+function HexMap:ComputeScoreHex()
     print("Start ComputeScoreHex",  os.date("%c"))
     for y = 0, self.height - 1 do
-        for x = 0, self.width - 1 do 
-            local hex = self:GetHexInMap(x, y)
-            self:ComputeCostalScore(hex)
-            self:ComputePeninsulaScore(hex)
-            self:ComputeResourcesScore(hex)
+        for x = 0, self.width - 1 do
+            local hex = self:GetHexInMap(x, y);
+            self:ComputeCostalScore(hex);
+            self:ComputePeninsulaScore(hex);
+            self:ComputeResourcesScore(hex);
+            self:ComputeFeaturesScore(hex);
+            self:ComputeTerrainsScore(hex);
         end
     end
     print("End ComputeScoreHex",  os.date("%c"))
@@ -661,6 +667,41 @@ function HexMap:ComputeResourcesScore(hex)
     end
 end
 
+function HexMap:ComputeFeaturesScore(hex)
+    hex.FeaturesScore = {}
+    for _, h in pairs(hex.AllRing6) do
+        local feature = h.FeatureType
+        if h:IsImpassable() == false and feature ~= g_FEATURE_NONE then
+            local score = hex.FeaturesScore[feature] or 0 --init
+            score = score + 1
+            hex.FeaturesScore[feature] = score
+        end
+    end
+    -- Include the tile itself
+    if hex.FeatureType ~= g_FEATURE_NONE then
+        local hexScore = hex.FeaturesScore[hex.FeatureType] or 0
+        hexScore = hexScore + 1
+        hex.FeaturesScore[hex.FeatureType] = hexScore
+    end
+end
+
+function HexMap:ComputeTerrainsScore(hex)
+    hex.TerrainsScore = {}
+    for _, h in pairs(hex.AllRing6) do
+        local terrain = h.TerrainType
+        if h:IsImpassable() == false and terrain ~= g_TERRAIN_TYPE_NONE then
+            local score = hex.TerrainsScore[terrain] or 0 --init
+            score = score + 1
+            hex.TerrainsScore[terrain] = score
+        end
+    end
+    -- Include the tile itself
+    if hex.TerrainType ~= g_TERRAIN_TYPE_NONE then
+        local hexScore = hex.TerrainsScore[hex.TerrainType] or 0
+        hexScore = hexScore + 1
+        hex.TerrainsScore[hex.TerrainType] = hexScore
+    end
+end
 function HexMap:PrintHorseDensity()
     print("PrintHorseDensity")
     local scanMap = {}

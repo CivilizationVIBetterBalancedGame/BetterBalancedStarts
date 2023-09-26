@@ -214,7 +214,6 @@ function BBS_AssignStartingPlots:__InitStartingData()
 
     --BBS_HexMap:PrintHexSpawnableMap();
     BBS_HexMap:PrintHexPeninsuleMap();
-    BBS_HexMap:PrintHorseDensity();
 
     BBS_HexMap:RunKmeans(20, 30);
     BBS_HexMap:PrintHexMap();
