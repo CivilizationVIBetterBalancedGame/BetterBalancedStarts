@@ -241,7 +241,8 @@ function Hex:FillHexDatas()
         self.IslandSize = plot:GetArea():GetPlotCount();
         self.IdContinent = plot:GetContinentType(); 
         self.IsOnSplit = Map.FindSecondContinent(plot, 1);
-        self.IsSpawnable = not self:IsWater();
+        self.IsMajorSpawnable = not self:IsWater();
+        self.IsMinorSpawnable = true;
         self.IsCivStartingPlot = false;
         self:UpdateYields();
         return;
@@ -581,7 +582,9 @@ function HexMap.new(_width, _height, mapScript)
     instance.height = _height;
     instance.mapScript = mapScript;
     instance.canCircumnavigate = instance:CanCircumnavigate();
-    instance.minimumDistanceMajorCivs = instance:SetMinimumDistanceMajorCivs();
+    instance.minimumDistanceMajortoMajorCivs = instance:SetMinimumDistanceMajortoMajorCivs();
+    instance.minimumDistanceMinorToMajorCivs = GlobalParameters.START_DISTANCE_MINOR_MAJOR_CIVILIZATION or 8;
+    instance.minimumDistanceMinorToMinorCivs = GlobalParameters.START_DISTANCE_MINOR_CIVILIZATION_START or 7;
     instance.map = {};
     instance.mapFreshWater = {};
     instance.mapCostal = {};
@@ -611,6 +614,8 @@ function HexMap.new(_width, _height, mapScript)
     instance:StoreHexRings();
     instance:ComputeScoreHex();
     instance.ValidSpawnHexes = {};
+    instance.majorSpawns = {};
+    instance.minorSpawns = {};
     -- instance:InitSetSpawnableWater -- too close to border, non fresh or coast, peninsula score 
     -- Put maps parameters here ? (world age, temperature, rainfall etc)
     return instance;
@@ -620,7 +625,7 @@ function HexMap:CanCircumnavigate()
     return self.mapScript ~= MAP_INLAND_SEA and self.mapScript ~= MAP_TILTED_AXIS;
 end
 
-function HexMap:SetMinimumDistanceMajorCivs()
+function HexMap:SetMinimumDistanceMajortoMajorCivs()
     if self.mapScript == MAP_HIGHLANDS or self.mapScript == MAP_LAKES or self.MAP_RICH_HIGHLANDS then
         return 15;
     elseif self.mapScript == MAP_INLAND_SEA then
@@ -710,6 +715,17 @@ function HexMap:ComputeScoreHex()
         end
     end
     print("End ComputeScoreHex",  os.date("%c"))
+end
+
+function HexMap:ResetSpawnableHex()
+    for y = 0, self.height - 1 do
+        for x = 0, self.width - 1 do
+            local hex = self:GetHexInMap(x, y);
+            self:ComputeSpawnableTiles(hex);
+            hex.IsMinorSpawnable = true;
+            hex.IsCivStartingPlot = false;
+        end
+    end
 end
 
 function HexMap:ComputeCostalScore(hex)
@@ -879,7 +895,7 @@ function HexMap:ComputeSpawnableTiles(hex)
         end
     end
     local isNotInPeninsula = hex.PeninsuleScore >= 33
-    hex.IsSpawnable = hex:IsWater() == false 
+    hex.IsMajorSpawnable = hex:IsWater() == false 
         and hex:IsSnowLand() == false 
         and isCloseToMapBorderX == false 
         and isCloseToMapBorderY == false 
@@ -888,7 +904,7 @@ function HexMap:ComputeSpawnableTiles(hex)
 end
 
 function HexMap:IsHexNextTo4ImpassableTiles(hex)
-    local ring1 = self:GetHexInRing(hex, 1)
+    local ring1 = hex.AllRing6Map[1];
     local impassableRing1 = 0
     for _, r1 in pairs(ring1) do
         if r1:IsImpassable() then
@@ -1952,7 +1968,7 @@ function HexMap:GetValidSpawns(civ)
     for y = 0, self.height - 1 do
         for x = 0, self.width - 1 do
             local hex = self:GetHexInMap(x, y);
-            if hex.IsSpawnable then --pre calculation of technical spawns
+            if hex.IsMajorSpawnable then --pre calculation of technical spawns
                 if civ.IsHydrophobicBias then
                     if hex.PeninsuleScore > 45 and hex:DistanceToClosest(self, self.mapCostal) > 3 then
                         table.insert(validTiles, hex);
@@ -1982,12 +1998,12 @@ function HexMap:GetValidSpawns(civ)
 end
 
 -- Used for city states, get any non water tiles and test if meet requirements
-function HexMap:GetAnySpawnablesTiles()
+function HexMap:GetAnyMinorSpawnablesTiles()
     local valid = {}
     for y = 0, self.height - 1 do
         for x = 0, self.width - 1 do
             local hex = self:GetHexInMap(x, y)
-            if hex:IsWater() == false then
+            if hex:IsWater() == false and hex.IsMinorSpawnable then
                 table.insert(valid, hex)
             end
         end
@@ -2001,7 +2017,7 @@ end
 function CivilizationAssignSpawn:AssignSpawnByCentroid(BBS_HexMap)
     print("AssignSpawnByCentroid for "..self.CivilizationLeader);
     if self.CivilizationLeader == BBS_LEADER_TYPE_SPECTATOR then
-        return;
+        return true;
     end
     -- Ocean tile out of centroid for the maori
     if self.IsOceanBias then
@@ -2016,8 +2032,8 @@ function CivilizationAssignSpawn:AssignSpawnByCentroid(BBS_HexMap)
         local rng = TerrainBuilder.GetRandomNumber(#oceanTilesMid - 1, "Random valid in centroid");
         rng = rng + 1
         local random = validTiles[rng];
-        self:AssignCivSpawn(BBS_HexMap, random);
-        return;
+        self:AssignMajorCivSpawn(BBS_HexMap, random);
+        return true;
     end
 
     -- Mean score for each hex in centroid cluster by bias
@@ -2036,7 +2052,7 @@ function CivilizationAssignSpawn:AssignSpawnByCentroid(BBS_HexMap)
         -- For each unoccupied centroid, find the valids spawns tiles depending on bias parameters
         if c.Centroid.PlacedCiv == false then
             for _, hex in pairs(c.Centroid.HexCluster) do
-                if hex.IsSpawnable and not (hex.IsCloseToTundra and self.IsTundraBias == false) then 
+                if hex.IsMajorSpawnable and not (hex.IsCloseToTundra and self.IsTundraBias == false) then 
                     if self.IsHydrophobicBias then
                         local closestCoast = hex:DistanceToClosest(BBS_HexMap, BBS_HexMap.mapCostal)
                         if hex.PeninsuleScore > 45 and closestCoast > 3 then
@@ -2074,8 +2090,8 @@ function CivilizationAssignSpawn:AssignSpawnByCentroid(BBS_HexMap)
                 -- Take the highest score among the valid tiles
                 local highestScoreHex = scoring[1].Hex;
                 print("Highest hex score found = "..highestScoreHex:PrintXY())
-                self:AssignCivSpawn(BBS_HexMap, highestScoreHex);
-                return;
+                self:AssignMajorCivSpawn(BBS_HexMap, highestScoreHex);
+                return true;
             else 
                 print("Not enough valids tiles in cluster "..tostring(c.Centroid.id))
             end
@@ -2083,6 +2099,9 @@ function CivilizationAssignSpawn:AssignSpawnByCentroid(BBS_HexMap)
             print("Centroid : "..tostring(c.Centroid.id).." already occupied")
         end
     end
+    -- Try again or go to firaxis placement
+    print("Unable to find a valid tile for this civ on this map")
+    return false;
 end
 
 -- For each hex in cluster, calculate the bias score and take score mean
@@ -2159,7 +2178,7 @@ end
 
 -- Find the highest score tile in the validTiles table
 -- Firaxis method SetStartingPlot called in BBS_AssignStartingPlots
-function CivilizationAssignSpawn:AssignCivSpawn(BBS_HexMap, bestStartingHex)
+function CivilizationAssignSpawn:AssignMajorCivSpawn(BBS_HexMap, bestStartingHex)
     -- Maori start is not in a centroid
     if bestStartingHex.Centroid ~= nil then
         self.AttributedCentroid = bestStartingHex.Centroid
@@ -2167,14 +2186,35 @@ function CivilizationAssignSpawn:AssignCivSpawn(BBS_HexMap, bestStartingHex)
     end
     self.StartingHex = bestStartingHex;
     bestStartingHex.IsCivStartingPlot = true;
-    bestStartingHex.IsSpawnable = false;
-    local list, _ = BBS_HexMap:GetAllHexInRing(bestStartingHex, BBS_HexMap.minimumDistanceMajorCivs)
-    for _, h in pairs(list) do
-        h.IsSpawnable = false;
+    bestStartingHex.IsMajorSpawnable = false;
+    bestStartingHex.IsMinorSpawnable = false;
+    local list, mappedHex = BBS_HexMap:GetAllHexInRing(bestStartingHex, BBS_HexMap.minimumDistanceMajortoMajorCivs)
+    for i, ringHexes in pairs(mappedHex) do
+        for _, h in pairs(ringHexes) do
+            h.IsMajorSpawnable = false;
+            -- distance to cs usually shorter 
+            if i <= BBS_HexMap.minimumDistanceMinorToMajorCivs then
+                h.IsMinorSpawnable = false;
+            end
+        end
+        
     end
     print("Assigned spawn "..bestStartingHex:PrintXY().." for civ "..tostring(self.CivilizationLeader))
     return;
 end
+
+-- To call after placing majors civs
+function CivilizationAssignSpawn:AssignMinorCivSpawn(BBS_HexMap, bestStartingHex)
+    self.StartingHex = bestStartingHex
+    bestStartingHex.IsCivStartingPlot = true;
+    bestStartingHex.IsMinorSpawnable = false;
+    table.insert(BBS_HexMap.minorSpawns, bestStartingHex);
+    local list, _ = BBS_HexMap:GetAllHexInRing(bestStartingHex, BBS_HexMap.minimumDistanceMinorToMinorCivs)
+    for i, hex in pairs(list) do
+        hex.IsMinorSpawnable = false;
+    end
+end
+
 
 -- Calculate the hex score for a civ, taking account for the bias score + extra parameters like fresh water/yield etc (to determine) 
 -- TODO Define scores

@@ -88,9 +88,8 @@ function BBS_AssignStartingPlots.Create(args)
         __GetTerrainIndex       = BBS_AssignStartingPlots.__GetTerrainIndex,
         __GetFeatureIndex       = BBS_AssignStartingPlots.__GetFeatureIndex,
         __GetResourceIndex      = BBS_AssignStartingPlots.__GetResourceIndex,
-
-        majorSpawns = {},
-        minorSpawns = {},
+        __PlaceMajorCivs        = BBS_AssignStartingPlots.__PlaceMajorCivs,
+        __ResetMajorsSpawns     = BBS_AssignStartingPlots.__ResetMajorsSpawns,
     }
 
     -- Get Bias all
@@ -197,52 +196,48 @@ function BBS_AssignStartingPlots.Create(args)
     table.sort(bbs_civilisations, function (a, b)
         return a.HighestBias < b.HighestBias;
     end)
-    for _, civ in pairs(bbs_civilisations) do
-        civ:AssignSpawnByCentroid(BBS_HexMap);
-    end
+    -- Recursive call 
+    BBS_failed = instance:__PlaceMajorCivs(bbs_civilisations, BBS_HexMap, 0);
 
-    -- Firaxis attribution of spawns 
-    for j, civ in pairs(bbs_civilisations) do
-        if civ.CivilizationLeader ~= BBS_LEADER_TYPE_SPECTATOR then
-            civ.Player:SetStartingPlot(civ.StartingHex.Plot)
-            table.insert(instance.majorSpawns, civ.StartingHex);
-            print(civ.CivilizationLeader.." spawn = "..tostring(civ.StartingHex:PrintXY()))
-        else
-            local hex0 = BBS_HexMap:GetHexInMap(j, 0);
-            civ.Player:SetStartingPlot(hex0.Plot)
-        end
-    end
-    -- randomly place cs in free space
-    for i, cs in pairs(bbs_citystates) do
-        local foundSpawn = false
-        local validspawnsleft = BBS_HexMap:GetAnySpawnablesTiles()
-        while foundSpawn == false do
-            local rng = TerrainBuilder.GetRandomNumber(#validspawnsleft - 1, "Random valid spawns");
-            local testedHex = validspawnsleft[rng+1]
-            local distMinor = testedHex:DistanceToClosest(BBS_HexMap, instance.minorSpawns) 
-            local distMajor = testedHex:DistanceToClosest(BBS_HexMap, instance.majorSpawns)
-            if testedHex.IsCivStartingPlot == false and (distMinor == nil or distMinor > 7) and (distMajor == nil or distMajor > 8) then
-                foundSpawn = true;
-                table.insert(instance.minorSpawns, testedHex);
-                cs.StartingHex = testedHex
-                testedHex.IsCivStartingPlot = true;
-                cs.Player:SetStartingPlot(cs.StartingHex.Plot)
-                print("CS "..tostring(i).." spawn = "..tostring(cs.StartingHex:PrintXY()))
+    if BBS_failed == false then
+         -- Firaxis methods for attribution of spawns 
+        for j, civ in pairs(bbs_civilisations) do
+            if civ.CivilizationLeader ~= BBS_LEADER_TYPE_SPECTATOR then
+                civ.Player:SetStartingPlot(civ.StartingHex.Plot)
+                table.insert(BBS_HexMap.majorSpawns, civ.StartingHex);
+                print(civ.CivilizationLeader.." spawn = "..tostring(civ.StartingHex:PrintXY()))
+            else
+                local hex0 = BBS_HexMap:GetHexInMap(j, 0);
+                civ.Player:SetStartingPlot(hex0.Plot)
             end
         end
-        
-    end
-    --StartPositioner.DivideMapIntoMinorRegions(instance.iNumMinorCivs);
-    Game:SetProperty("BBS_RESPAWN", true)
-    print("End Assign Centroid",  os.date("%c"))
-    
-    if BBS_failed then
+        -- randomly place cs in free space
+        for i, cs in pairs(bbs_citystates) do
+            local foundSpawn = false
+            local validspawnsleft = BBS_HexMap:GetAnyMinorSpawnablesTiles()
+            while foundSpawn == false do
+                local rng = TerrainBuilder.GetRandomNumber(#validspawnsleft - 1, "Random valid spawns");
+                local testedHex = validspawnsleft[rng+1]
+                if testedHex.IsCivStartingPlot == false then
+                    foundSpawn = true;
+                    cs:AssignMinorCivSpawn(BBS_HexMap, testedHex)
+                    cs.Player:SetStartingPlot(cs.StartingHex.Plot)
+                    print("CS "..tostring(i).." spawn = "..tostring(cs.StartingHex:PrintXY()))
+                end
+            end
+            
+        end
+        --StartPositioner.DivideMapIntoMinorRegions(instance.iNumMinorCivs);
+        Game:SetProperty("BBS_RESPAWN", true)
+        print("End Assign Centroid",  os.date("%c"))
+    elseif BBS_failed then
         print("BBS_AssignStartingPlots: To Many Attempts Failed - Go to Firaxis Placement")
         Game:SetProperty("BBS_RESPAWN", false)
         local argSPlot = AssignStartingPlots.Create(args)
 
         return instance;
-    end
+    end   
+    
     -- print("BBS_AssignStartingPlots: Sending Data")
     return instance
 end
@@ -296,4 +291,31 @@ function BBS_AssignStartingPlots:__InitStartingData()
 
 end
 
+function BBS_AssignStartingPlots:__PlaceMajorCivs(civs, BBS_HexMap, index) 
+-- TODO : manage cases when unable to place a civ => rollback and try again
+    for _, civ in pairs(civs) do
+        if civ.CivilizationLeader ~= BBS_LEADER_TYPE_SPECTATOR then
+            local placed = civ:AssignSpawnByCentroid(BBS_HexMap);
+            if placed == false and index < 7 then
+                self:__ResetMajorsSpawns();
+                index = index + 1;
+                self:__PlaceMajorCivs(civs, BBS_HexMap, index)
+            elseif index >= 7 then
+                print("Placements failed back to firaxis placement")
+                return true;
+            end
+        end
+    end
+    return false;
+end
 
+function BBS_AssignStartingPlots:__ResetMajorsSpawns(civs, BBS_HexMap)
+    BBS_HexMap.majorSpawns = {};
+    for _, civ in pairs(civs) do
+        if civ.AttributedCentroid ~= nil then
+            civ.AttributedCentroid.PlacedCiv = false;
+        end
+        civ.AttributedCentroid = nil;
+        civ.StartingHex = {};
+    end
+end
