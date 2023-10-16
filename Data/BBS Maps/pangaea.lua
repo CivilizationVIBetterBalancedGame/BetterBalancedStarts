@@ -20,6 +20,7 @@ include "AssignStartingPlots"
 include "BBS_AssignStartingPlots"
 include "BBS_Balance"
 include "BBS_MapUtils"
+include "DW_FeatureGenerator"
 
 local g_iW, g_iH;
 local g_iFlags = {};
@@ -430,7 +431,7 @@ function AddFeatures()
 	end
 	
 	local args = {rainfall = rainfall}
-	featuregen = FeatureGenerator.Create(args);
+	featuregen = DW_FeatureGenerator.Create(args);
 	featuregen:AddFeatures(true, true);  --second parameter is whether or not rivers start inland);
 end
 

@@ -187,8 +187,6 @@ function BBS_AssignStartingPlots.Create(args)
 		Teamers_Config = MapConfiguration.GetValue("BBS_Team_Spawn")
 	end
 
-    local BBS_failed = false;
-
     instance:__InitStartingData()
 
     print("Start Assign Centroid",  os.date("%c"))
@@ -197,9 +195,14 @@ function BBS_AssignStartingPlots.Create(args)
         return a.HighestBias < b.HighestBias;
     end)
     -- Recursive call 
-    BBS_failed = instance:__PlaceMajorCivs(bbs_civilisations, BBS_HexMap, 0);
-
-    if BBS_failed == false then
+    local BBS_failed = instance:__PlaceMajorCivs(bbs_civilisations, BBS_HexMap, 0);
+    print("BBS_failed = "..tostring(BBS_failed))
+    if BBS_failed then
+        print("BBS_AssignStartingPlots: To Many Attempts Failed - Go to Firaxis Placement")
+        Game:SetProperty("BBS_RESPAWN", false)
+        local argSPlot = AssignStartingPlots.Create(args)
+        return instance;
+    else
          -- Firaxis methods for attribution of spawns 
         for j, civ in pairs(bbs_civilisations) do
             if civ.CivilizationLeader ~= BBS_LEADER_TYPE_SPECTATOR then
@@ -230,12 +233,6 @@ function BBS_AssignStartingPlots.Create(args)
         --StartPositioner.DivideMapIntoMinorRegions(instance.iNumMinorCivs);
         Game:SetProperty("BBS_RESPAWN", true)
         print("End Assign Centroid",  os.date("%c"))
-    elseif BBS_failed then
-        print("BBS_AssignStartingPlots: To Many Attempts Failed - Go to Firaxis Placement")
-        Game:SetProperty("BBS_RESPAWN", false)
-        local argSPlot = AssignStartingPlots.Create(args)
-
-        return instance;
     end   
     
     -- print("BBS_AssignStartingPlots: Sending Data")
@@ -297,7 +294,7 @@ function BBS_AssignStartingPlots:__PlaceMajorCivs(civs, BBS_HexMap, index)
         if civ.CivilizationLeader ~= BBS_LEADER_TYPE_SPECTATOR then
             local placed = civ:AssignSpawnByCentroid(BBS_HexMap);
             if placed == false and index < 7 then
-                self:__ResetMajorsSpawns();
+                self:__ResetMajorsSpawns(civs, BBS_HexMap);
                 index = index + 1;
                 self:__PlaceMajorCivs(civs, BBS_HexMap, index)
             elseif index >= 7 then

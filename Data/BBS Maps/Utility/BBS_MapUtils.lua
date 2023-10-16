@@ -561,7 +561,7 @@ function Centroid:ComputeCentroidScore()
         self.IsRiverScore = self.IsRiverScore / #self.HexCluster
         self.TundraScore = self.TundraScore / #self.HexCluster
         -- mainly tundra centroid 
-        
+        -- TODO remove later ?
         if self.TundraScore > 35 then
             self.IsTundraCentroid = true
             print("Centroid tundra score = "..tostring(self.TundraScore).." Id = "..tostring(self.id))
@@ -724,6 +724,7 @@ function HexMap:ResetSpawnableHex()
             self:ComputeSpawnableTiles(hex);
             hex.IsMinorSpawnable = true;
             hex.IsCivStartingPlot = false;
+            
         end
     end
 end
@@ -795,7 +796,7 @@ function HexMap:ComputeResourcesScore(hex)
             local ressource = h.ResourceType
             if h:IsImpassable() == false and ressource ~= g_RESOURCE_NONE then
                 local score = hex.ResourcesScore[ressource] or 0 --init
-                score = score + 1
+                score = score + 1 * ScoreDistanceFactor(i)
                 hex.ResourcesScore[ressource] = score
             end
         end
@@ -803,7 +804,7 @@ function HexMap:ComputeResourcesScore(hex)
     -- Include the tile itself
     if hex.ResourceType ~= g_RESOURCE_NONE then
         local hexScore = hex.ResourcesScore[hex.ResourceType] or 0
-        hexScore = hexScore + 1
+        hexScore = hexScore + 1 * ScoreDistanceFactor(i)
         hex.ResourcesScore[hex.ResourceType] = hexScore
     end
 end
@@ -815,7 +816,7 @@ function HexMap:ComputeFeaturesScore(hex)
             local feature = h.FeatureType
             if feature ~= g_FEATURE_NONE then
                 local score = hex.FeaturesScore[feature] or 0 --init
-                score = score + 1
+                score = score + 1 * ScoreDistanceFactor(i)
                 hex.FeaturesScore[feature] = score
             end
         end
@@ -823,7 +824,7 @@ function HexMap:ComputeFeaturesScore(hex)
     -- Include the tile itself
     if hex.FeatureType ~= g_FEATURE_NONE then
         local hexScore = hex.FeaturesScore[hex.FeatureType] or 0
-        hexScore = hexScore + 1
+        hexScore = hexScore + 1 * ScoreDistanceFactor(i)
         hex.FeaturesScore[hex.FeatureType] = hexScore
     end
 end
@@ -835,14 +836,14 @@ function HexMap:ComputeTerrainsScore(hex)
             local terrain = h.TerrainType
             if terrain ~= g_TERRAIN_TYPE_NONE then
                 local score = hex.TerrainsScore[terrain] or 0 --init
-                score = score + 1
+                score = score + 1 * ScoreDistanceFactor(i)
                 hex.TerrainsScore[terrain] = score
             end
             -- Compute coastal tiles score
             local isCoastal = h.IsCoastal
             if isCoastal == true then
                 local score = hex.TerrainsScore[g_TERRAIN_TYPE_COAST] or 0 --init
-                score = score + 1
+                score = score + 1 * ScoreDistanceFactor(i)
                 hex.TerrainsScore[g_TERRAIN_TYPE_COAST] = score
             end
             if h:IsTundraLand() and i < 4 then
@@ -855,7 +856,7 @@ function HexMap:ComputeTerrainsScore(hex)
     -- Include the tile itself
     if hex.TerrainType ~= g_TERRAIN_TYPE_NONE then
         local hexScore = hex.TerrainsScore[hex.TerrainType] or 0
-        hexScore = hexScore + 1
+        hexScore = hexScore + 1 * ScoreDistanceFactor(i)
         hex.TerrainsScore[hex.TerrainType] = hexScore
     end
    
@@ -901,6 +902,17 @@ function HexMap:ComputeSpawnableTiles(hex)
         and isCloseToMapBorderY == false 
         and isNotInPeninsula
         and isTooCloseToNaturalWonder == false;
+end
+
+-- TODO : Testing score calculations depending on distance
+function ScoreDistanceFactor(dist)
+    if dist == 1 then
+        return 3;
+    elseif dist == 2 then
+        return 2;
+    else 
+        return 1;
+    end
 end
 
 function HexMap:IsHexNextTo4ImpassableTiles(hex)
@@ -2079,8 +2091,8 @@ function CivilizationAssignSpawn:AssignSpawnByCentroid(BBS_HexMap)
                 end 
             end
             print("Size of valid tiles in cluster = "..tostring(#validTiles))
-            -- Threshold of valid tiles ?
-            if #validTiles > 2 then
+            -- TODO Threshold of valid tiles ?
+            if #validTiles > 0 then
                 local scoring = {}
                 for _, h in pairs(validTiles) do
                     local score = h:ComputeHexScoreCiv(self)
@@ -2138,7 +2150,8 @@ function Hex:ComputeHexScoreByBias(bias)
         end
     elseif (bias.Type == "RIVERS") then
         if self.IsOnRiver  then
-            biasScore = 1 * GetBiasFactor(bias);
+            -- TODO Better calc
+            biasScore = 3 * GetBiasFactor(bias);
         end
     elseif (bias.Type == "RESOURCES") then
         if self.ResourcesScore[bias.Value] ~= nil  then
@@ -2233,6 +2246,7 @@ function Hex:ComputeHexScoreCiv(civ)
     for _, bias in pairs(civ.CivilizationBiases) do
         score = score + self:ComputeHexScoreByBias(bias);
     end
+    print("ComputeHexScoreCiv - "..self:PrintXY().." Score = "..tostring(score))
     return score;
 end
 
