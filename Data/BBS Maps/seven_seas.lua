@@ -66,7 +66,7 @@ function GenerateMap()
 		if (GameConfiguration.GetValue("BBStemp") == true) then
 			BBS_temp = true;
 			print ("BBS Temperature: On");
-			terrainTypes = BBS_GenerateTerrainTypes(plotTypes, g_iW, g_iH, g_iFlags, false, temperature);
+			terrainTypes = BBS_GenerateTerrainTypes(plotTypes, g_iW, g_iH, g_iFlags, true, temperature);
 			else
 			BBS_temp = false;
 			terrainTypes = GenerateTerrainTypes(plotTypes, g_iW, g_iH, g_iFlags, false, temperature);

@@ -192,17 +192,29 @@ function BBS_AssignStartingPlots.Create(args)
     print("Start Assign Centroid",  os.date("%c"))
     -- Place civs, highest bias first
     table.sort(bbs_civilisations, function (a, b)
-        return a.HighestBias < b.HighestBias;
+        if a.BiasPriority == b.BiasPriority then
+            return a.HighestBias < b.HighestBias
+        else
+            -- Custom priority based on bias contraints
+            return a.BiasPriority > b.BiasPriority;
+        end
     end)
+    
     -- Recursive call 
-    local BBS_failed = instance:__PlaceMajorCivs(bbs_civilisations, BBS_HexMap, 0);
-    print("BBS_failed = "..tostring(BBS_failed))
-    if BBS_failed then
-        print("BBS_AssignStartingPlots: To Many Attempts Failed - Go to Firaxis Placement")
-        Game:SetProperty("BBS_RESPAWN", false)
-        local argSPlot = AssignStartingPlots.Create(args)
-        return instance;
-    else
+    local BBS_AssignTries = 1;
+    local BBS_Success = false;
+    while BBS_Success == false and BBS_AssignTries < 7 do
+        BBS_Success = instance:__PlaceMajorCivs(bbs_civilisations, BBS_HexMap);
+        if BBS_Success == false then
+            instance:__ResetMajorsSpawns(bbs_civilisations, BBS_HexMap);
+            BBS_AssignTries = BBS_AssignTries + 1
+            print("Failed try number "..tostring(BBS_AssignTries))
+        else 
+            print("BBS_Success !")
+        end
+    end
+    print("BBS_AssignTries = "..tostring(BBS_AssignTries).." - BBS_Success = "..tostring(BBS_Success))
+    if BBS_Success then
          -- Firaxis methods for attribution of spawns 
         for j, civ in pairs(bbs_civilisations) do
             if civ.CivilizationLeader ~= BBS_LEADER_TYPE_SPECTATOR then
@@ -233,6 +245,11 @@ function BBS_AssignStartingPlots.Create(args)
         --StartPositioner.DivideMapIntoMinorRegions(instance.iNumMinorCivs);
         Game:SetProperty("BBS_RESPAWN", true)
         print("End Assign Centroid",  os.date("%c"))
+    else
+        print("BBS_AssignStartingPlots: To Many Attempts Failed - Go to Firaxis Placement")
+        Game:SetProperty("BBS_RESPAWN", false)
+        local argSPlot = AssignStartingPlots.Create(args)
+        return instance;
     end   
     
     -- print("BBS_AssignStartingPlots: Sending Data")
@@ -293,21 +310,18 @@ function BBS_AssignStartingPlots:__PlaceMajorCivs(civs, BBS_HexMap, index)
     for _, civ in pairs(civs) do
         if civ.CivilizationLeader ~= BBS_LEADER_TYPE_SPECTATOR then
             local placed = civ:AssignSpawnByCentroid(BBS_HexMap);
-            if placed == false and index < 7 then
-                self:__ResetMajorsSpawns(civs, BBS_HexMap);
-                index = index + 1;
-                self:__PlaceMajorCivs(civs, BBS_HexMap, index)
-            elseif index >= 7 then
-                print("Placements failed back to firaxis placement")
-                return true;
+            if placed == false then
+                print("Failed to place civ "..tostring(civ.CivilizationLeader))
+                return false;
             end
         end
     end
-    return false;
+    return true;
 end
 
 function BBS_AssignStartingPlots:__ResetMajorsSpawns(civs, BBS_HexMap)
     BBS_HexMap.majorSpawns = {};
+    BBS_HexMap:ResetSpawnableHex();
     for _, civ in pairs(civs) do
         if civ.AttributedCentroid ~= nil then
             civ.AttributedCentroid.PlacedCiv = false;
