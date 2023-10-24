@@ -1577,7 +1577,11 @@ function HexMap:PrintHexSpawnableMap()
             if hex:IsWater() then
                 logX = logX.."~~".." ";
             else
-                logX = logX.."0"..tostring(hex.CostalScore).." ";
+                if hex.IsMajorSpawnable then
+                    logX = logX.."11".." ";
+                else
+                    logX = logX.."00".." ";
+                end
             end
             
         end
@@ -2185,14 +2189,14 @@ function HexMap:GetValidSpawnsInList(civ, listHex)
     for _, hex in pairs(listHex) do
         if hex.IsMajorSpawnable then --pre calculation of technical spawns
             -- TundraScore and DesertScore are the percent of tundra/desert tile in 6 rings around the tile
-            if hex.TundraScore < 16 and civ.IsTundraBias == false and hex.DesertScore < 16 and civ.IsDesertBias == false then
+            if hex.TundraScore < 16 and civ.IsTundraBias == false then
                 if civ.IsCoastalBias then
                     -- Fresh water is favored on score calculations
-                    if hex.IsCoastal and hex:IsTundraLand() == false and hex:IsDesertLand() == false then
+                    if hex.IsCoastal and hex:IsTundraLand() == false then
                         table.insert(validTiles, hex);
                     end
                 else -- default take all water tiles
-                    if (hex.IsFreshWater or hex.IsCoastal) and hex:IsTundraLand() == false and hex:IsDesertLand() == false then
+                    if (hex.IsFreshWater or hex.IsCoastal) and hex:IsTundraLand() == false then
                         table.insert(validTiles, hex);
                     end
                 end
@@ -2262,9 +2266,9 @@ function Hex:ComputeHexScoreCiv(civ)
 
     -- Avoid unwanted tiles (score = percentage of tundraa tile in ring 6, with a little threshold, valid tile threshold is 16 atm)
     -- Desert not calculated because future terraforming
-    local tundraScore = (100 - self.TundraScore) / 100
+    local tundraScore = (100 - self.TundraScore / 2) / 100
     if civ.IsTundraBias == false and self.TundraScore > 5 then
-        score = score * (100 - self.TundraScore) / 100;
+        score = score * tundraScore;
     end
     print(self:PrintXY().." - Score = "..baseScore.." + "..tostring(biasScore).." + "..tostring(peninsulaScore).." * "..tostring(tundraScore).." = "..tostring(math.floor(score)) )
 
@@ -2449,7 +2453,7 @@ function CivilizationAssignSpawn:IsBiasRespected(hex, hexMap)
                 elseif bias.Type == "CUSTOM_CONTINENT_SPLIT" and hexMap:HasContinentInWalkableRange(hex, 5) == false then
                     return false;
                 elseif bias.Type == "NEGATIVE_TERRAINS" then
-                    -- Test: exclude on ring 3 
+                    -- Test: excluded by tile scoring
                     if i < 4 and hring.TerrainType == bias.Value then
                         return false;
                     end

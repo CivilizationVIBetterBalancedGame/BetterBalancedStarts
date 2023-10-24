@@ -224,6 +224,19 @@ function BBS_AssignStartingPlots.Create(args)
     end
     table.sort(bbs_civilisations, 
     function(a, b) 
+        if a.TotalMapScore == b.TotalMapScore then
+            if a.TotalValidTiles == b.TotalValidTiles then
+                local rng1 = TerrainBuilder.GetRandomNumber(9999999, "Spawn A");
+                local rng2 = TerrainBuilder.GetRandomNumber(9999999, "Spawn B");
+                return rng1 > rng2;
+            else
+                return a.TotalValidTiles < b.TotalValidTiles
+            end
+        else
+            -- less score = more constraints for bias respect
+            return a.TotalMapScore < b.TotalMapScore
+        end       
+        
         if a.TotalValidTiles == b.TotalValidTiles then
             if a.TotalMapScore == b.TotalMapScore then
                 local rng1 = TerrainBuilder.GetRandomNumber(9999999, "Spawn A");
@@ -236,6 +249,8 @@ function BBS_AssignStartingPlots.Create(args)
             -- less score = more constraints for bias respect
             return a.TotalValidTiles < b.TotalValidTiles
         end       
+
+        
     end)
     for _, civ in pairs(bbs_civilisations) do
         print(tostring(civ.CivilizationLeader).." - ScoreTotal = "..tostring(civ.TotalMapScore).." -  Valid tiles = "..tostring(civ.TotalValidTiles))
