@@ -190,16 +190,58 @@ function BBS_AssignStartingPlots.Create(args)
     instance:__InitStartingData()
 
     print("Start Assign Centroid",  os.date("%c"))
-    -- Place civs, highest bias first
-    table.sort(bbs_civilisations, function (a, b)
-        if a.BiasPriority == b.BiasPriority then
-            return a.HighestBias < b.HighestBias
-        else
-            -- Custom priority based on bias contraints
-            return a.BiasPriority > b.BiasPriority;
+
+    for _, civ in pairs(bbs_civilisations) do
+        if civ.CivilizationLeader ~= BBS_LEADER_TYPE_SPECTATOR then
+            local allCentScore = civ:GetCentroidsOrderedByScore(BBS_HexMap);
+            -- Sum of centroid scores
+            local totalScore = 0 
+            local totalValidTiles = 0
+            local maxCentScore = 0
+            for _, c in pairs(allCentScore) do
+                totalScore = totalScore + c.Score
+                totalValidTiles = totalValidTiles + #c.ValidTilesBias
+                if c.Score > maxCentScore then
+                    maxCentScore = c.Score;
+                end
+            end
+            if maxCentScore == 0 then
+                if civ.IsCoastalBias then
+                    totalScore = 10
+                    maxCentScore = 1;
+                else
+                    totalScore = 20
+                    maxCentScore = 1;
+                end
+                
+            end
+            civ.TotalMapScore = totalScore / maxCentScore
+            civ.TotalValidTiles = totalValidTiles
+        else 
+            civ.TotalMapScore = 100;
+            civ.TotalValidTiles = 0
         end
+    end
+    table.sort(bbs_civilisations, 
+    function(a, b) 
+        if a.TotalValidTiles == b.TotalValidTiles then
+            if a.TotalMapScore == b.TotalMapScore then
+                local rng1 = TerrainBuilder.GetRandomNumber(9999999, "Spawn A");
+                local rng2 = TerrainBuilder.GetRandomNumber(9999999, "Spawn B");
+                return rng1 > rng2;
+            else
+                return a.TotalMapScore < b.TotalMapScore
+            end
+        else
+            -- less score = more constraints for bias respect
+            return a.TotalValidTiles < b.TotalValidTiles
+        end       
     end)
+    for _, civ in pairs(bbs_civilisations) do
+        print(tostring(civ.CivilizationLeader).." - ScoreTotal = "..tostring(civ.TotalMapScore).." -  Valid tiles = "..tostring(civ.TotalValidTiles))
+    end
     
+
     -- Recursive call 
     local BBS_AssignTries = 1;
     local BBS_Success = false;
