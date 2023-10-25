@@ -2258,7 +2258,8 @@ function Hex:ComputeHexScoreCiv(civ)
     local peninsulaScore = 0;
     -- Favor more open land for no bias and coastal civ
     if civ.IsNoBias or civ.IsCoastalBias or civ.IsKingNorthBias then
-        peninsulaScore = self.PeninsuleScore / 10
+        -- Rounding the score
+        peninsulaScore = math.floor((self.PeninsuleScore / 10) + 0.5)
         -- Cap peninsula score avoid every on inland spawn 
         score = score + math.min(5, peninsulaScore)
     end
@@ -2470,7 +2471,7 @@ function CivilizationAssignSpawn:IsBiasRespected(hex, hexMap)
                         isOneOfBiasRespected = true;
                     end
                 elseif bias.Type == "CUSTOM_HYDROPHOBIC" then 
-                    if hex.PeninsuleScore > 45 and hex:DistanceToClosest(self, self.mapCostal) > 3 then
+                    if hex.PeninsuleScore > 45 and hex:DistanceToClosest(hexMap, hexMap.mapCostal) > 3 then
                         isOneOfBiasRespected = true;
                     end
                 end
