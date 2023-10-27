@@ -2261,7 +2261,12 @@ function Hex:ComputeHexScoreCiv(civ)
         -- Rounding the score
         peninsulaScore = math.floor((self.PeninsuleScore / 10) + 0.5)
         -- Cap peninsula score avoid every on inland spawn 
-        score = score + math.min(5, peninsulaScore)
+        if civ.IsCoastalBias then
+            score = score + math.min(5, peninsulaScore)
+        else
+            score = score + peninsulaScore
+        end
+       
     end
     
 
