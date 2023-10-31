@@ -2274,7 +2274,7 @@ end
 function Hex:ComputeHexScoreByBias(bias) 
     local biasScore = 0;
     -- Bias threshold, 
-    local scoreThreshold = 35;
+    local scoreThreshold = 100;
     if bias.Value == g_TERRAIN_TYPE_COAST and self.IsCoastal then
         -- Not taking into account the number of coastal tiles in the centroid for now 
         return biasScore;
@@ -2309,7 +2309,7 @@ function Hex:ComputeHexScoreByBias(bias)
         end
     -- Custom Biases are usually computed in valid tiles and isBiasRespected method, not in the score
     end
-    return math.max(biasScore, scoreThreshold);
+    return biasScore;
 end
 
 -- Return the highest score hex for this civ 
@@ -2329,7 +2329,7 @@ function CivilizationAssignSpawn:GetHighestHexScore(hexList)
     local highestScoresTable = {}
     for _, s in pairs(scoring) do
         if s.Score == highestScore then
-            print("GetHighestHexScore - Highest score found = "..tostring(s.Score).." "..s.Hex:PrintXY())0
+            print("GetHighestHexScore - Highest score found = "..tostring(s.Score).." "..s.Hex:PrintXY());
             table.insert(highestScoresTable, s)
         end
     end
@@ -2466,9 +2466,9 @@ end
 -- TODO : determine weight
 function GetBiasFactor(bias)
     if bias.Tier == 1 then
-        return 3;
-    elseif bias.Tier == 2 then
         return 2;
+    elseif bias.Tier == 2 then
+        return 1.75;
     elseif bias.Tier == 3 then
         return 1.5;
     elseif bias.Tier == 4 then

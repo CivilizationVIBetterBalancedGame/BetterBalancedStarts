@@ -13,6 +13,7 @@ include("NaturalWonderGenerator");
 include("ResourceGenerator");
 include("AssignStartingPlots");
 include "BBS_MapUtils";
+include "BBS_CivilizationAssign";
 
 local BBS_VERSION = "2.2.0"
 
