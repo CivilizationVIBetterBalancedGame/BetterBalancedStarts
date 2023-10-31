@@ -2273,6 +2273,8 @@ end
 -- TODO : do the custom bias calculations
 function Hex:ComputeHexScoreByBias(bias) 
     local biasScore = 0;
+    -- Bias threshold, 
+    local scoreThreshold = 35;
     if bias.Value == g_TERRAIN_TYPE_COAST and self.IsCoastal then
         -- Not taking into account the number of coastal tiles in the centroid for now 
         return biasScore;
@@ -2286,7 +2288,6 @@ function Hex:ComputeHexScoreByBias(bias)
         end
     elseif (bias.Type == "RIVERS") then
         if self.IsOnRiver  then
-            -- TODO Better calc
             biasScore = self.RiverScore * GetBiasFactor(bias);
         end
     elseif (bias.Type == "RESOURCES") then
@@ -2306,37 +2307,20 @@ function Hex:ComputeHexScoreByBias(bias)
         if self.ResourcesScore[bias.Value] ~= nil  then
             biasScore = - self.ResourcesScore[bias.Value] * GetBiasFactor(bias)
         end
-    -- Custom Biases 				
-    elseif (bias.Type == "CUSTOM_NO_FRESH_WATER") then
-        --print("Calculate custom no fresh score "..tostring(bias.Value))
-    elseif (bias.Type == "CUSTOM_CONTINENT_SPLIT") then
-        --print("CUSTOM_CONTINENT_SPLIT")
-    elseif (bias.Type == "CUSTOM_NO_LUXURY_LIMIT") then
-        --print("Calculate no lux limit score "..tostring(bias.Value))
-    elseif (bias.Type == "CUSTOM_MOUNTAIN_LOVER") then
-        --print("Calculate mountain lover inca score "..tostring(bias.Value))
-    elseif (bias.Type == "CUSTOM_KING_OF_THE_NORTH") then	
-        --print("Calculate king of the north norvegian score "..tostring(bias.Value))
-    elseif (bias.Type == "CUSTOM_I_AM_SALTY")  then	
-        --print("Calculate salty astralian score "..tostring(bias.Value))
-    elseif (bias.Type == "CUSTOM_HYDROPHOBIC") then	
-        --print("Calculate hydrophobic maya score "..tostring(bias.Value))
+    -- Custom Biases are usually computed in valid tiles and isBiasRespected method, not in the score
     end
-    return biasScore;
+    return math.max(biasScore, scoreThreshold);
 end
 
-
-
-
+-- Return the highest score hex for this civ 
 function CivilizationAssignSpawn:GetHighestHexScore(hexList)
     local scoring = {}
     
+    -- Get all the hex scores for this civ and order them 
     for _, h in pairs(hexList) do
         local score = h:ComputeHexScoreCiv(self)
-
         table.insert(scoring, { Hex = h, Score = score})
     end
-
     table.sort(scoring, function(a, b) 
         return a.Score > b.Score; 
     end);
@@ -2345,11 +2329,11 @@ function CivilizationAssignSpawn:GetHighestHexScore(hexList)
     local highestScoresTable = {}
     for _, s in pairs(scoring) do
         if s.Score == highestScore then
-            print("GetHighestHexScore - Highest score found = "..tostring(s.Score).." "..s.Hex:PrintXY(), os.date("%c"))
+            print("GetHighestHexScore - Highest score found = "..tostring(s.Score).." "..s.Hex:PrintXY())0
             table.insert(highestScoresTable, s)
         end
     end
-    -- If multiples tiles with same score, take any 
+    -- If multiples tiles with same score, take a random one
     if #highestScoresTable > 1 then
         highestScoresTable = GetShuffledCopyOfTable(highestScoresTable);
     end
@@ -2357,19 +2341,19 @@ function CivilizationAssignSpawn:GetHighestHexScore(hexList)
     return highestScoresTable[1].Hex, highestScoresTable[1].Score; 
 end
 
--- Find the highest score tile in the validTiles table
+-- Set the starting hex
 -- Firaxis method SetStartingPlot called in BBS_AssignStartingPlots
-function CivilizationAssignSpawn:AssignMajorCivSpawn(BBS_HexMap, bestStartingHex)
-    -- Maori start is not in a centroid
-    if bestStartingHex.Centroid ~= nil then
-        self.AttributedCentroid = bestStartingHex.Centroid
+function CivilizationAssignSpawn:AssignMajorCivSpawn(BBS_HexMap, startingHex)
+    if startingHex.Centroid ~= nil then
+        self.AttributedCentroid = startingHex.Centroid
         self.AttributedCentroid.PlacedCiv = true
     end
-    self.StartingHex = bestStartingHex;
-    bestStartingHex.IsCivStartingPlot = true;
-    bestStartingHex.IsMajorSpawnable = false;
-    bestStartingHex.IsMinorSpawnable = false;
-    local list, mappedHex = BBS_HexMap:GetAllHexInRing(bestStartingHex, BBS_HexMap.minimumDistanceMajortoMajorCivs)
+    self.StartingHex = startingHex;
+    startingHex.IsCivStartingPlot = true;
+    startingHex.IsMajorSpawnable = false;
+    startingHex.IsMinorSpawnable = false;
+    -- Set minimum distance around starting hex
+    local list, mappedHex = BBS_HexMap:GetAllHexInRing(startingHex, BBS_HexMap.minimumDistanceMajortoMajorCivs)
     for i, ringHexes in pairs(mappedHex) do
         for _, h in pairs(ringHexes) do
             h.IsMajorSpawnable = false;
@@ -2380,28 +2364,26 @@ function CivilizationAssignSpawn:AssignMajorCivSpawn(BBS_HexMap, bestStartingHex
         end
         
     end
-    print("Assigned spawn "..bestStartingHex:PrintXY().." for civ "..tostring(self.CivilizationLeader))
+    print("Assigned spawn "..startingHex:PrintXY().." for civ "..tostring(self.CivilizationLeader))
     return;
 end
 
 -- To call after placing majors civs
-function CivilizationAssignSpawn:AssignMinorCivSpawn(BBS_HexMap, bestStartingHex)
-    self.StartingHex = bestStartingHex
-    bestStartingHex.IsCivStartingPlot = true;
-    bestStartingHex.IsMinorSpawnable = false;
-    table.insert(BBS_HexMap.minorSpawns, bestStartingHex);
-    local list, _ = BBS_HexMap:GetAllHexInRing(bestStartingHex, BBS_HexMap.minimumDistanceMinorToMinorCivs)
+function CivilizationAssignSpawn:AssignMinorCivSpawn(BBS_HexMap, startingHex)
+    self.StartingHex = startingHex
+    startingHex.IsCivStartingPlot = true;
+    startingHex.IsMinorSpawnable = false;
+    table.insert(BBS_HexMap.minorSpawns, startingHex);
+    local list, _ = BBS_HexMap:GetAllHexInRing(startingHex, BBS_HexMap.minimumDistanceMinorToMinorCivs)
     for i, hex in pairs(list) do
         hex.IsMinorSpawnable = false;
     end
 end
 
-
-
--- Return a boolean for bias respect on tested hex in parameter
+-- Return a boolean testing bias respect on hex in parameter
 function CivilizationAssignSpawn:IsBiasRespected(hex, hexMap)
     -- Biases should be already sorted by tier
-        -- TODO : Make custom variable per category for better management (isMineResourceBias etc)
+    -- TODO : Make custom variable per category for better management ? (isMineResourceBias etc)
     if #self.CivilizationBiases == 0 then
         return true;
     end
@@ -2496,12 +2478,12 @@ function GetBiasFactor(bias)
     end
 end
 
-
+-- Find the total score 
 function CivilizationAssignSpawn:CalculateTotalScores(BBS_HexMap)
-    -- Define scores for centroids
+    -- Define scores for centroids and order them by score
     if self.CivilizationLeader ~= BBS_LEADER_TYPE_SPECTATOR then
         self:CalculateOrderCentroidsScore(BBS_HexMap);
-        -- Sum of centroid scores  
+        -- Sum of centroid scores (cover all maps) 
         local totalScore = 0 
         local totalValidTiles = 0
         local maxCentScore = 0
@@ -2512,8 +2494,9 @@ function CivilizationAssignSpawn:CalculateTotalScores(BBS_HexMap)
                 maxCentScore = c.Score;
             end
         end
+        -- By default, if no bias are giving score, put the max score by default being the max number of regions
         if maxCentScore == 0 then
-            totalScore = 20;
+            totalScore = GlobalNumberOfRegions;
             maxCentScore = 1;
         end
         self.TotalMapScore = totalScore / maxCentScore
@@ -2561,7 +2544,7 @@ function CivilizationAssignSpawn:CalculateOrderCentroidsScore(BBS_HexMap)
     for _, c in pairs(self.CentroidsScore) do
         print("AssignSpawnByCentroid - Score for centroid "..tostring(c.Centroid.id).." = "..tostring(c.Score).." Valid = "..tostring(#c.ValidTiles).." ValidBias = "..tostring(#c.ValidTilesBias).." TundraScoring = "..tostring(c.TundraScoring).." PeninsulaScore = "..tostring(c.MeanPeninsulaScore));
     end 
-    
+
     return self.CentroidsScore;
 end
 
@@ -2616,7 +2599,7 @@ function CivilizationAssignSpawn:FindHighestScoreHex()
             end
         end    
     end
-    --print("FindHighestScoreHex : "..tostring(#validTilesInTop3).." valid tiles in top 3")
+
     -- Take random tile among the highest scores 
     local selectedHex = self:GetHighestHexScore(validTilesInTop3)
 

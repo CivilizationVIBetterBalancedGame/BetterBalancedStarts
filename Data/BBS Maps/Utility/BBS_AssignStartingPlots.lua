@@ -54,7 +54,7 @@ BBS_LEADER_TYPE_SPECTATOR = "LEADER_SPECTATOR"
 
 BBS_AssignStartingPlots = {};
 BBS_HexMap = {};
-
+GlobalNumberOfRegions = PlayerManager.GetAliveMajorsCount() + PlayerManager.GetAliveMinorsCount();
 ------------------------------------------------------------------------------
 function ___Debug(...)
     print(...);
@@ -200,13 +200,14 @@ function BBS_AssignStartingPlots.Create(args)
 
     print("Start Assign spawn order",  os.date("%c"))
     -- Define spawn order 
+    -- Comparing first the number of valid tiles, placing first 
     table.sort(bbs_civilisations, 
     function(a, b) 
         if a.TotalValidTiles == b.TotalValidTiles then
             if a.TotalMapScore == b.TotalMapScore then
-                print("No bias random order")
-                local rng1 = TerrainBuilder.GetRandomNumber(999, "Spawn A");
-                local rng2 = TerrainBuilder.GetRandomNumber(999, "Spawn B");
+                -- Random order when same number of valid tiles and scores (comparing 2 no bias or 2 purely coastal)
+                local rng1 = TerrainBuilder.GetRandomNumber(999999, "Spawn A");
+                local rng2 = TerrainBuilder.GetRandomNumber(999999, "Spawn B");
                 return rng1 > rng2;
             else
                 return a.TotalMapScore < b.TotalMapScore
@@ -214,9 +215,7 @@ function BBS_AssignStartingPlots.Create(args)
         else
             -- less score = more constraints for bias respect
             return a.TotalValidTiles < b.TotalValidTiles
-        end       
-
-        
+        end
     end)
 
     for _, civ in pairs(bbs_civilisations) do
@@ -300,7 +299,7 @@ function BBS_AssignStartingPlots:__InitStartingData()
     --BBS_HexMap:PrintHexSpawnableMap();
     BBS_HexMap:PrintHexPeninsuleMap();
 
-    BBS_HexMap:RunKmeans(20, 30);
+    BBS_HexMap:RunKmeans(GlobalNumberOfRegions, 30);
     BBS_HexMap:PrintHexMap();
     for _, c in pairs(BBS_HexMap.centroidsArray) do
         c:ComputeCentroidScore();
