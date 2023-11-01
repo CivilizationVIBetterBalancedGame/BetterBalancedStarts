@@ -1,9 +1,9 @@
-
 ---------------------------------------
 -- CivilizationAssignSpawn
 ---------------------------------------
 
 CivilizationAssignSpawn = {}
+
 function CivilizationAssignSpawn.new(player, leader, name, team)
     local instance = {}
     setmetatable(instance, {__index = CivilizationAssignSpawn});
@@ -245,21 +245,38 @@ function CivilizationAssignSpawn:GetResourceIndex(resourceType)
     end
 end
 
--- Used for city states, get any non water tiles and test if meet requirements
-function HexMap:GetAnyMinorSpawnablesTiles()
-    local valid = {}
-    for y = 0, self.height - 1 do
-        for x = 0, self.width - 1 do
-            local hex = self:GetHexInMap(x, y)
-            if hex:IsWater() == false and hex.IsMinorSpawnable then
-                table.insert(valid, hex)
+-- Find the total score 
+function CivilizationAssignSpawn:CalculateTotalScores(BBS_HexMap)
+    -- Define scores for centroids and order them by score
+    if self.CivilizationLeader ~= BBS_LEADER_TYPE_SPECTATOR then
+        self:CalculateOrderCentroidsScore(BBS_HexMap);
+        -- Sum of centroid scores (cover all maps) 
+        local totalScore = 0 
+        local totalValidTiles = 0
+        local maxCentScore = 0
+        for _, c in pairs(self.CentroidsScore) do
+            totalScore = totalScore + c.Score
+            totalValidTiles = totalValidTiles + #c.ValidTilesBias
+            if c.Score > maxCentScore then
+                maxCentScore = c.Score;
             end
         end
+        -- By default, if no bias are giving score, put the max score by default being the max number of regions
+        if maxCentScore == 0 then
+            totalScore = GlobalNumberOfRegions;
+            maxCentScore = 1;
+        end
+        self.TotalMapScore = totalScore / maxCentScore
+        self.TotalValidTiles = totalValidTiles
+    else 
+        self.TotalMapScore = 100;
+        self.TotalValidTiles = 0
     end
-    return valid;
-end
-            
 
+end
+
+
+-- Main first method to call to assign spawn
 -- Complete function of assigning spawn to a major civ 
 -- Add more random to calculations for non coastal and non bias ? 
 function CivilizationAssignSpawn:AssignSpawnByCentroid(BBS_HexMap)
@@ -283,14 +300,53 @@ function CivilizationAssignSpawn:AssignSpawnByCentroid(BBS_HexMap)
 end
 
 
+-- Order the regions based on bias score and number of valid spawn tiles
+function CivilizationAssignSpawn:CalculateOrderCentroidsScore(BBS_HexMap)
+    self.CentroidsScore = {};
+     -- Mean score for each hex in centroid cluster by bias
+    for i, centroid in pairs(BBS_HexMap.centroidsArray) do
+        local centScore = self:ComputeBiasScoreCiv(centroid);
+        local meanPeninsulaScore = 0;
+        local validTiles = self:GetValidSpawnsInHexList(centroid.HexCluster);
+        local validBiasTiles = {}
+        if #validTiles > 0 then
+            for _, hex in pairs(validTiles) do
+                if self:IsBiasRespected(hex, BBS_HexMap) then
+                    table.insert(validBiasTiles, hex);
+                    meanPeninsulaScore = meanPeninsulaScore + hex.PeninsuleScore;
+                end
+            end
+            meanPeninsulaScore = meanPeninsulaScore / #validBiasTiles;
+        end
+        table.insert(self.CentroidsScore, { Centroid = centroid, Score = centScore, ValidTiles = validTiles, ValidTilesBias = validBiasTiles, MeanPeninsulaScore = meanPeninsulaScore, TundraScoring = centroid.TundraScore });
+    end
+     -- Go through each centroid, from highest to lower centroid score for the civ
+    table.sort(self.CentroidsScore, 
+    function(a, b) 
+        if a.Score == 0 and b.Score == 0 then
+            return #a.ValidTilesBias > #b.ValidTilesBias
+        else
+            return a.Score > b.Score
+        end
+    end)
+
+    -- DEBUG PRINT
+    print("Civilization : "..self.CivilizationLeader)
+    for _, c in pairs(self.CentroidsScore) do
+        print("AssignSpawnByCentroid - Score for centroid "..tostring(c.Centroid.id).." = "..tostring(c.Score).." Valid = "..tostring(#c.ValidTiles).." ValidBias = "..tostring(#c.ValidTilesBias).." TundraScoring = "..tostring(c.TundraScoring).." PeninsulaScore = "..tostring(c.MeanPeninsulaScore));
+    end 
+
+    return self.CentroidsScore;
+end
+
 -- Main method to get valid spawns tiles depending on civ bias 
-function HexMap:GetValidSpawnsInList(civ, listHex)
+function CivilizationAssignSpawn:GetValidSpawnsInHexList(listHex)
     local validTiles = {}
     for _, hex in pairs(listHex) do
         if hex.IsMajorSpawnable then --pre calculation of technical spawns
             -- TundraScore and DesertScore are the percent of tundra/desert tile in 6 rings around the tile
-            if hex.TundraScore < 16 and civ.IsTundraBias == false then
-                if civ.IsCoastalBias then
+            if self.IsTundraBias == false then
+                if self.IsCoastalBias then
                     -- Fresh water is favored on score calculations
                     if hex.IsCoastal and hex:IsTundraLand() == false then
                         table.insert(validTiles, hex);
@@ -300,9 +356,9 @@ function HexMap:GetValidSpawnsInList(civ, listHex)
                         table.insert(validTiles, hex);
                     end
                 end
-            elseif civ.IsTundraBias and hex:IsTundraLand() and hex.IsFreshWater then
+            elseif self.IsTundraBias and hex:IsTundraLand() and hex.IsFreshWater then
                 table.insert(validTiles, hex);
-            elseif civ.IsDesertBias and hex:IsDesertLand() and hex.IsFreshWater then
+            elseif self.IsDesertBias and hex:IsDesertLand() and hex.IsFreshWater then
                 table.insert(validTiles, hex); 
             end
         end
@@ -310,129 +366,71 @@ function HexMap:GetValidSpawnsInList(civ, listHex)
     return validTiles;
 end
 
--- For each hex in cluster, calculate the bias score and take score mean
-function Centroid:ComputeBiasScoreCiv(civ)
-    if civ.CivilizationLeader == BBS_LEADER_TYPE_SPECTATOR or civ.IsOceanBias then
-        return;
-    end
-    local centScore = 0
-    local nbBias = 0;
-    for _, bias in pairs(civ.CivilizationBiases) do
-        local scoredBias = 0
-        for _, hex in pairs(self.HexCluster) do
-            local score = hex:ComputeHexScoreByBias(bias)
-            scoredBias = scoredBias + score
-            centScore = centScore + score
+-- Find the best centroid for the civ from data analysis
+function CivilizationAssignSpawn:FindHighestScoreHex()
+    local top3Centroids =  {};
+    local i = 0;
+    local totalSpawnableBias = 0;
+    local useEveryValidTiles = false;
+    -- self.CentroidsScore must be filled by CalculateOrderCentroidsScore method
+    -- Get 3 best regions (already sorted by score or valid tiles)
+    for _, c in pairs(self.CentroidsScore) do
+        if #c.ValidTilesBias > 0 then
+            table.insert(top3Centroids, c)
+            i = i + 1
+            totalSpawnableBias = totalSpawnableBias + #c.ValidTilesBias
+            if i == 5 then
+                break;
+            end
         end
-        if scoredBias > 0 then
-            nbBias = nbBias + 1
+    end
+    -- TODO TRY : if not enough valid bias tile but lots of valid spawn : use these
+    if totalSpawnableBias < 3 then
+        print("Not enough vald tiles for bias, use default valid spawns")
+        useEveryValidTiles = true;
+        top3Centroids =  {};
+        i = 0
+        for _, c in pairs(self.CentroidsScore) do
+            if #c.ValidTiles > 0 then
+                table.insert(top3Centroids, c)
+                i = i + 1
+                if i == 5 then
+                    break;
+                end
+            end
         end
     end
-    if nbBias == 0 then
-        centScore = centScore / #self.HexCluster
-    else
-        centScore = centScore / (#self.HexCluster * nbBias)
+    if #top3Centroids == 0 then
+        --  No centroid found => not even a valid tile in the map = impossible to place civ
+        return nil;
     end
-    -- print("Centroid score = "..tostring(centScore).." for civ "..civ.CivilizationLeader)
-    return centScore;
-end
-
-
--- Calculate the hex score for a civ, taking account for the bias score + extra parameters like fresh water/yield etc (to determine) 
--- TODO Define scores
-function Hex:ComputeHexScoreCiv(civ)
-    local score = 100
-
-    -- Favor fresh water in almost every case 
-    if civ.IsNoFreshWaterBias or self.IsFreshWater or (self.IsCoastal and civ.IsCoastalBias) then
-        score = score + 20;
-    end
-
-    local baseScore = tostring(score);
-    local totalBiasScore = 0
-    for _, bias in pairs(civ.CivilizationBiases) do
-        local thisBiasScore = self:ComputeHexScoreByBias(bias);
-        totalBiasScore = totalBiasScore + thisBiasScore
-        score = score + thisBiasScore;
-    end
-
-    local peninsulaScore = 0;
-    -- Favor more open land for no bias and coastal civ
-    if civ.IsNoBias or civ.IsCoastalBias or civ.IsKingNorthBias then
-        -- Rounding the score
-        peninsulaScore = math.floor((self.PeninsuleScore / 10) + 0.5)
-        -- Cap peninsula score avoid every on inland sea for naval civ and favor inland for others
-        if civ.IsCoastalBias then
-            score = score + math.min(5, peninsulaScore)
+    -- Compare regions by size of valids tiles and best score tile in region 
+    local validTilesInTop3 = {}
+    for _, c in pairs(top3Centroids) do
+        if useEveryValidTiles then 
+            for _, h in pairs(c.ValidTiles) do
+                table.insert(validTilesInTop3, h);
+            end
         else
-            score = score + peninsulaScore
-        end
+            for _, h in pairs(c.ValidTilesBias) do
+                table.insert(validTilesInTop3, h);
+            end
+        end    
     end
-    
 
-    -- Avoid unwanted tiles (score = percentage of tundraa tile in ring 6, with a little threshold, valid tile threshold is 16 atm)
-    -- Desert not calculated because future terraforming
-    local tundraScore = (100 - self.TundraScore / 2) / 100
-    if civ.IsTundraBias == false and self.TundraScore > 5 then
-        score = score * tundraScore;
-    end
-    print(self:PrintXY().." - Score = "..baseScore.." + "..tostring(totalBiasScore).." + "..tostring(peninsulaScore).." * "..tostring(self.TundraScore).." = "..tostring(math.floor(score + 0.5)), os.date("%c"))
+    -- Take random tile among the highest scores 
+    local selectedHex = self:GetHighestHexScore(validTilesInTop3)
 
-    return math.floor(score + 0.5);
+    return selectedHex;
 end
 
--- Get the hex score for a given bias
--- Score for each tile are from the HexMap:Compute***Scores -- TODO : takes into account the tile surroundings in ring 6 for now
--- Weighted by bias tier TODO : determine the weight for each tier
--- TODO : do the custom bias calculations
-function Hex:ComputeHexScoreByBias(bias) 
-    local biasScore = 0;
-    -- Bias threshold, 
-    local scoreThreshold = 100;
-    if bias.Value == g_TERRAIN_TYPE_COAST and self.IsCoastal then
-        -- Not taking into account the number of coastal tiles in the centroid for now 
-        return biasScore;
-    elseif (bias.Type == "TERRAINS" and bias.Value ~= g_TERRAIN_TYPE_COAST) then
-        if self.TerrainsScore[bias.Value] ~= nil  then
-            biasScore = self.TerrainsScore[bias.Value] * GetBiasFactor(bias)
-        end
-    elseif (bias.Type == "FEATURES") then
-        if self.FeaturesScore[bias.Value] ~= nil  then
-            biasScore = self.FeaturesScore[bias.Value] * GetBiasFactor(bias)
-        end
-    elseif (bias.Type == "RIVERS") then
-        if self.IsOnRiver  then
-            biasScore = self.RiverScore * GetBiasFactor(bias);
-        end
-    elseif (bias.Type == "RESOURCES") then
-        if self.ResourcesScore[bias.Value] ~= nil  then
-            biasScore = self.ResourcesScore[bias.Value] * GetBiasFactor(bias)
-        end
-    -- Negative Biases are optionnal and act as repellents 	
-    elseif (bias.Type == "NEGATIVE_TERRAINS") then
-        if self.TerrainsScore[bias.Value] ~= nil  then
-            biasScore = - self.TerrainsScore[bias.Value] * GetBiasFactor(bias)
-        end
-    elseif (bias.Type == "NEGATIVE_FEATURES") then
-        if self.FeaturesScore[bias.Value] ~= nil  then
-            biasScore = - self.FeaturesScore[bias.Value] * GetBiasFactor(bias)
-        end
-    elseif (bias.Type == "NEGATIVE_RESOURCES") then
-        if self.ResourcesScore[bias.Value] ~= nil  then
-            biasScore = - self.ResourcesScore[bias.Value] * GetBiasFactor(bias)
-        end
-    -- Custom Biases are usually computed in valid tiles and isBiasRespected method, not in the score
-    end
-    return biasScore;
-end
 
 -- Return the highest score hex for this civ 
 function CivilizationAssignSpawn:GetHighestHexScore(hexList)
     local scoring = {}
-    
     -- Get all the hex scores for this civ and order them 
     for _, h in pairs(hexList) do
-        local score = h:ComputeHexScoreCiv(self)
+        local score = self:ComputeHexScoreCiv(h)
         table.insert(scoring, { Hex = h, Score = score})
     end
     table.sort(scoring, function(a, b) 
@@ -453,6 +451,140 @@ function CivilizationAssignSpawn:GetHighestHexScore(hexList)
     end
 
     return highestScoresTable[1].Hex, highestScoresTable[1].Score; 
+end
+
+
+-- Calculate the hex score for a civ, taking account for the bias score + extra parameters like fresh water/yield etc (to determine) 
+-- TODO Define scores
+function CivilizationAssignSpawn:ComputeHexScoreCiv(hex)
+    local score = 100
+
+    -- Favor fresh water in almost every case 
+    if self.IsNoFreshWaterBias or hex.IsFreshWater or (hex.IsCoastal and self.IsCoastalBias) then
+        score = score + 20;
+    end
+
+    local baseScore = tostring(score);
+    local totalBiasScore = 0
+    for _, bias in pairs(self.CivilizationBiases) do
+        local thisBiasScore = ComputeHexScoreByBias(hex, bias);
+        totalBiasScore = totalBiasScore + thisBiasScore
+        score = score + thisBiasScore;
+    end
+
+    local peninsulaScore = 0;
+    -- Favor more open land for no bias and coastal civ
+    if self.IsNoBias or self.IsCoastalBias or self.IsKingNorthBias or self.IsMountainBias or self.IsMountainLoverBias then
+        -- Rounding the score
+        peninsulaScore = math.floor((hex.PeninsuleScore / 10) + 0.5)
+        -- Cap peninsula score avoid every on inland sea for naval civ and favor inland for others
+        if self.IsCoastalBias then
+            score = score + math.min(5, peninsulaScore)
+        else
+            score = score + peninsulaScore
+        end
+    end
+    
+
+    -- Avoid unwanted tiles (score = percentage of tundraa tile in ring 6, with a little threshold, valid tile threshold is 16 atm)
+    -- Desert not calculated because future terraforming
+    local tundraScore = (100 - hex.TundraScore / 2) / 100
+    if self.IsTundraBias == false and hex.TundraScore > 5 then
+        score = score * tundraScore;
+    end
+    print(hex:PrintXY().." - Score = "..baseScore.." + "..tostring(totalBiasScore).." + "..tostring(peninsulaScore).." * "..tostring(hex.TundraScore).." = "..tostring(math.floor(score + 0.5)), os.date("%c"))
+
+    return math.floor(score + 0.5);
+end
+
+
+
+-- For each hex in cluster, calculate the bias score and take score mean
+function CivilizationAssignSpawn:ComputeBiasScoreCiv(centroid)
+    if self.CivilizationLeader == BBS_LEADER_TYPE_SPECTATOR or self.IsOceanBias then
+        return;
+    end
+    local centScore = 0
+    local nbBias = 0;
+    for _, bias in pairs(self.CivilizationBiases) do
+        local scoredBias = 0
+        for _, hex in pairs(centroid.HexCluster) do
+            local score = ComputeHexScoreByBias(hex, bias)
+            scoredBias = scoredBias + score
+            centScore = centScore + score
+        end
+        if scoredBias > 0 then
+            nbBias = nbBias + 1
+        end
+    end
+    if nbBias == 0 then
+        centScore = centScore / #centroid.HexCluster
+    else
+        centScore = centScore / (#centroid.HexCluster * nbBias)
+    end
+    -- print("Centroid score = "..tostring(centScore).." for civ "..civ.CivilizationLeader)
+    return centScore;
+end
+
+
+-- Get the hex score for a given bias
+-- Score for each tile are from the HexMap:Compute***Scores -- TODO : takes into account the tile surroundings in ring 6 for now
+-- Weighted by bias tier TODO : determine the weight for each tier
+-- TODO : do the custom bias calculations
+function ComputeHexScoreByBias(hex, bias)
+    local biasScore = 0;
+    -- Bias threshold, 
+    local scoreThreshold = 50;
+    if bias.Value == g_TERRAIN_TYPE_COAST and hex.IsCoastal then
+        -- Not taking into account the number of coastal tiles in the centroid for now 
+        return biasScore;
+    elseif (bias.Type == "TERRAINS" and bias.Value ~= g_TERRAIN_TYPE_COAST) then
+        if hex.TerrainsScore[bias.Value] ~= nil  then
+            biasScore = hex.TerrainsScore[bias.Value] * GetBiasFactor(bias)
+        end
+    elseif (bias.Type == "FEATURES") then
+        if hex.FeaturesScore[bias.Value] ~= nil  then
+            biasScore = hex.FeaturesScore[bias.Value] * GetBiasFactor(bias)
+        end
+    elseif (bias.Type == "RIVERS") then
+        if hex.IsOnRiver  then
+            biasScore = hex.RiverScore * GetBiasFactor(bias);
+        end
+    elseif (bias.Type == "RESOURCES") then
+        if hex.ResourcesScore[bias.Value] ~= nil  then
+            biasScore = hex.ResourcesScore[bias.Value] * GetBiasFactor(bias)
+        end
+    -- Negative Biases are optionnal and act as repellents 	
+    elseif (bias.Type == "NEGATIVE_TERRAINS") then
+        if hex.TerrainsScore[bias.Value] ~= nil  then
+            biasScore = - hex.TerrainsScore[bias.Value] * GetBiasFactor(bias)
+        end
+    elseif (bias.Type == "NEGATIVE_FEATURES") then
+        if hex.FeaturesScore[bias.Value] ~= nil  then
+            biasScore = - hex.FeaturesScore[bias.Value] * GetBiasFactor(bias)
+        end
+    elseif (bias.Type == "NEGATIVE_RESOURCES") then
+        if hex.ResourcesScore[bias.Value] ~= nil  then
+            biasScore = - hex.ResourcesScore[bias.Value] * GetBiasFactor(bias)
+        end
+    -- Custom Biases are usually computed in valid tiles and isBiasRespected method, not in the score
+    end
+    return math.min(biasScore, scoreThreshold);
+end
+
+-- TODO : determine weight
+function GetBiasFactor(bias)
+    if bias.Tier == 1 then
+        return 2;
+    elseif bias.Tier == 2 then
+        return 1.75;
+    elseif bias.Tier == 3 then
+        return 1.5;
+    elseif bias.Tier == 4 then
+        return 1.25;
+    elseif bias.Tier == 5 then
+        return 1.1;
+    end
 end
 
 -- Set the starting hex
@@ -576,146 +708,3 @@ function CivilizationAssignSpawn:IsBiasRespected(hex, hexMap)
 end
 
 
-
--- TODO : determine weight
-function GetBiasFactor(bias)
-    if bias.Tier == 1 then
-        return 2;
-    elseif bias.Tier == 2 then
-        return 1.75;
-    elseif bias.Tier == 3 then
-        return 1.5;
-    elseif bias.Tier == 4 then
-        return 1.25;
-    elseif bias.Tier == 5 then
-        return 1.1;
-    end
-end
-
--- Find the total score 
-function CivilizationAssignSpawn:CalculateTotalScores(BBS_HexMap)
-    -- Define scores for centroids and order them by score
-    if self.CivilizationLeader ~= BBS_LEADER_TYPE_SPECTATOR then
-        self:CalculateOrderCentroidsScore(BBS_HexMap);
-        -- Sum of centroid scores (cover all maps) 
-        local totalScore = 0 
-        local totalValidTiles = 0
-        local maxCentScore = 0
-        for _, c in pairs(self.CentroidsScore) do
-            totalScore = totalScore + c.Score
-            totalValidTiles = totalValidTiles + #c.ValidTilesBias
-            if c.Score > maxCentScore then
-                maxCentScore = c.Score;
-            end
-        end
-        -- By default, if no bias are giving score, put the max score by default being the max number of regions
-        if maxCentScore == 0 then
-            totalScore = GlobalNumberOfRegions;
-            maxCentScore = 1;
-        end
-        self.TotalMapScore = totalScore / maxCentScore
-        self.TotalValidTiles = totalValidTiles
-    else 
-        self.TotalMapScore = 100;
-        self.TotalValidTiles = 0
-    end
-
-end
-
-
--- Order the regions based on bias score and number of valid spawn tiles
-function CivilizationAssignSpawn:CalculateOrderCentroidsScore(BBS_HexMap)
-    self.CentroidsScore = {};
-     -- Mean score for each hex in centroid cluster by bias
-    for i, centroid in pairs(BBS_HexMap.centroidsArray) do
-        local centScore = centroid:ComputeBiasScoreCiv(self);
-        local meanPeninsulaScore = 0;
-        local validTiles = BBS_HexMap:GetValidSpawnsInList(self, centroid.HexCluster);
-        local validBiasTiles = {}
-        if #validTiles > 0 then
-            for _, hex in pairs(validTiles) do
-                if self:IsBiasRespected(hex, BBS_HexMap) then
-                    table.insert(validBiasTiles, hex);
-                    meanPeninsulaScore = meanPeninsulaScore + hex.PeninsuleScore;
-                end
-            end
-            meanPeninsulaScore = meanPeninsulaScore / #validBiasTiles;
-        end
-        table.insert(self.CentroidsScore, { Centroid = centroid, Score = centScore, ValidTiles = validTiles, ValidTilesBias = validBiasTiles, MeanPeninsulaScore = meanPeninsulaScore, TundraScoring = centroid.TundraScore });
-    end
-     -- Go through each centroid, from highest to lower centroid score for the civ
-    table.sort(self.CentroidsScore, 
-    function(a, b) 
-        if a.Score == 0 and b.Score == 0 then
-            return #a.ValidTilesBias > #b.ValidTilesBias
-        else
-            return a.Score > b.Score
-        end
-    end)
-
-    -- DEBUG PRINT
-    print("Civilization : "..self.CivilizationLeader)
-    for _, c in pairs(self.CentroidsScore) do
-        print("AssignSpawnByCentroid - Score for centroid "..tostring(c.Centroid.id).." = "..tostring(c.Score).." Valid = "..tostring(#c.ValidTiles).." ValidBias = "..tostring(#c.ValidTilesBias).." TundraScoring = "..tostring(c.TundraScoring).." PeninsulaScore = "..tostring(c.MeanPeninsulaScore));
-    end 
-
-    return self.CentroidsScore;
-end
-
--- Find the best centroid for the civ from data analysis
-function CivilizationAssignSpawn:FindHighestScoreHex()
-    local top3Centroids =  {};
-    local i = 0;
-    local totalSpawnableBias = 0;
-    local useEveryValidTiles = false;
-    -- self.CentroidsScore must be filled by CalculateOrderCentroidsScore method
-    -- Get 3 best regions (already sorted by score or valid tiles)
-    for _, c in pairs(self.CentroidsScore) do
-        if #c.ValidTilesBias > 0 then
-            table.insert(top3Centroids, c)
-            i = i + 1
-            totalSpawnableBias = totalSpawnableBias + #c.ValidTilesBias
-            if i == 5 then
-                break;
-            end
-        end
-    end
-    -- TODO TRY : if not enough valid bias tile but lots of valid spawn : use these
-    if totalSpawnableBias < 3 then
-        print("Not enough vald tiles for bias, use default valid spawns")
-        useEveryValidTiles = true;
-        top3Centroids =  {};
-        i = 0
-        for _, c in pairs(self.CentroidsScore) do
-            if #c.ValidTiles > 0 then
-                table.insert(top3Centroids, c)
-                i = i + 1
-                if i == 5 then
-                    break;
-                end
-            end
-        end
-    end
-    if #top3Centroids == 0 then
-        --  No centroid found => not even a valid tile in the map = impossible to place civ
-        return nil;
-    end
-    -- Compare regions by size of valids tiles and best score tile in region 
-    local validTilesInTop3 = {}
-    for _, c in pairs(top3Centroids) do
-        if useEveryValidTiles then 
-            for _, h in pairs(c.ValidTiles) do
-                table.insert(validTilesInTop3, h);
-            end
-        else
-            for _, h in pairs(c.ValidTilesBias) do
-                table.insert(validTilesInTop3, h);
-            end
-        end    
-    end
-
-    -- Take random tile among the highest scores 
-    local selectedHex = self:GetHighestHexScore(validTilesInTop3)
-
-    return selectedHex;
-end

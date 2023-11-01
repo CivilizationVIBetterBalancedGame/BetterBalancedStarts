@@ -55,7 +55,7 @@ BBS_LEADER_TYPE_SPECTATOR = "LEADER_SPECTATOR"
 
 BBS_AssignStartingPlots = {};
 BBS_HexMap = {};
-GlobalNumberOfRegions = PlayerManager.GetAliveMajorsCount() + PlayerManager.GetAliveMinorsCount();
+
 ------------------------------------------------------------------------------
 function ___Debug(...)
     print(...);
@@ -180,6 +180,8 @@ function BBS_AssignStartingPlots.Create(args)
     elseif total_players < number_player_settings then
         bbs_min_distance = bbs_min_distance + 2;
     end
+
+    GlobalNumberOfRegions = total_players + PlayerManager.GetAliveMinorsCount();
 
     -- Set game properties
     Game:SetProperty("BBS_MAJOR_DISTANCE", bbs_min_distance)
