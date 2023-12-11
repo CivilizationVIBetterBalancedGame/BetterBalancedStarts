@@ -257,6 +257,20 @@ function Hex:UpdateYields()
     self.Science = plot:GetYield(g_YIELD_SCIENCE);
     self.Culture = plot:GetYield(g_YIELD_CULTURE);
     self.Faith = plot:GetYield(g_YIELD_FAITH);
+    -- Strategics not taken into account for yield when spawning
+    if self.ResourceType == g_RESOURCE_HORSES or self.ResourceType == g_RESOURCE_NITER then
+        self.Food = self.Food - 1;
+        self.Prod = self.Prod - 1;
+    elseif self.ResourceType == g_RESOURCE_COAL or self.ResourceType == g_RESOURCE_URANIUM then
+        self.Prod = self.Prod - 2;
+    elseif self.ResourceType == g_RESOURCE_OIL then
+        self.Prod = self.Prod - 3;
+    elseif self.ResourceType == g_RESOURCE_IRON or self.ResourceType == g_RESOURCE_ALUMINUM then
+        self.Science = self.Science - 1;
+    end
+    if self.ResourceType == g_RESOURCE_HORSES then
+        print(self:PrintXY().." horses so F = "..tostring(self.Food).." and P = "..tostring(self.Prod))
+    end
     self.Is22 = self.Food == 2 and self.Prod == 2
     self.Is31 = self.Food == 3 and self.Prod == 1
 end
@@ -649,7 +663,6 @@ function HexMap.new(_width, _height, mapScript)
     instance.mapWonders = {};
     instance.map22 = {}
     instance.centroidsArray = {};
-    instance.PeninsuleScoreOK = {}
     instance.mapResourcesLux = instance:GetMapResourcesLux();
     instance.mapResourcesBonus = instance:GetMapResourcesBonus();
     instance.mapResourcesStrategics = instance:GetMapResourcesStrategics();
@@ -659,6 +672,7 @@ function HexMap.new(_width, _height, mapScript)
     instance.mapResourcesMines = instance:GetMapResourcesMines();
     instance.mapResourcesQuarries = instance:GetMapResourcesQuarries();
     instance.mapResourcesFishings = instance:GetMapResourcesFishings();
+    instance.PeninsulaScoreThreshold = 35;
     instance:FillHexMapDatas();
     instance:StoreHexRings();
     instance:ComputeScoreHex();
@@ -704,9 +718,9 @@ function HexMap:FillHexMapDatas()
             if newHex.IsCoastal then
                 table.insert(self.mapCostal, newHex);
             end
-            self:InsertMapResources(newHex.x, newHex.y);
-            self:InsertMapFeatures(newHex.x, newHex.y);
-            self:InsertMapTerrains(newHex.x, newHex.y);
+            self:InsertMapResources(newHex);
+            self:InsertMapFeatures(newHex);
+            self:InsertMapTerrains(newHex);
             if newHex.IdContinent ~= nil then
                 self.mapContinents[newHex.IdContinent] = self.mapContinents[newHex.IdContinent] or {}
                 table.insert(self.mapContinents[newHex.IdContinent], newHex);
@@ -747,6 +761,28 @@ function HexMap:StoreHexRings()
     end
 end
 
+function HexMap:CanHaveJungle(hex) 
+    -- Rainforest on Earth mostly in Tropics, so keep in narrow band around Equator
+    local equator = math.ceil(self.height / 2);
+    local jungleBottom = equator - (20 * self.height / 180);
+    local jungleTop = equator + (20 * self.height / 180);
+    if (self.mapScript == MAP_TILTED_AXIS) then
+        local centerX = math.ceil(self.height / 2);
+        local centerY = math.ceil(self.width / 2);
+        local distanceToCenter = Map.GetPlotDistance(hex:GetX(), hex:GetY(), centerX, centerY);
+        jungleBottom = equator - (20 * self.height / 180);
+        jungleTop = equator + (20 * self.height / 180);
+        if(distanceToCenter >= jungleBottom and distanceToCenter <= jungleTop) then
+            return true;
+        else
+            return false;
+        end
+    end
+    if(hex:GetY() >= jungleBottom  and hex:GetY() <= jungleTop) then 
+        return true;
+    end
+    return false;
+end
 -- For each tile, store the score density for each ressource/feature/terrain - use for civ biases
 -- TODO : how to calculate a score 
 function HexMap:ComputeScoreHex()
@@ -809,9 +845,8 @@ end
 
 -- Calculate number of reachable tiles in ring 6 to avoid peninsula spawns
 function HexMap:ComputePeninsulaScore(hex)
-    hex.PeninsuleScore = 0
+    hex.PeninsulaScore = 0
     if hex:IsImpassable() == false and self:IsHexNextTo4ImpassableTiles(hex) == false and hex:IsSnowLand() == false then
-        local threshold = #hex.AllRing6 * 0.33
         local visitedRing = {}
         local visitedHex = {}
         local totalVisited = 0
@@ -829,12 +864,8 @@ function HexMap:ComputePeninsulaScore(hex)
                     end
                 end 
             end 
-        end
-        --print("ComputePeninsuleNonSpawnable - Number of visitable tiles in 6 rings for ("..tostring(hex.x)..", "..tostring(hex.y)..") is "..tostring(totalVisited).." sur "..tostring(#hex.AllRing6))               
-        hex.PeninsuleScore = math.floor((totalVisited / #hex.AllRing6) * 100 )
-        if totalVisited > threshold then
-            table.insert(self.PeninsuleScoreOK, hex)
-        end
+        end            
+        hex.PeninsulaScore = math.floor((totalVisited / #hex.AllRing6) * 100 )
     end
 end
 
@@ -858,9 +889,9 @@ function HexMap:ComputeResourcesScore(hex)
         hex.ResourcesScore[hex.ResourceType] = hexScore
     end
 
-    for ress, _ in pairs(hex.ResourcesScore) do
-        hex.ResourcesScore[ress] = hex.ResourcesScore[ress] / #hex.AllRing6  * 100;
-    end
+    --for ress, _ in pairs(hex.ResourcesScore) do
+    --    hex.ResourcesScore[ress] = hex.ResourcesScore[ress] / #hex.AllRing6  * 100;
+    --end
 
 end
 
@@ -883,9 +914,9 @@ function HexMap:ComputeFeaturesScore(hex)
         hex.FeaturesScore[hex.FeatureType] = hexScore
     end
 
-    for feat, _ in pairs(hex.FeaturesScore) do
-        hex.FeaturesScore[feat] = hex.FeaturesScore[feat] / #hex.AllRing6  * 100;
-    end
+    --for feat, _ in pairs(hex.FeaturesScore) do
+    --   hex.FeaturesScore[feat] = hex.FeaturesScore[feat] / #hex.AllRing6  * 100;
+    --end
 
 end
 
@@ -920,9 +951,9 @@ function HexMap:ComputeTerrainsScore(hex)
         hex.TerrainsScore[hex.TerrainType] = hexScore
     end
 
-    for terr, _ in pairs(hex.TerrainsScore) do
-        hex.TerrainsScore[terr] = hex.TerrainsScore[terr] / #hex.AllRing6 * 100;
-    end
+   -- for terr, _ in pairs(hex.TerrainsScore) do
+    --    hex.TerrainsScore[terr] = hex.TerrainsScore[terr] / #hex.AllRing6 * 100;
+    --end
 
     -- see if how to calculate for more precision in score (by ring distance etc)
     local flatTundraScore =  hex.TerrainsScore[g_TERRAIN_TYPE_TUNDRA] or 0;
@@ -980,6 +1011,7 @@ function HexMap:ComputeMajorSpawnableTiles(hex)
     local isCloseToMapBorderX = self.canCircumnavigate == false and (self.width - hex.x <= 3 or hex.x <= 3);
     local isCloseToMapBorderY = self.height - hex.y <= 3 or hex.y <= 3;
     local isTooCloseToNaturalWonder = false
+    local isCloseToTooManyFlood = self:IsHexNextTo5FloodTiles(hex);
     for i, r in pairs(hex.AllRing6Map) do
         for _, h in pairs(r) do
             -- Limit to 5 tiles like now
@@ -989,12 +1021,13 @@ function HexMap:ComputeMajorSpawnableTiles(hex)
             end
         end
     end
-    local isNotInPeninsula = hex.PeninsuleScore >= 33
+    local isNotInPeninsula = hex.PeninsulaScore >= self.PeninsulaScoreThreshold
     hex.IsMajorSpawnable = hex:IsWater() == false 
         and hex:IsSnowLand() == false 
         and isCloseToMapBorderX == false 
         and isCloseToMapBorderY == false 
         and isNotInPeninsula == true
+        and isCloseToTooManyFlood == false
         and isTooCloseToNaturalWonder == false;
 end
 
@@ -1055,6 +1088,20 @@ function HexMap:IsHexNextTo4ImpassableTiles(hex)
     return false;
 end
 
+-- Avoid spawns on too many floodplains ring 1 and coastal on spawning
+function HexMap:IsHexNextTo5FloodTiles(hex)
+    local ring1 = hex.AllRing6Map[1];
+    local floodplainsR1 = 0
+    for _, r1 in pairs(ring1) do
+        if r1:IsFloodplains() or r1:IsWater() then
+            floodplainsR1 = floodplainsR1 + 1
+        end
+        if floodplainsR1 > 4 then
+            return true;
+        end
+    end
+    return false;
+end
 
 function HexMap:UpdateYieldMap()
     -- Temp - 2f 2p tiles are mapped 
@@ -1070,8 +1117,7 @@ function HexMap:UpdateYieldMap()
     end
 end
 
-function HexMap:InsertMapResources(x, y)   
-    local hex = self:GetHexInMap(x, y)
+function HexMap:InsertMapResources(hex)   
     if hex ~= nil and hex.ResourceType ~= g_RESOURCE_NONE then
         self.mapResources[hex.ResourceType] = self.mapResources[hex.ResourceType] or {}
         table.insert(self.mapResources[hex.ResourceType], hex);
@@ -1099,8 +1145,7 @@ end
 
 -- Remove from the map the hex with current resource 
 -- Amber can be mine ressource (on land) and fishing (on water) - have to deal with that during mapping
-function HexMap:RemoveMapResources(x, y)
-    local hex = self:GetHexInMap(x, y)
+function HexMap:RemoveMapResources(hex)
     if hex ~= nil and hex.ResourceType ~= g_RESOURCE_NONE then
         -- Remove previous resource from map
         for i , h in ipairs(self.mapResources[hex.ResourceType]) do
@@ -1133,16 +1178,14 @@ function HexMap:RemoveMapResources(x, y)
 end
 
 
-function HexMap:InsertMapFeatures(x, y)   
-    local hex = self:GetHexInMap(x, y)
+function HexMap:InsertMapFeatures(hex)   
     if hex ~= nil and hex.FeatureType ~= g_FEATURE_NONE then
         self.mapFeatures[hex.FeatureType] = self.mapFeatures[hex.FeatureType] or {};
         table.insert(self.mapFeatures[hex.FeatureType], hex)
     end
 end
 
-function HexMap:RemoveMapFeatures(x, y)   
-    local hex = self:GetHexInMap(x, y)
+function HexMap:RemoveMapFeatures(hex)   
     if hex ~= nil and hex.FeatureType ~= g_FEATURE_NONE then
         for i , h in ipairs(self.mapFeatures[hex.FeatureType]) do
             if h == hex then
@@ -1153,15 +1196,14 @@ function HexMap:RemoveMapFeatures(x, y)
     end
 end
 
-function HexMap:InsertMapTerrains(x, y)   
-    local hex = self:GetHexInMap(x, y)
+function HexMap:InsertMapTerrains(hex)   
     if hex ~= nil and hex.TerrainType ~= g_TERRAIN_TYPE_NONE then
         self.mapTerrains[hex.TerrainType] = self.mapTerrains[hex.TerrainType] or {};
         table.insert(self.mapTerrains[hex.TerrainType], hex)
     end
 end
 
-function HexMap:RemoveMapTerrains(x, y)   
+function HexMap:RemoveMapTerrains(hex)   
     for i , h in ipairs(self.mapTerrains[hex.TerrainType]) do
         if h == hex then
             table.remove(self.mapTerrains[hex.TerrainType], i)
@@ -1416,14 +1458,12 @@ end
 -- Should never be none
 ---------------------------------------
 function HexMap:TerraformSetTerrain(hex, terrainId) 
-    local plot = Map.GetPlot(hex.x, hex.y);
-    if plot ~= nil and hex.TerrainType ~= g_TERRAIN_TYPE_NONE then
-        print("TerraformSetTerrain "..tostring(terrainId))
-        self:RemoveMapTerrains(hex.x, hex.y);
-        TerrainBuilder.SetTerrainType(plot, terrainId);
+    if hex ~= nil and hex.TerrainType ~= g_TERRAIN_TYPE_NONE then
+        self:RemoveMapTerrains(hex);
+        TerrainBuilder.SetTerrainType(hex.Plot, terrainId);
         hex.TerrainType = terrainId
         hex:UpdateYields();
-        self:InsertMapTerrains(hex.x, hex.y);
+        self:InsertMapTerrains(hex);
     end
 end
 
@@ -1431,15 +1471,25 @@ end
 -- Resources
 ---------------------------------------
 function HexMap:TerraformSetResource(hex, resourceId) 
-    local plot = Map.GetPlot(hex.x, hex.y);
-    if plot ~= nil and ResourceBuilder.CanHaveResource(plot, resourceId) then
-        self:RemoveMapResources(hex.x, hex.y);
-        ResourceBuilder.SetResourceType(plot, resourceId, 1);
-        hex.ResourceType = resourceId;
-        hex.HexResource = HexResource.new(self.ResourceType);
-        hex:UpdateYields()
-        self:InsertMapResources(hex.x, hex.y);
-        return true;
+    --and ResourceBuilder.CanHaveResource(hex.Plot, resourceId)
+    if hex.Plot ~= nil  then
+        if resourceId == g_RESOURCE_NONE then
+            ResourceBuilder.SetResourceType(hex.Plot, g_RESOURCE_NONE);
+            hex.ResourceType = resourceId;
+            hex.HexResource = HexResource.new(self.ResourceType);
+            hex:UpdateYields()
+            return true;
+        end
+        if ResourceBuilder.CanHaveResource(hex.Plot, resourceId) then
+            self:RemoveMapResources(hex);
+            ResourceBuilder.SetResourceType(hex.Plot, g_RESOURCE_NONE);
+            ResourceBuilder.SetResourceType(hex.Plot, resourceId, 1);
+            hex.ResourceType = resourceId;
+            hex.HexResource = HexResource.new(self.ResourceType);
+            self:InsertMapResources(hex);
+            hex:UpdateYields()
+            return true;
+        end
     end
     return false;
 end
@@ -1448,15 +1498,13 @@ end
 -- Features
 ---------------------------------------
 function HexMap:TerraformSetFeature(hex, featureId)
-    local plot = Map.GetPlot(hex.x, hex.y);
-    local i = hex.y * self.width + hex.x;
-	local plotindex = Map.GetPlotByIndex(i);
-    if plot ~= nil and TerrainBuilder.CanHaveFeature(plotindex, featureId) then
-        self:RemoveMapFeatures(hex.x, hex.y)
-        TerrainBuilder.SetFeatureType(plotindex, featureId);
+    -- and TerrainBuilder.CanHaveFeature(hex.Plot, featureId)
+    if hex.Plot ~= nil and TerrainBuilder.CanHaveFeature(hex.Plot, featureId) then
+        self:RemoveMapFeatures(hex)
+        TerrainBuilder.SetFeatureType(hex.Plot, featureId);
         hex.FeatureType = featureId;
         hex:UpdateYields()
-        self:InsertMapFeatures(hex.x, hex.y);
+        self:InsertMapFeatures(hex);
         return true;
     end 
     return false;
@@ -1466,43 +1514,178 @@ end
 -- Hills
 -- Info : not currently mapped, see if needed
 ---------------------------------------
-function Hex:TerraformToHill(cleanTile)
+function HexMap:TerraformToHill(hex, cleanTile)
     if (cleanTile) then
         self:TerraformSetFeature(g_FEATURE_NONE);
         self:TerraformSetResource(g_RESOURCE_NONE);
     end
-    if self.TerrainType == g_TERRAIN_TYPE_GRASS then
+    if hex.TerrainType == g_TERRAIN_TYPE_GRASS then
         self:TerraformSetTerrain(g_TERRAIN_TYPE_GRASS_HILLS)
-    elseif self.TerrainType == g_TERRAIN_TYPE_PLAINS then
+    elseif hex.TerrainType == g_TERRAIN_TYPE_PLAINS then
         self:TerraformSetTerrain(g_TERRAIN_TYPE_PLAINS_HILLS)
-    elseif self.TerrainType == g_TERRAIN_TYPE_DESERT then
+    elseif hex.TerrainType == g_TERRAIN_TYPE_DESERT then
         self:TerraformSetTerrain(g_TERRAIN_TYPE_DESERT_HILLS)
-    elseif self.TerrainType == g_TERRAIN_TYPE_TUNDRA then
+    elseif hex.TerrainType == g_TERRAIN_TYPE_TUNDRA then
         self:TerraformSetTerrain(g_TERRAIN_TYPE_TUNDRA_HILLS)
-    elseif self.TerrainType == g_TERRAIN_TYPE_SNOW then
+    elseif hex.TerrainType == g_TERRAIN_TYPE_SNOW then
         self:TerraformSetTerrain(g_TERRAIN_TYPE_SNOW_HILLS)
+    end
+    hex:UpdateYields()
+end
+
+function HexMap:TerraformMountainToHill(hex)
+    self:TerraformSetFeature(hex, g_FEATURE_NONE);
+    if hex.TerrainType == g_TERRAIN_TYPE_GRASS_MOUNTAIN then
+        self:TerraformSetTerrain(hex, g_TERRAIN_TYPE_GRASS_HILLS)
+    elseif hex.TerrainType == g_TERRAIN_TYPE_PLAINS_MOUNTAIN then
+        self:TerraformSetTerrain(hex, g_TERRAIN_TYPE_PLAINS_HILLS)
+    elseif hex.TerrainType == g_TERRAIN_TYPE_DESERT_MOUNTAIN then
+        self:TerraformSetTerrain(hex, g_TERRAIN_TYPE_DESERT_HILLS)
+    elseif hex.TerrainType == g_TERRAIN_TYPE_TUNDRA_MOUNTAIN then
+        self:TerraformSetTerrain(hex, g_TERRAIN_TYPE_TUNDRA_HILLS)
+    elseif hex.TerrainType == g_TERRAIN_TYPE_SNOW_MOUNTAIN then
+        self:TerraformSetTerrain(hex, g_TERRAIN_TYPE_SNOW_HILLS)
+    end
+    hex:UpdateYields()
+end
+
+function HexMap:TerraformDesert(hex) 
+    --50% plain/grass
+    if hex.FeatureType == g_FEATURE_FLOODPLAINS then
+        self:TerraformSetFeature(hex, g_FEATURE_NONE);
+    end
+    local rng = TerrainBuilder.GetRandomNumber(100, "Desert terraform");
+    if rng <= 50 then
+        if hex.TerrainType == g_TERRAIN_TYPE_DESERT then
+            self:TerraformSetTerrain(hex, g_TERRAIN_TYPE_GRASS)
+        elseif hex.TerrainType == g_TERRAIN_TYPE_DESERT_HILLS then
+            self:TerraformSetTerrain(hex, g_TERRAIN_TYPE_GRASS_HILLS)
+        elseif hex.TerrainType == g_TERRAIN_TYPE_DESERT_MOUNTAIN then
+            self:TerraformSetTerrain(hex, g_TERRAIN_TYPE_GRASS_HILLS)
+        end
+    else
+        if hex.TerrainType == g_TERRAIN_TYPE_DESERT then
+            self:TerraformSetTerrain(hex, g_TERRAIN_TYPE_PLAINS)
+        elseif hex.TerrainType == g_TERRAIN_TYPE_DESERT_HILLS then
+            self:TerraformSetTerrain(hex, g_TERRAIN_TYPE_PLAINS_HILLS)
+        elseif hex.TerrainType == g_TERRAIN_TYPE_DESERT_MOUNTAIN then
+            self:TerraformSetTerrain(hex, g_TERRAIN_TYPE_PLAINS_HILLS)
+        end
+    end
+    
+end
+
+-- TODO Add rng
+-- Possible 2/2 tiles without lux : 
+-- Grass+Hill+Forest, Plain+Junle+Hills, Stone+Hills, Deer+Forest, Grass+Sheeps 
+-- Extra yield (gold faith culture science) not taken in account here
+function HexMap:TerraformTo4Yields(hex)
+    -- Low yield strategics and lux are not changed here, floodplains untouched because placement is making sure we are not around 5 or 6 flood in ring 1
+    if hex.Food + hex.Prod >= 4  
+        or g_RESOURCES_STRATEGICS[hex.ResourceType] 
+        or g_RESOURCES_LUX_LIST[hex.ResourceType] 
+        or hex:IsWater()
+        or hex:IsFloodplains() 
+        or hex.FeatureType == g_FEATURE_GEOTHERMAL_FISSURE then
+            print("TerraformTo4Yields - Can't upgrade naturally (excluded) - Terrain : "..tostring(hex.TerrainType).." Resource :"..tostring(hex.ResourceType).." - Feature : "..tostring(hex.FeatureType))
+            return false;
+    end
+    -- Low yields upgrades
+    if hex.TerrainType == g_TERRAIN_TYPE_GRASS and hex.FeatureType == g_FEATURE_FOREST then
+        self:TerraformSetTerrain(hex, g_TERRAIN_TYPE_GRASS_HILLS);
+    elseif hex.TerrainType == g_TERRAIN_TYPE_PLAINS and hex.FeatureType == g_FEATURE_JUNGLE and hex.ResourceType == g_RESOURCE_NONE then
+        local rng = TerrainBuilder.GetRandomNumber(100, "Random");
+        if rng <= 50 then
+            print("Add bananas to jungle")
+            self:TerraformSetTerrain(hex, g_TERRAIN_TYPE_PLAINS_HILLS);
+        else
+            self:TerraformSetResource(hex, g_RESOURCE_BANANAS);
+        end
+    elseif hex.TerrainType == g_TERRAIN_TYPE_PLAINS and hex.FeatureType == g_FAETURE_FOREST and hex.ResourceType == g_RESOURCE_NONE then
+        self:TerraformSetTerrain(hex, g_TERRAIN_TYPE_PLAINS_HILLS);
+    elseif hex.ResourceType == g_RESOURCE_STONE then
+        if hex.TerrainType == g_TERRAIN_TYPE_GRASS then
+            self:TerraformSetTerrain(hex, g_TERRAIN_TYPE_GRASS_HILLS);
+        end
+    elseif hex.ResourceType == g_RESOURCE_NONE and hex.FeatureType == g_FEATURE_NONE 
+        and hex:IsTundraLand() == false and hex:IsDesertLand() == false then
+        local rng = TerrainBuilder.GetRandomNumber(100, "Random");
+        if rng <= 10 then
+            self:TerraformSetTerrain(hex, g_TERRAIN_TYPE_GRASS);
+            self:TerraformSetFeature(hex, g_FEATURE_FOREST);
+            self:TerraformSetResource(hex, g_RESOURCE_DEER);
+            print("TerraformTo4Yields "..hex:PrintXY().." to 2/2 Deer");--sus
+        elseif rng <= 30 then
+            self:TerraformSetTerrain(hex, g_TERRAIN_TYPE_PLAINS_HILLS);
+            self:TerraformSetResource(hex, g_RESOURCE_SHEEP);
+            print("TerraformTo4Yields "..hex:PrintXY().." to 2/2 Sheep");
+        elseif rng <= 50 then
+            self:TerraformSetTerrain(hex, g_TERRAIN_TYPE_GRASS_HILLS);
+            self:TerraformSetResource(hex, g_RESOURCE_STONE);
+            print("TerraformTo4Yields "..hex:PrintXY().." to 2/2 Stone");
+        else
+            self:TerraformTo4YieldsNoResource(hex);
+        end
+    -- Some bonus resources that cant be changed naturally
+    else
+        print("TerraformTo4Yields - Can't upgrade naturally - Terrain : "..tostring(hex.TerrainType).." Resource :"..tostring(hex.ResourceType).." - Feature : "..tostring(hex.FeatureType))
+        return false;
+    end
+    hex:UpdateYields()
+    return true;
+end
+
+function HexMap:TerraformTo4YieldsNoResource(hex)
+    if hex.TerrainType == g_TERRAIN_TYPE_GRASS then
+        self:TerraformSetTerrain(hex, g_TERRAIN_TYPE_GRASS_HILLS);
+        self:TerraformSetFeature(hex, g_FEATURE_FOREST);
+        print("TerraformTo4Yields "..hex:PrintXY().." to 2/2 Grass Hill Forest");
+    elseif hex.TerrainType == g_TERRAIN_TYPE_GRASS_HILLS then
+        self:TerraformSetFeature(hex, g_FEATURE_FOREST);
+        print("TerraformTo4Yields "..hex:PrintXY().." to 2/2 Grass Hill Forest");
+    elseif hex.TerrainType == g_TERRAIN_TYPE_PLAINS then
+        if self:CanHaveJungle(hex) then
+            self:TerraformSetTerrain(hex, g_TERRAIN_TYPE_PLAINS_HILLS);
+            self:TerraformSetFeature(hex, g_FEATURE_JUNGLE);
+            print("TerraformTo4Yields "..hex:PrintXY().." to 2/2 Plain Hill Jungle");
+        else
+            self:TerraformSetTerrain(hex, g_TERRAIN_TYPE_GRASS_HILLS);
+            self:TerraformSetFeature(hex, g_FEATURE_FOREST);
+            print("TerraformTo4Yields "..hex:PrintXY().." to 2/2 Grass Hill Forest");
+        end
+    elseif hex.TerrainType == g_TERRAIN_TYPE_PLAINS_HILLS then
+        if self:CanHaveJungle(hex) then
+            self:TerraformSetFeature(hex, g_FEATURE_JUNGLE);
+            print("TerraformTo4Yields "..hex:PrintXY().." to 2/2 Plain Hill Jungle");
+        else
+            self:TerraformSetTerrain(hex, g_TERRAIN_TYPE_GRASS_HILLS);
+            self:TerraformSetFeature(hex, g_FEATURE_FOREST);
+            print("TerraformTo4Yields "..hex:PrintXY().." to 2/2 Grass Hill Forest");
+        end
+    end
+    hex:UpdateYields()
+end
+
+function HexMap:TerraformToFlat(hex, cleanTile)
+    if (cleanTile) then
+        self:TerraformSetFeature(hex, g_FEATURE_NONE);
+        self:TerraformSetResource(hex, g_RESOURCE_NONE);
+    end
+    if hex.TerrainType == g_TERRAIN_TYPE_GRASS_HILLS then
+        self:TerraformSetTerrain(hex, g_TERRAIN_TYPE_GRASS)
+    elseif hex.TerrainType == g_TERRAIN_TYPE_PLAINS_HILLS then
+        self:TerraformSetTerrain(hex, g_TERRAIN_TYPE_PLAINS)
+    elseif hex.TerrainType == g_TERRAIN_TYPE_DESERT_HILLS then
+        self:TerraformSetTerrain(hex, g_TERRAIN_TYPE_DESERT)
+    elseif hex.TerrainType == g_TERRAIN_TYPE_TUNDRA_HILLS then
+        self:TerraformSetTerrain(hex, g_TERRAIN_TYPE_TUNDRA)
+    elseif hex.TerrainType == g_TERRAIN_TYPE_SNOW_HILLS then
+        self:TerraformSetTerrain(hex, g_TERRAIN_TYPE_SNOW)
     end
     self:UpdateYields()
 end
 
-function Hex:TerraformToFlat(cleanTile)
-    if (cleanTile) then
-        self:TerraformSetFeature(g_FEATURE_NONE);
-        self:TerraformSetResource(g_RESOURCE_NONE);
-    end
-    if self.TerrainType == g_TERRAIN_TYPE_GRASS_HILLS then
-        self:TerraformSetTerrain(g_TERRAIN_TYPE_GRASS)
-    elseif self.TerrainType == g_TERRAIN_TYPE_PLAINS_HILLS then
-        self:TerraformSetTerrain(g_TERRAIN_TYPE_PLAINS)
-    elseif self.TerrainType == g_TERRAIN_TYPE_DESERT_HILLS then
-        self:TerraformSetTerrain(g_TERRAIN_TYPE_DESERT)
-    elseif self.TerrainType == g_TERRAIN_TYPE_TUNDRA_HILLS then
-        self:TerraformSetTerrain(g_TERRAIN_TYPE_TUNDRA)
-    elseif self.TerrainType == g_TERRAIN_TYPE_SNOW_HILLS then
-        self:TerraformSetTerrain(g_TERRAIN_TYPE_SNOW)
-    end
-    self:UpdateYields()
-end
+
 
 function HexMap:RemoveVolcano(hex)
     if (hex:IsMountain() == true and hex.FeatureType == g_FEATURE_VOLCANO) then
@@ -1620,13 +1803,13 @@ function HexMap:PrintHexPeninsuleMap()
                 logX = logX.."~~".." ";
             else
                 local printScore = ""
-                local score = hex.PeninsuleScore
+                local score = hex.PeninsulaScore
                 if score == 0 then
                     score = "00"
                 elseif score == 100 then
                     score = "99"
                 else
-                    score = tostring(hex.PeninsuleScore)
+                    score = tostring(hex.PeninsulaScore)
                 end
                 logX = logX..score.." ";
             end
@@ -1899,3 +2082,207 @@ function even(test)
     end
 end
 
+function printAllStartYields(hexMap) 
+    print("PrintAllStartYields")
+    local meanFoodR1 = 0;
+    local meanProdR1 = 0;
+    for _,start in pairs(hexMap.majorSpawns) do
+        print("Start "..start:PrintXY())
+        local foodR1 = 0;
+        local prodR1 = 0;
+        local countR1 = 0;
+        local ring1 = hexMap:GetHexInRing(start, 1)
+        for _, h in pairs(ring1) do
+            foodR1 = foodR1 + h.Food;
+            prodR1 = prodR1 + h.Prod;
+        end
+        print("Start "..start:PrintXY().." Food = "..tostring(foodR1).." and Prod = "..tostring(prodR1))
+        meanFoodR1 = meanFoodR1 + foodR1;
+        meanProdR1 = meanProdR1 + prodR1;
+    end
+    meanFoodR1 = meanFoodR1 / #hexMap.majorSpawns;
+    meanProdR1 = meanProdR1 / #hexMap.majorSpawns;
+    print("meanFoodR1 = "..tostring(meanFoodR1));
+    print("meanProdR1 = "..tostring(meanProdR1));
+end
+
+function BalanceSpawns(hexMap, civ)
+    local balancing = SpawnBalancing.new(civ.StartingHex, hexMap, civ);
+    balancing:RemoveRing1MountainsOnRiver();
+    balancing:RemoveRing1Deserts();
+    balancing:ApplyMinimalTiles();
+end
+
+---------------------------------------
+-- SpawnBalancing
+---------------------------------------
+SpawnBalancing = {}
+
+local EMPTY_TILES = "EMPTY_TILES"; 
+local LOW_YIELD_TILES = "LOW_YIELD_TILES"; 
+local STANDARD_YIELD_TILES = "STANDARD_YIELD_TILES"; 
+local HIGH_YIELD_TILES = "HIGH_YIELD_TILES";
+
+function SpawnBalancing.new(hex, hexMap, civ)
+    local instance = {};
+    setmetatable(instance, {__index = SpawnBalancing});
+    instance.Hex = hex;
+    instance.HexMap = hexMap;
+    instance.Civ = civ
+    instance.RingTables = {};
+    instance.MaxRing = 3;
+    instance:FillTablesRings();
+    print("Init SpawnBalancing")
+    return instance;
+end
+
+function SpawnBalancing:FillTablesRings() 
+    print("SpawnBalancing FillTablesRings")
+    for i = 1, self.MaxRing do
+        local impassable = {};
+        local emptyTiles = {};
+        local lowYields = {};
+        local standardYields = {};
+        local highYields = {};
+        local hexInRing = self.HexMap:GetHexInRing(self.Hex, i);
+        self.RingTables[i] = {};
+        for _, h in pairs(hexInRing) do
+            if h:IsImpassable() then
+                table.insert(impassable, h);
+            elseif h.ResourceType == g_RESOURCE_NONE and h.FeatureType == g_FEATURE_NONE and h:IsHill() == false then
+                table.insert(emptyTiles, h);
+            elseif h.Food < 2 or h.Prod < 2 then
+                table.insert(lowYields, h);
+            elseif h.Food + h.Prod == 4 and h.Prod > 0 then
+                table.insert(standardYields, h);
+            elseif h.Food + h.Prod > 4 or h.Food == 0 then
+                table.insert(highYields, h);
+            end
+        end
+        self.RingTables[i].HexRings = hexInRing; -- list of tiles in the ring index
+        self.RingTables[i].IMPASSABLE = impassable; --mountain or water
+        self.RingTables[i].EMPTY_TILES = emptyTiles; --flat grasslands or plains
+        self.RingTables[i].LOW_YIELD_TILES = lowYields; --yields < 2 food or < 2 prod
+        self.RingTables[i].STANDARD_YIELD_TILES = standardYields; -- 4 yields tiles
+        self.RingTables[i].HIGH_YIELD_TILES = highYields; --food+prod > 4
+        self.RingTables[i].RELOCATING_TILES = {};
+        print(self.Hex:PrintXY().." - EMPTY_TILES "..tostring(i).. " = "..tostring(#self.RingTables[i].EMPTY_TILES))
+        print(self.Hex:PrintXY().." - LOW_YIELD_TILES "..tostring(i).. " = "..tostring(#self.RingTables[i].LOW_YIELD_TILES))
+        print(self.Hex:PrintXY().." - STANDARD_YIELD_TILES "..tostring(i).. " = "..tostring(#self.RingTables[i].STANDARD_YIELD_TILES))
+        print(self.Hex:PrintXY().." - HIGH_YIELD_TILES "..tostring(i).. " = "..tostring(#self.RingTables[i].HIGH_YIELD_TILES))
+    end
+end
+
+
+
+function SpawnBalancing:RemoveRing1MountainsOnRiver()
+    for _, h in pairs(self.RingTables[1].HexRings) do
+        if (h.IsOnRiver or h.IsCoastal) and h:IsMountain() then
+            self.HexMap:TerraformMountainToHill(h);
+        end
+    end
+end
+
+function SpawnBalancing:RemoveRing1Deserts()
+    if self.Civ.IsDesertBias == false then
+        print("RemoveRing1Deserts")
+        self.HexMap:TerraformDesert(self.Hex);
+        for _, h in pairs(self.RingTables[1].HexRings) do
+            self.HexMap:TerraformDesert(h);
+        end
+    end
+end
+
+function SpawnBalancing:ApplyMinimalTiles() 
+    -- At least 2 4yields tiles workables ring1
+    for i, _ in pairs(self.RingTables) do
+        if i == self.MaxRing + 1 then 
+            return
+        end
+        print("ApplyMinimalTiles Ring "..tostring(i));
+        -- Apply relocated resources from previous ring
+        if #self.RingTables[i].RELOCATING_TILES > 0 then
+            for _, resId in pairs(self.RingTables[i].RELOCATING_TILES) do
+                print("Relocating "..tostring(resId))
+                if #self.RingTables[i].EMPTY_TILES > 0 then
+                    local randomEmptyYields = GetShuffledCopyOfTable(self.RingTables[i].EMPTY_TILES);
+                    for _, hex in pairs(randomEmptyYields) do
+                        if self.HexMap:TerraformSetResource(hex, resId) then 
+                            print("Relocated "..tostring(resId).." on "..hex:PrintXY())
+                            break;
+                        end
+                    end
+                end
+                if #self.RingTables[i].LOW_YIELD_TILES > 0 then
+                    local randomLowYields = GetShuffledCopyOfTable(self.RingTables[i].LOW_YIELD_TILES);
+                    for _, hex in pairs(randomLowYields) do
+                        if self.HexMap:TerraformSetResource(hex, resId) then 
+                            print("Relocated "..tostring(resId).." on "..hex:PrintXY())
+                            break;
+                        end
+                    end
+                end
+            end
+        end        
+        local tileToUp = (i + 1) - #self.RingTables[i].STANDARD_YIELD_TILES - #self.RingTables[i].HIGH_YIELD_TILES;
+        print("ApplyMinimalTiles - tileToUp = "..tostring(tileToUp))
+        if tileToUp > 0 and #self.RingTables[i].EMPTY_TILES > 0 then
+            local listEmptyR1 = self.RingTables[i].EMPTY_TILES;
+            if #listEmptyR1 > 1 then
+                listEmptyR1 = GetShuffledCopyOfTable(listEmptyR1);
+            end
+            for _, hex in pairs(listEmptyR1) do
+                if tileToUp > 0 then
+                    print("Terraform empty tile : "..hex:PrintXY().." to 2/2");
+                    local terraformed = self.HexMap:TerraformTo4Yields(hex);
+                    if terraformed then
+                        hex:UpdateYields();
+                        --self:FillTablesR1();
+                        tileToUp = tileToUp - 1;
+                    else
+                        print(hex:PrintXY().." not terraformed")
+                    end
+                   
+                end
+            end
+        end
+        print("Left to up after upgrading empty tiles : "..tostring(tileToUp))
+        if tileToUp > 0 and #self.RingTables[i].LOW_YIELD_TILES > 0 then
+            local listLowYieldsTiles = self.RingTables[i].LOW_YIELD_TILES;
+            if #listLowYieldsTiles > 1 then
+                listLowYieldsTiles = GetShuffledCopyOfTable(listLowYieldsTiles);
+            end
+            for _, hex in pairs(listLowYieldsTiles) do
+                if tileToUp > 0 then
+                    print("Terraform Low yield  : "..hex:PrintXY().." to 2/2");
+                    local terraformed = self.HexMap:TerraformTo4Yields(hex);
+                    if terraformed then 
+                        hex:UpdateYields();
+                        tileToUp = tileToUp - 1;
+                    end
+                end
+            end
+            print("Left to up after upgrading low yield tiles : "..tostring(tileToUp))
+            if tileToUp > 0 and i < self.MaxRing then
+                listLowYieldsTiles = GetShuffledCopyOfTable(listLowYieldsTiles);
+                for _, hex in pairs(listLowYieldsTiles) do
+                    if tileToUp == 0 then 
+                        print("tileToUp = 0 after relocating");
+                        break 
+                    end
+                    if hex:IsFloodplains() == false then
+                        local nextIndex = i + 1
+                        table.insert(self.RingTables[nextIndex].RELOCATING_TILES, hex.ResourceType);
+                        self.HexMap:TerraformSetResource(hex, g_RESOURCE_NONE);
+                        local terraformed = self.HexMap:TerraformTo4Yields(hex);
+                        if terraformed then 
+                            hex:UpdateYields();
+                            tileToUp = tileToUp - 1;
+                        end
+                    end
+                end
+            end
+            print("Left to up after relocating resources : "..tostring(tileToUp))
+        end
+    end
+end

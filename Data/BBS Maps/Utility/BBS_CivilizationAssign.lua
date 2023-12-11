@@ -313,7 +313,7 @@ function CivilizationAssignSpawn:CalculateOrderCentroidsScore(BBS_HexMap)
             for _, hex in pairs(validTiles) do
                 if self:IsBiasRespected(hex, BBS_HexMap) then
                     table.insert(validBiasTiles, hex);
-                    meanPeninsulaScore = meanPeninsulaScore + hex.PeninsuleScore;
+                    meanPeninsulaScore = meanPeninsulaScore + hex.PeninsulaScore;
                 end
             end
             meanPeninsulaScore = meanPeninsulaScore / #validBiasTiles;
@@ -405,21 +405,21 @@ function CivilizationAssignSpawn:FindHighestScoreHex()
         return nil;
     end
     -- Compare regions by size of valids tiles and best score tile in region 
-    local validTilesInTop3 = {}
+    local validTilesInTop5 = {}
     for _, c in pairs(top3Centroids) do
         if useEveryValidTiles then 
             for _, h in pairs(c.ValidTiles) do
-                table.insert(validTilesInTop3, h);
+                table.insert(validTilesInTop5, h);
             end
         else
             for _, h in pairs(c.ValidTilesBias) do
-                table.insert(validTilesInTop3, h);
+                table.insert(validTilesInTop5, h);
             end
         end    
     end
 
     -- Take random tile among the highest scores 
-    local selectedHex = self:GetHighestHexScore(validTilesInTop3)
+    local selectedHex = self:GetHighestHexScore(validTilesInTop5)
 
     return selectedHex;
 end
@@ -462,12 +462,18 @@ function CivilizationAssignSpawn:ComputeHexScoreCiv(hex)
     -- Favor fresh water in almost every case 
     if self.IsNoFreshWaterBias or hex.IsFreshWater or (hex.IsCoastal and self.IsCoastalBias) then
         score = score + 20;
+        
     end
 
     local baseScore = tostring(score);
     local totalBiasScore = 0
+    local totalBiasThreshold = 25;
+    local countBias = 0;
     for _, bias in pairs(self.CivilizationBiases) do
         local thisBiasScore = ComputeHexScoreByBias(hex, bias);
+        if thisBiasScore > 0 then
+            countBias = countBias + 1;
+        end
         totalBiasScore = totalBiasScore + thisBiasScore
         score = score + thisBiasScore;
     end
@@ -476,9 +482,9 @@ function CivilizationAssignSpawn:ComputeHexScoreCiv(hex)
     -- Favor more open land for no bias and coastal civ
     if self.IsNoBias or self.IsCoastalBias or self.IsKingNorthBias or self.IsMountainBias or self.IsMountainLoverBias then
         -- Rounding the score
-        peninsulaScore = math.floor((hex.PeninsuleScore / 10) + 0.5)
+        peninsulaScore = math.floor((hex.PeninsulaScore / 10) + 0.5)
         -- Cap peninsula score avoid every on inland sea for naval civ and favor inland for others
-        if self.IsCoastalBias then
+        if self.IsCoastalBias or self.IsMountainBias or self.IsMountainLoverBias then
             score = score + math.min(5, peninsulaScore)
         else
             score = score + peninsulaScore
@@ -488,11 +494,11 @@ function CivilizationAssignSpawn:ComputeHexScoreCiv(hex)
 
     -- Avoid unwanted tiles (score = percentage of tundraa tile in ring 6, with a little threshold, valid tile threshold is 16 atm)
     -- Desert not calculated because future terraforming
-    local tundraScore = (100 - hex.TundraScore / 2) / 100
+    local tundraScore = math.floor(hex.TundraScore / 10 + 0.5);
     if self.IsTundraBias == false and hex.TundraScore > 5 then
-        score = score * tundraScore;
+        score = score - tundraScore;
     end
-    print(hex:PrintXY().." - Score = "..baseScore.." + "..tostring(totalBiasScore).." + "..tostring(peninsulaScore).." * "..tostring(hex.TundraScore).." = "..tostring(math.floor(score + 0.5)), os.date("%c"))
+    print(hex:PrintXY().." - Score = "..baseScore.." + "..tostring(totalBiasScore).." + "..tostring(peninsulaScore).." - "..tostring(tundraScore).." ("..tostring(hex.TundraScore)..") = "..tostring(math.floor(score + 0.5)), os.date("%c"))
 
     return math.floor(score + 0.5);
 end
@@ -530,17 +536,18 @@ end
 -- Get the hex score for a given bias
 -- Score for each tile are from the HexMap:Compute***Scores -- TODO : takes into account the tile surroundings in ring 6 for now
 -- Weighted by bias tier TODO : determine the weight for each tier
--- TODO : do the custom bias calculations
 function ComputeHexScoreByBias(hex, bias)
     local biasScore = 0;
-    -- Bias threshold, 
-    local scoreThreshold = 50;
+    -- TODO : Bias threshold and factor : highter tier = higher threshold ?
+    local scoreThreshold = 25; -- to determine
     if bias.Value == g_TERRAIN_TYPE_COAST and hex.IsCoastal then
         -- Not taking into account the number of coastal tiles in the centroid for now 
         return biasScore;
     elseif (bias.Type == "TERRAINS" and bias.Value ~= g_TERRAIN_TYPE_COAST) then
         if hex.TerrainsScore[bias.Value] ~= nil  then
-            biasScore = hex.TerrainsScore[bias.Value] * GetBiasFactor(bias)
+            -- Terrains are more common (hills, plains etc) so factoring less 
+            biasScore = math.ceil((hex.TerrainsScore[bias.Value] * GetBiasFactor(bias) / 3) + 0.5);
+            scoreThreshold = 20; -- to determine
         end
     elseif (bias.Type == "FEATURES") then
         if hex.FeaturesScore[bias.Value] ~= nil  then
@@ -557,22 +564,25 @@ function ComputeHexScoreByBias(hex, bias)
     -- Negative Biases are optionnal and act as repellents 	
     elseif (bias.Type == "NEGATIVE_TERRAINS") then
         if hex.TerrainsScore[bias.Value] ~= nil  then
-            biasScore = - hex.TerrainsScore[bias.Value] * GetBiasFactor(bias)
+            biasScore = - math.ceil((hex.TerrainsScore[bias.Value] * GetBiasFactor(bias) / 3) + 0.5);
+            scoreThreshold = -20;
         end
     elseif (bias.Type == "NEGATIVE_FEATURES") then
         if hex.FeaturesScore[bias.Value] ~= nil  then
             biasScore = - hex.FeaturesScore[bias.Value] * GetBiasFactor(bias)
+            scoreThreshold = -25;
         end
     elseif (bias.Type == "NEGATIVE_RESOURCES") then
         if hex.ResourcesScore[bias.Value] ~= nil  then
             biasScore = - hex.ResourcesScore[bias.Value] * GetBiasFactor(bias)
+            scoreThreshold = -25;
         end
     -- Custom Biases are usually computed in valid tiles and isBiasRespected method, not in the score
     end
     return math.min(biasScore, scoreThreshold);
 end
 
--- TODO : determine weight
+-- TODO : determine weight 
 function GetBiasFactor(bias)
     if bias.Tier == 1 then
         return 2;
@@ -639,6 +649,7 @@ function CivilizationAssignSpawn:IsBiasRespected(hex, hexMap)
      -- Custom bias treated by valid tiles
     local isOneOfBiasRespected = false;
     for _, bias in pairs(self.CivilizationBiases) do
+        -- Mandatory biases
         if bias.Type == "TERRAINS" and IsTundraLand(bias.Value) and hex:IsTundraLand() == false then
             return false;
         elseif bias.Type == "TERRAINS" and IsDesertLand(bias.Value) and hex:IsDesertLand() == false then
@@ -655,6 +666,16 @@ function CivilizationAssignSpawn:IsBiasRespected(hex, hexMap)
             else
                 return false;
             end
+        elseif bias.Type == "CUSTOM_HYDROPHOBIC" then 
+            if hex.PeninsulaScore > 45 and hex:IsCloseToCoast() == false then
+                isOneOfBiasRespected = true;
+            else 
+                return false;
+            end  
+        elseif bias.Type == "CUSTOM_KING_OF_THE_NORTH" then
+            if hex.y < hexMap.height * 0.3 or hex.y > hexMap.height * 0.7 then
+                isOneOfBiasRespected = true;
+            end      
         end
         for i, ringList in pairs(hex.AllRing6Map) do
             for _, hring in pairs(ringList) do
@@ -670,14 +691,15 @@ function CivilizationAssignSpawn:IsBiasRespected(hex, hexMap)
                     end
                 elseif (bias.Type == "TERRAINS" and bias.Value ~= g_TERRAIN_TYPE_COAST) or bias.Type == "CUSTOM_MOUNTAIN_LOVER" then
                     if IsMountain(bias.Value) then
-                        if i > 1 and i < 4 and hring:IsMountain() then
+                        -- At least a mountain in ring 2, density score do the rest
+                        if i == 2 and hring:IsMountain() then
                             isOneOfBiasRespected = true;
                         end
                     elseif i < 4 and hring.TerrainType == bias.Value then
                         -- Plains and grassland checked by density, tundra and desert bias in valid tile checks
                         isOneOfBiasRespected = true;
                     end            
-                elseif bias.Type == "CUSTOM_CONTINENT_SPLIT" and hexMap:HasContinentInWalkableRange(hex, 5) == false then
+                elseif bias.Type == "CUSTOM_CONTINENT_SPLIT" and hexMap:HasContinentInWalkableRange(hex, 4) == false then
                     return false;
                 elseif bias.Type == "NEGATIVE_TERRAINS" then
                     -- Test: excluded by tile scoring
@@ -691,14 +713,6 @@ function CivilizationAssignSpawn:IsBiasRespected(hex, hexMap)
                 elseif bias.Type == "NEGATIVE_RESOURCES" then
                     if i < 4 and hring.ResourceType == bias.Value then
                         return false;
-                    end
-                elseif bias.Type == "CUSTOM_KING_OF_THE_NORTH" then
-                    if hex.y < hexMap.height * 0.3 or hex.y > hexMap.height * 0.7 then
-                        isOneOfBiasRespected = true;
-                    end
-                elseif bias.Type == "CUSTOM_HYDROPHOBIC" then 
-                    if hex.PeninsuleScore > 45 and hex:IsCloseToCoast() == false then
-                        isOneOfBiasRespected = true;
                     end
                 end
             end

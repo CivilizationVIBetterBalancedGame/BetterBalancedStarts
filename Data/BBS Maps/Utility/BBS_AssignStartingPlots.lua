@@ -58,7 +58,7 @@ BBS_HexMap = {};
 
 ------------------------------------------------------------------------------
 function ___Debug(...)
-    print(...);
+    --print(...);
 end
 
 ------------------------------------------------------------- BBS ----------------------------
@@ -96,7 +96,9 @@ function BBS_AssignStartingPlots.Create(args)
     -- Get Bias all
     bbs_negative_bias = {}
     bbs_custom_bias = {}
-
+    -- BBCC_SETTING
+    local bcySetting = GameConfiguration.GetValue("BBCC_SETTING");
+    local bcySettingYield = GameConfiguration.GetValue("BBCC_SETTING_YIELD");
     -- Custom negative bias located in StartBiasNegatives table
     local ret = DB.Query("SELECT * from StartBiasNegatives");
     for key, value in pairs(ret) do
@@ -206,12 +208,13 @@ function BBS_AssignStartingPlots.Create(args)
     -- Comparing first the number of valid tiles, placing first 
     table.sort(bbs_civilisations, 
     function(a, b) 
+        print(tostring(a.TotalValidTiles).." "..tostring(b.TotalValidTiles));
         if a.TotalValidTiles == b.TotalValidTiles then
             if a.TotalMapScore == b.TotalMapScore then
                 -- Random order when same number of valid tiles and scores (comparing 2 no bias or 2 purely coastal)
                 local rng1 = TerrainBuilder.GetRandomNumber(999999, "Spawn A");
                 local rng2 = TerrainBuilder.GetRandomNumber(999999, "Spawn B");
-                return rng1 > rng2;
+                return rng1 >= rng2;
             else
                 return a.TotalMapScore < b.TotalMapScore
             end
@@ -254,6 +257,14 @@ function BBS_AssignStartingPlots.Create(args)
                 civ.Player:SetStartingPlot(hex0.Plot)
             end
         end
+
+        for _, civ in pairs(bbs_civilisations) do
+            if civ.CivilizationLeader ~= BBS_LEADER_TYPE_SPECTATOR then
+                BalanceSpawns(BBS_HexMap, civ);
+            end
+        end
+        printAllStartYields(BBS_HexMap);
+
         -- randomly place cs in free space
         for i, cs in pairs(bbs_citystates) do
             local foundSpawn = false
