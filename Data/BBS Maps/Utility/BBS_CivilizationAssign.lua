@@ -268,6 +268,7 @@ function CivilizationAssignSpawn:CalculateTotalScores(BBS_HexMap)
         end
         self.TotalMapScore = totalScore / maxCentScore
         self.TotalValidTiles = totalValidTiles
+        print("CalculateTotalScores "..self.CivilizationLeader.." "..tostring(totalValidTiles))
     else 
         self.TotalMapScore = 100;
         self.TotalValidTiles = 0
@@ -460,14 +461,14 @@ function CivilizationAssignSpawn:ComputeHexScoreCiv(hex)
     local score = 100
 
     -- Favor fresh water in almost every case 
-    if self.IsNoFreshWaterBias or hex.IsFreshWater or (hex.IsCoastal and self.IsCoastalBias) then
+    if self.IsNoFreshWaterBias or hex.IsFreshWater or (hex.IsCoastal and self.IsCoastalBias)  then
         score = score + 20;
-        
+    elseif  self.IsNoBias then -- no bias coastal at +15 TEST
+        score = score + 18;
     end
 
     local baseScore = tostring(score);
     local totalBiasScore = 0
-    local totalBiasThreshold = 25;
     local countBias = 0;
     for _, bias in pairs(self.CivilizationBiases) do
         local thisBiasScore = ComputeHexScoreByBias(hex, bias);
@@ -494,7 +495,7 @@ function CivilizationAssignSpawn:ComputeHexScoreCiv(hex)
 
     -- Avoid unwanted tiles (score = percentage of tundraa tile in ring 6, with a little threshold, valid tile threshold is 16 atm)
     -- Desert not calculated because future terraforming
-    local tundraScore = math.floor(hex.TundraScore / 10 + 0.5);
+    local tundraScore = math.floor(hex.TundraScore / 5 + 0.5);
     if self.IsTundraBias == false and hex.TundraScore > 5 then
         score = score - tundraScore;
     end

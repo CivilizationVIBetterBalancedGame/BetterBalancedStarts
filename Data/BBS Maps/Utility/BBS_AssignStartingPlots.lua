@@ -208,8 +208,12 @@ function BBS_AssignStartingPlots.Create(args)
     -- Comparing first the number of valid tiles, placing first 
     table.sort(bbs_civilisations, 
     function(a, b) 
-        print(tostring(a.TotalValidTiles).." "..tostring(b.TotalValidTiles));
-        if a.TotalValidTiles == b.TotalValidTiles then
+        -- Avoid bug where a or b is nil for unknown reasons 
+        if a == nil then
+            return false
+        elseif b == nil then
+            return true
+        elseif a.TotalValidTiles == b.TotalValidTiles then
             if a.TotalMapScore == b.TotalMapScore then
                 -- Random order when same number of valid tiles and scores (comparing 2 no bias or 2 purely coastal)
                 local rng1 = TerrainBuilder.GetRandomNumber(999999, "Spawn A");
