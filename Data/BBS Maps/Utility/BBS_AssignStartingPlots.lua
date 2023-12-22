@@ -238,16 +238,45 @@ function BBS_AssignStartingPlots.Create(args)
     -- Recursive call 
     local BBS_AssignTries = 1;
     local BBS_Success = false;
-    while BBS_Success == false and BBS_AssignTries < 7 do
-        BBS_Success = instance:__PlaceMajorCivs(bbs_civilisations, BBS_HexMap, BBS_AssignTries);
-        if BBS_Success == false then
-            instance:__ResetMajorsSpawns(bbs_civilisations, BBS_HexMap);
-            BBS_AssignTries = BBS_AssignTries + 1
+    while BBS_Success == false and BBS_AssignTries < 4 do
+        -- Place all civs and fill BBS_HexMap.tempMajorSpawns
+        local placementOK = instance:__PlaceMajorCivs(bbs_civilisations, BBS_HexMap, BBS_AssignTries);
+        instance:__ResetMajorsSpawns(bbs_civilisations, BBS_HexMap);
+        if placementOK == false then
+            --instance:__ResetMajorsSpawns(bbs_civilisations, BBS_HexMap);
+            BBS_HexMap.tempMajorSpawns[BBS_AssignTries] = {};
             print("Failed try number "..tostring(BBS_AssignTries))
         else 
-            print("BBS_Success !")
+            print("BBS_Success on try "..tostring(BBS_AssignTries))
         end
+        BBS_AssignTries = BBS_AssignTries + 1
     end
+    local maxMeanScore = 0
+    local maxMeanScoreIndex = 0
+    for index, c in pairs(BBS_HexMap.tempMajorSpawns) do
+        local list = BBS_HexMap.tempMajorSpawns[index]
+        local meanScore = 0
+        if #list > 0 then
+            local totalScore = 0
+            for _, civscore in pairs(list) do
+                totalScore = totalScore + civscore.Score;
+            end
+            meanScore = totalScore / #list
+            if maxMeanScore < meanScore then
+                BBS_Success = true;
+                maxMeanScore = meanScore;
+                maxMeanScoreIndex = index;
+            end
+        end
+        print("Assign mean score for try "..tostring(index).." = "..meanScore)
+    end
+
+    print("Selected try max score = "..tostring(maxMeanScoreIndex))
+    for _, c in pairs(BBS_HexMap.tempMajorSpawns[maxMeanScoreIndex]) do
+        print("tempMajorSpawns AssignMajorCivSpawn for "..c.Civ.CivilizationLeader.." "..c.Spawn:PrintXY())
+        c.Civ:AssignMajorCivSpawn(BBS_HexMap, c.Spawn);
+    end
+
     print("BBS_AssignTries = "..tostring(BBS_AssignTries).." - BBS_Success = "..tostring(BBS_Success))
     if BBS_Success then
          -- Firaxis methods for attribution of spawns 
@@ -356,12 +385,12 @@ function BBS_AssignStartingPlots:__PlaceMajorCivs(civs, BBS_HexMap, index)
     BBS_HexMap.tempMajorSpawns[index] = {};
     for _, civ in pairs(civs) do
         if civ.CivilizationLeader ~= BBS_LEADER_TYPE_SPECTATOR then
-            local placed = civ:AssignSpawnByCentroid(BBS_HexMap);
+            local placed, spawnHex, score = civ:AssignSpawnByCentroid(BBS_HexMap);
             if placed == false then
                 print("Failed to place civ "..tostring(civ.CivilizationLeader))
                 return false;
             end
-
+            table.insert(BBS_HexMap.tempMajorSpawns[index], {Civ = civ, Spawn = spawnHex, Score = score});
         end
     end
     return true;

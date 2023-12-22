@@ -292,15 +292,16 @@ function CivilizationAssignSpawn:AssignSpawnByCentroid(BBS_HexMap)
     -- Recalculate valid tiles in each centroid
     self:CalculateOrderCentroidsScore(BBS_HexMap);
     -- Find the best tiles based on score of top centroids 
-    local hexSpawnFound = self:FindHighestScoreHex();
+    local hexSpawnFound, score = self:FindHighestScoreHex();
 
+    -- 
     if hexSpawnFound ~= nil then
         self:AssignMajorCivSpawn(BBS_HexMap, hexSpawnFound);
-        return true;
+        return true, hexSpawnFound, score;
     else 
          -- Try again or go to firaxis placement
         print("Unable to find a valid tile for this civ on this map")
-        return false;
+        return false, nil, nil;
     end
 end
 
@@ -424,9 +425,9 @@ function CivilizationAssignSpawn:FindHighestScoreHex()
     end
 
     -- Take random tile among the highest scores 
-    local selectedHex = self:GetHighestHexScore(validTilesInTop5)
+    local selectedHex, score = self:GetHighestHexScore(validTilesInTop5)
 
-    return selectedHex;
+    return selectedHex, score;
 end
 
 
@@ -488,11 +489,12 @@ function CivilizationAssignSpawn:ComputeHexScoreCiv(hex)
     if self.IsNoBias or self.IsCoastalBias or self.IsKingNorthBias or self.IsMountainBias then
         -- Rounding the score
         peninsulaScore = math.floor((hex.PeninsulaScore / 10) + 0.5)
-        -- Cap peninsula score avoid every on inland sea for naval civ and favor inland for others
+        -- Cap peninsula score avoid every on inland sea for naval civ and favor spawns with more land (ex small seas inland)
         if self.IsCoastalBias or self.IsMountainBias or self.IsMountainLoverBias then
             score = score + math.min(5, peninsulaScore)
         else
-            score = score + peninsulaScore
+            -- Select hex at random when >80% score 
+            score = score + math.min(8, peninsulaScore)
         end
     end
     
@@ -552,19 +554,22 @@ function ComputeHexScoreByBias(hex, bias)
         if hex.TerrainsScore[bias.Value] ~= nil  then
             -- Terrains are more common (hills, plains etc) so factoring less 
             biasScore = math.ceil((hex.TerrainsScore[bias.Value] * GetBiasFactor(bias) / 3) + 0.5);
-            scoreThreshold = 20; -- to determine
+            scoreThreshold = 25; -- to determine
         end
     elseif (bias.Type == "FEATURES") then
         if hex.FeaturesScore[bias.Value] ~= nil  then
             biasScore = hex.FeaturesScore[bias.Value] * GetBiasFactor(bias)
+            scoreThreshold = 15;
         end
     elseif (bias.Type == "RIVERS") then
         if hex.IsOnRiver  then
             biasScore = hex.RiverScore * GetBiasFactor(bias);
+            scoreThreshold = 25;
         end
     elseif (bias.Type == "RESOURCES") then
         if hex.ResourcesScore[bias.Value] ~= nil  then
             biasScore = hex.ResourcesScore[bias.Value] * GetBiasFactor(bias)
+            scoreThreshold = 10;
         end
     -- Negative Biases are optionnal and act as repellents 	
     elseif (bias.Type == "NEGATIVE_TERRAINS") then
@@ -575,12 +580,12 @@ function ComputeHexScoreByBias(hex, bias)
     elseif (bias.Type == "NEGATIVE_FEATURES") then
         if hex.FeaturesScore[bias.Value] ~= nil  then
             biasScore = - hex.FeaturesScore[bias.Value] * GetBiasFactor(bias)
-            scoreThreshold = -25;
+            scoreThreshold = -15;
         end
+    -- not exist atm
     elseif (bias.Type == "NEGATIVE_RESOURCES") then
         if hex.ResourcesScore[bias.Value] ~= nil  then
             biasScore = - hex.ResourcesScore[bias.Value] * GetBiasFactor(bias)
-            scoreThreshold = -25;
         end
     -- Custom Biases are usually computed in valid tiles and isBiasRespected method, not in the score
     end
