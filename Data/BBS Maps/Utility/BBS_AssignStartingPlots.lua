@@ -208,7 +208,7 @@ function BBS_AssignStartingPlots.Create(args)
     -- Comparing first the number of valid tiles, placing first 
     table.sort(bbs_civilisations, 
     function(a, b) 
-        -- Avoid bug where a or b is nil for unknown reasons 
+        -- Avoid bug where a or b is nil for unknown reasons
         if a == nil then
             return false
         elseif b == nil then
@@ -216,8 +216,8 @@ function BBS_AssignStartingPlots.Create(args)
         elseif a.TotalValidTiles == b.TotalValidTiles then
             if a.TotalMapScore == b.TotalMapScore then
                 -- Random order when same number of valid tiles and scores (comparing 2 no bias or 2 purely coastal)
-                local rng1 = TerrainBuilder.GetRandomNumber(999999, "Spawn A");
-                local rng2 = TerrainBuilder.GetRandomNumber(999999, "Spawn B");
+                local rng1 = TerrainBuilder.GetRandomNumber(100, "Spawn A");
+                local rng2 = TerrainBuilder.GetRandomNumber(100, "Spawn B");
                 return rng1 >= rng2;
             else
                 return a.TotalMapScore < b.TotalMapScore
@@ -239,7 +239,7 @@ function BBS_AssignStartingPlots.Create(args)
     local BBS_AssignTries = 1;
     local BBS_Success = false;
     while BBS_Success == false and BBS_AssignTries < 7 do
-        BBS_Success = instance:__PlaceMajorCivs(bbs_civilisations, BBS_HexMap);
+        BBS_Success = instance:__PlaceMajorCivs(bbs_civilisations, BBS_HexMap, BBS_AssignTries);
         if BBS_Success == false then
             instance:__ResetMajorsSpawns(bbs_civilisations, BBS_HexMap);
             BBS_AssignTries = BBS_AssignTries + 1
@@ -262,11 +262,14 @@ function BBS_AssignStartingPlots.Create(args)
             end
         end
 
+        print("Start BalanceSpawns",  os.date("%c"))
+
         for _, civ in pairs(bbs_civilisations) do
             if civ.CivilizationLeader ~= BBS_LEADER_TYPE_SPECTATOR then
                 BalanceSpawns(BBS_HexMap, civ);
             end
         end
+        print("End BalanceSpawns",  os.date("%c"))
         printAllStartYields(BBS_HexMap);
 
         -- randomly place cs in free space
@@ -350,6 +353,7 @@ end
 
 function BBS_AssignStartingPlots:__PlaceMajorCivs(civs, BBS_HexMap, index) 
 -- TODO : manage cases when unable to place a civ => rollback and try again
+    BBS_HexMap.tempMajorSpawns[index] = {};
     for _, civ in pairs(civs) do
         if civ.CivilizationLeader ~= BBS_LEADER_TYPE_SPECTATOR then
             local placed = civ:AssignSpawnByCentroid(BBS_HexMap);
@@ -357,6 +361,7 @@ function BBS_AssignStartingPlots:__PlaceMajorCivs(civs, BBS_HexMap, index)
                 print("Failed to place civ "..tostring(civ.CivilizationLeader))
                 return false;
             end
+
         end
     end
     return true;

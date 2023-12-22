@@ -13,6 +13,7 @@ function CivilizationAssignSpawn.new(player, leader, name, team)
     instance.CivilizationTeam = team;
     instance.IsNoBias = false;
     instance.IsCoastalBias = false;
+    instance.IsJungleBias = false;
     instance.IsDesertBias = false;
     instance.IsTundraBias = false;
     instance.IsRiverBias = false;
@@ -54,7 +55,7 @@ function CivilizationAssignSpawn:GetBiases()
             bias.IsNegative = false;
             bias.Tier = row.Tier;
             bias.Type = "RESOURCES";
-            bias.Value = self:GetResourceIndex(row.ResourceType);
+            bias.Value = GetResourceIndex(row.ResourceType);
             ___Debug("BBS_AssignStartingPlots: Add Bias : Civilization",self.CivilizationName,"Bias Type:", bias.Type, "Tier :", bias.Tier, "Type :", row.ResourceType);
             table.insert(biases, bias);
         end
@@ -65,11 +66,14 @@ function CivilizationAssignSpawn:GetBiases()
             bias.IsNegative = false;
             bias.Tier = row.Tier;
             bias.Type = "FEATURES";
-            bias.Value = self:GetFeatureIndex(row.FeatureType);
+            bias.Value = GetFeatureIndex(row.FeatureType);
             ___Debug("BBS_AssignStartingPlots: Add Bias : Civilization",self.CivilizationName,"Bias Type:", bias.Type, "Tier :", bias.Tier, "Type :", row.FeatureType);
             table.insert(biases, bias);
             if bias.Value == g_FEATURE_FLOODPLAINS or bias.Value == g_FEATURE_FLOODPLAINS_GRASSLAND or bias.Value == g_FEATURE_FLOODPLAINS_PLAINS then
                 self.IsFloodplainsBias = true;
+            end
+            if bias.Value == g_FEATURE_JUNGLE then
+                self.IsJungleBias = true;
             end
         end
     end
@@ -79,7 +83,7 @@ function CivilizationAssignSpawn:GetBiases()
             bias.IsNegative = false;
             bias.Tier = row.Tier;
             bias.Type = "TERRAINS";
-            bias.Value = self:GetTerrainIndex(row.TerrainType);
+            bias.Value = GetTerrainIndex(row.TerrainType);
             ___Debug("BBS_AssignStartingPlots: Add Bias : Civilization",self.CivilizationName,"Bias Type:", bias.Type, "Tier :", bias.Tier, "Type :", row.TerrainType);
             table.insert(biases, bias);
             if bias.Value == g_TERRAIN_TYPE_COAST then --only wilhemine has non T1 coast bias -what to do with her)
@@ -111,19 +115,19 @@ function CivilizationAssignSpawn:GetBiases()
             local bias = {};
             bias.IsNegative = true;
 			if row.TerrainType ~= nil then
-				bias.Value = self:GetTerrainIndex(row.TerrainType);
+				bias.Value = GetTerrainIndex(row.TerrainType);
 				bias.Type = "NEGATIVE_TERRAINS";
 				bias.Tier = row.Tier;
 				___Debug("BBS_AssignStartingPlots: Add Bias : Civilization",self.CivilizationName,"Bias Type:", bias.Type, "Tier :", bias.Tier, "Type :", row.TerrainType);
 				table.insert(biases, bias);
 				elseif row.FeatureType ~= nil then
-				bias.Value = self:GetFeatureIndex(row.FeatureType);
+				bias.Value = GetFeatureIndex(row.FeatureType);
 				bias.Type = "NEGATIVE_FEATURES";
 				bias.Tier = row.Tier;
 				___Debug("BBS_AssignStartingPlots: Add Bias : Civilization",self.CivilizationName,"Bias Type:", bias.Type, "Tier :", bias.Tier, "Type :", row.FeatureType);
 				table.insert(biases, bias);
 				elseif row.ResourceType ~= nil then
-				bias.Value = self:GetResourceIndex(row.ResourceType);
+				bias.Value = GetResourceIndex(row.ResourceType);
 				bias.Type = "NEGATIVE_RESOURCES";
 				bias.Tier = row.Tier;
 				___Debug("BBS_AssignStartingPlots: Add Bias : Civilization",self.CivilizationName,"Bias Type:", bias.Type, "Tier :", bias.Tier, "Type :", row.ResourceType);
@@ -182,7 +186,7 @@ function CivilizationAssignSpawn:GetBiases()
 end
 
 -- Need to convert the bias value (in text) from database to the corresponding index
-function CivilizationAssignSpawn:GetTerrainIndex(terrainType)
+function GetTerrainIndex(terrainType)
     if (terrainType == "TERRAIN_COAST") then
         return g_TERRAIN_TYPE_COAST;
     elseif (terrainType == "TERRAIN_DESERT") then
@@ -216,7 +220,7 @@ function CivilizationAssignSpawn:GetTerrainIndex(terrainType)
     end
 end
 
-function CivilizationAssignSpawn:GetFeatureIndex(featureType)
+function GetFeatureIndex(featureType)
     if (featureType == "FEATURE_VOLCANO") then
         return g_FEATURE_VOLCANO;
     elseif (featureType == "FEATURE_JUNGLE") then
@@ -236,7 +240,7 @@ function CivilizationAssignSpawn:GetFeatureIndex(featureType)
     end
 end
 
-function CivilizationAssignSpawn:GetResourceIndex(resourceType)
+function GetResourceIndex(resourceType)
     local resourceTypeName = "LOC_" .. resourceType .. "_NAME";
     for row in GameInfo.Resources() do
         if (row.Name == resourceTypeName) then
@@ -353,7 +357,7 @@ function CivilizationAssignSpawn:GetValidSpawnsInHexList(listHex)
                         table.insert(validTiles, hex);
                     end
                 else -- default take all water tiles
-                    if (hex.IsFreshWater or hex.IsCoastal) and hex:IsTundraLand() == false then
+                    if (hex.IsFreshWater or hex.IsCoastal) and hex:IsTundraLand() == false and (hex.IsCloseToTundra == false and hex.TundraScore < 20) then
                         table.insert(validTiles, hex);
                     end
                 end
@@ -461,9 +465,9 @@ function CivilizationAssignSpawn:ComputeHexScoreCiv(hex)
     local score = 100
 
     -- Favor fresh water in almost every case 
-    if self.IsNoFreshWaterBias or hex.IsFreshWater or (hex.IsCoastal and self.IsCoastalBias)  then
+    if self.IsNoFreshWaterBias or hex.IsFreshWater  then
         score = score + 20;
-    elseif  self.IsNoBias then -- no bias coastal at +15 TEST
+    elseif  hex.IsCoastal and (self.IsNoBias or self.IsCoastalBias) then -- coastal for no bias TEST
         score = score + 18;
     end
 
@@ -481,7 +485,7 @@ function CivilizationAssignSpawn:ComputeHexScoreCiv(hex)
 
     local peninsulaScore = 0;
     -- Favor more open land for no bias and coastal civ
-    if self.IsNoBias or self.IsCoastalBias or self.IsKingNorthBias or self.IsMountainBias or self.IsMountainLoverBias then
+    if self.IsNoBias or self.IsCoastalBias or self.IsKingNorthBias or self.IsMountainBias then
         -- Rounding the score
         peninsulaScore = math.floor((hex.PeninsulaScore / 10) + 0.5)
         -- Cap peninsula score avoid every on inland sea for naval civ and favor inland for others
@@ -676,8 +680,12 @@ function CivilizationAssignSpawn:IsBiasRespected(hex, hexMap)
         elseif bias.Type == "CUSTOM_KING_OF_THE_NORTH" then
             if hex.y < hexMap.height * 0.3 or hex.y > hexMap.height * 0.7 then
                 isOneOfBiasRespected = true;
-            end      
+            end 
         end
+        if bias.Type == "CUSTOM_CONTINENT_SPLIT" and hex:HasContinentInWalkableRange(4) == false then
+            return false;
+        end
+        local jungleFound = false;
         for i, ringList in pairs(hex.AllRing6Map) do
             for _, hring in pairs(ringList) do
                 if bias.Type == "RESOURCES" then
@@ -689,7 +697,10 @@ function CivilizationAssignSpawn:IsBiasRespected(hex, hexMap)
                     -- Respected if at lease 1 feature in ring 3
                     if i < 4 and hring.FeatureType == bias.Value then
                         isOneOfBiasRespected = true;
-                    end
+                        if self.IsJungleBias and bias.Value == g_FEATURE_JUNGLE then
+                            jungleFound = true;
+                        end
+                    end     
                 elseif (bias.Type == "TERRAINS" and bias.Value ~= g_TERRAIN_TYPE_COAST) or bias.Type == "CUSTOM_MOUNTAIN_LOVER" then
                     if IsMountain(bias.Value) then
                         -- At least a mountain in ring 2, density score do the rest
@@ -700,8 +711,6 @@ function CivilizationAssignSpawn:IsBiasRespected(hex, hexMap)
                         -- Plains and grassland checked by density, tundra and desert bias in valid tile checks
                         isOneOfBiasRespected = true;
                     end            
-                elseif bias.Type == "CUSTOM_CONTINENT_SPLIT" and hexMap:HasContinentInWalkableRange(hex, 4) == false then
-                    return false;
                 elseif bias.Type == "NEGATIVE_TERRAINS" then
                     -- Test: excluded by tile scoring
                     if i < 4 and hring.TerrainType == bias.Value then
@@ -717,6 +726,9 @@ function CivilizationAssignSpawn:IsBiasRespected(hex, hexMap)
                     end
                 end
             end
+        end
+        if self.IsJungleBias and bias.Type == "FEATURES" and bias.Value == g_FEATURE_JUNGLE then
+            return jungleFound;
         end
     end
     return isOneOfBiasRespected;
