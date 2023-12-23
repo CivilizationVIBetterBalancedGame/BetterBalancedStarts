@@ -58,7 +58,7 @@ BBS_HexMap = {};
 
 ------------------------------------------------------------------------------
 function ___Debug(...)
-    --print(...);
+    print(...);
 end
 
 ------------------------------------------------------------- BBS ----------------------------
@@ -235,7 +235,7 @@ function BBS_AssignStartingPlots.Create(args)
     -- Recursive call 
     local BBS_AssignTries = 1;
     local BBS_Success = false;
-    while BBS_Success == false and BBS_AssignTries < 6 do
+    while BBS_Success == false and BBS_AssignTries < 2 do
         -- Place all civs and fill BBS_HexMap.tempMajorSpawns
         local placementOK = instance:__PlaceMajorCivs(bbs_civilisations, BBS_HexMap, BBS_AssignTries);
         instance:__ResetMajorsSpawns(bbs_civilisations, BBS_HexMap);
