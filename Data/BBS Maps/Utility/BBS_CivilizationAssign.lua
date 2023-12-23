@@ -501,8 +501,9 @@ function CivilizationAssignSpawn:ComputeHexScoreCiv(hex)
 
     -- Avoid unwanted tiles (score = percentage of tundraa tile in ring 6, with a little threshold, valid tile threshold is 16 atm)
     -- Desert not calculated because future terraforming
-    local tundraScore = math.floor(hex.TundraScore / 5 + 0.5);
+    local tundraScore = math.floor(hex.TundraScore / 10 + 0.5);
     if self.IsTundraBias == false and hex.TundraScore > 5 then
+        -- In case 
         score = score - tundraScore;
     end
     print(hex:PrintXY().." - Score = "..baseScore.." + "..tostring(totalBiasScore).." + "..tostring(peninsulaScore).." - "..tostring(tundraScore).." ("..tostring(hex.TundraScore)..") = "..tostring(math.floor(score + 0.5)), os.date("%c"))
@@ -559,7 +560,7 @@ function ComputeHexScoreByBias(hex, bias)
     elseif (bias.Type == "FEATURES") then
         if hex.FeaturesScore[bias.Value] ~= nil  then
             biasScore = hex.FeaturesScore[bias.Value] * GetBiasFactor(bias)
-            scoreThreshold = 15;
+            scoreThreshold = 20;
         end
     elseif (bias.Type == "RIVERS") then
         if hex.IsOnRiver  then
@@ -580,7 +581,7 @@ function ComputeHexScoreByBias(hex, bias)
     elseif (bias.Type == "NEGATIVE_FEATURES") then
         if hex.FeaturesScore[bias.Value] ~= nil  then
             biasScore = - hex.FeaturesScore[bias.Value] * GetBiasFactor(bias)
-            scoreThreshold = -15;
+            scoreThreshold = -2;
         end
     -- not exist atm
     elseif (bias.Type == "NEGATIVE_RESOURCES") then

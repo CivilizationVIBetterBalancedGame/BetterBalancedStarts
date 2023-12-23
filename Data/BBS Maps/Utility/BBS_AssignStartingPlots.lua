@@ -292,15 +292,16 @@ function BBS_AssignStartingPlots.Create(args)
         end
 
         print("Start BalanceSpawns",  os.date("%c"))
-
+        local allSpawnBalancing = {}
         for _, civ in pairs(bbs_civilisations) do
             if civ.CivilizationLeader ~= BBS_LEADER_TYPE_SPECTATOR then
-                BalanceSpawns(BBS_HexMap, civ);
+                local spawn = BalanceSpawns(BBS_HexMap, civ);
+                table.insert(allSpawnBalancing, spawn);
             end
         end
-        print("End BalanceSpawns",  os.date("%c"))
         printAllStartYields(BBS_HexMap);
-
+        BalanceAllCivYields(allSpawnBalancing)
+        print("End BalanceSpawns",  os.date("%c"))
         -- randomly place cs in free space
         for i, cs in pairs(bbs_citystates) do
             local foundSpawn = false
