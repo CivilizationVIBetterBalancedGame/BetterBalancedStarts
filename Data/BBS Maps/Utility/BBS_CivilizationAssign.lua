@@ -501,9 +501,8 @@ function CivilizationAssignSpawn:ComputeHexScoreCiv(hex)
 
     -- Avoid unwanted tiles (score = percentage of tundraa tile in ring 6, with a little threshold, valid tile threshold is 16 atm)
     -- Desert not calculated because future terraforming
-    local tundraScore = math.floor(hex.TundraScore / 10 + 0.5);
+    local tundraScore = math.floor(hex.TundraScore / 4 + 0.5);
     if self.IsTundraBias == false and hex.TundraScore > 5 then
-        -- In case 
         score = score - tundraScore;
     end
     print(hex:PrintXY().." - Score = "..baseScore.." + "..tostring(totalBiasScore).." + "..tostring(peninsulaScore).." - "..tostring(tundraScore).." ("..tostring(hex.TundraScore)..") = "..tostring(math.floor(score + 0.5)), os.date("%c"))
@@ -631,6 +630,7 @@ function CivilizationAssignSpawn:AssignMajorCivSpawn(BBS_HexMap, startingHex)
         end
         
     end
+    --BBS_HexMap:PrintHexSpawnableMap()
     print("Assigned spawn "..startingHex:PrintXY().." for civ "..tostring(self.CivilizationLeader))
     return;
 end

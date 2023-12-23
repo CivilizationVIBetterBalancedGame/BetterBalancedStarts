@@ -232,13 +232,10 @@ function BBS_AssignStartingPlots.Create(args)
         print(tostring(civ.CivilizationLeader).." - ScoreTotal = "..tostring(civ.TotalMapScore).." -  Valid tiles = "..tostring(civ.TotalValidTiles))
     end
 
-    print("End Assign spawn order",  os.date("%c"))
-    
-
     -- Recursive call 
     local BBS_AssignTries = 1;
     local BBS_Success = false;
-    while BBS_Success == false and BBS_AssignTries < 4 do
+    while BBS_Success == false and BBS_AssignTries < 6 do
         -- Place all civs and fill BBS_HexMap.tempMajorSpawns
         local placementOK = instance:__PlaceMajorCivs(bbs_civilisations, BBS_HexMap, BBS_AssignTries);
         instance:__ResetMajorsSpawns(bbs_civilisations, BBS_HexMap);
@@ -270,15 +267,15 @@ function BBS_AssignStartingPlots.Create(args)
         end
         print("Assign mean score for try "..tostring(index).." = "..meanScore)
     end
-
-    print("Selected try max score = "..tostring(maxMeanScoreIndex))
-    for _, c in pairs(BBS_HexMap.tempMajorSpawns[maxMeanScoreIndex]) do
-        print("tempMajorSpawns AssignMajorCivSpawn for "..c.Civ.CivilizationLeader.." "..c.Spawn:PrintXY())
-        c.Civ:AssignMajorCivSpawn(BBS_HexMap, c.Spawn);
-    end
-
+    
+    print("End Assign spawn order",  os.date("%c"))
     print("BBS_AssignTries = "..tostring(BBS_AssignTries).." - BBS_Success = "..tostring(BBS_Success))
     if BBS_Success then
+        print("Selected try max score = "..tostring(maxMeanScoreIndex))
+        for _, c in pairs(BBS_HexMap.tempMajorSpawns[maxMeanScoreIndex]) do
+            print("tempMajorSpawns AssignMajorCivSpawn for "..c.Civ.CivilizationLeader.." "..c.Spawn:PrintXY())
+            c.Civ:AssignMajorCivSpawn(BBS_HexMap, c.Spawn);
+        end
          -- Firaxis methods for attribution of spawns 
         for j, civ in pairs(bbs_civilisations) do
             if civ.CivilizationLeader ~= BBS_LEADER_TYPE_SPECTATOR then
