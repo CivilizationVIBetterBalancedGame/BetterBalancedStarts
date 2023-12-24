@@ -1459,6 +1459,51 @@ function Hex:GetAdjDirection(directionIndex)
    end
 end
 
+function HexMap:GetAdjDirectionInMap(hex, directionIndex)
+    local adjHex = nil;
+    if hex.y % 2 == 0 then
+        if directionIndex == DirectionTypes.DIRECTION_NORTHEAST then
+            adjHex = self:GetHexSum(hex, Hex.new(0, 1))
+            return self:GetHexInMap(adjHex.x, adjHex.y)
+        elseif directionIndex == DirectionTypes.DIRECTION_EAST then
+            adjHex = self:GetHexSum(hex, Hex.new(1, 0))
+            return self:GetHexInMap(adjHex.x, adjHex.y)
+        elseif directionIndex == DirectionTypes.DIRECTION_SOUTHEAST then
+            adjHex = self:GetHexSum(hex, Hex.new(0, -1))
+            return self:GetHexInMap(adjHex.x, adjHex.y)
+        elseif directionIndex == DirectionTypes.DIRECTION_SOUTHWEST then
+            adjHex = self:GetHexSum(hex, Hex.new(-1, -1))
+            return self:GetHexInMap(adjHex.x, adjHex.y)
+        elseif directionIndex == DirectionTypes.DIRECTION_WEST then
+            adjHex = self:GetHexSum(hex, Hex.new(-1, 0))
+            return self:GetHexInMap(adjHex.x, adjHex.y)
+        elseif directionIndex == DirectionTypes.DIRECTION_NORTHWEST then
+            adjHex = self:GetHexSum(hex, Hex.new(-1, 1))
+            return self:GetHexInMap(adjHex.x, adjHex.y)
+        end
+    elseif hex.y % 2 == 1 then
+        if directionIndex == DirectionTypes.DIRECTION_NORTHEAST then
+            adjHex = self:GetHexSum(hex, Hex.new(1, 1))
+            return self:GetHexInMap(adjHex.x, adjHex.y)
+        elseif directionIndex == DirectionTypes.DIRECTION_EAST then
+            adjHex = self:GetHexSum(hex, Hex.new(1, 0))
+            return self:GetHexInMap(adjHex.x, adjHex.y)
+        elseif directionIndex == DirectionTypes.DIRECTION_SOUTHEAST then
+            adjHex = self:GetHexSum(hex, Hex.new(1, -1))
+            return self:GetHexInMap(adjHex.x, adjHex.y)
+        elseif directionIndex == DirectionTypes.DIRECTION_SOUTHWEST then
+            adjHex = self:GetHexSum(hex, Hex.new(0, -1))
+            return self:GetHexInMap(adjHex.x, adjHex.y)
+        elseif directionIndex == DirectionTypes.DIRECTION_WEST then
+            adjHex = self:GetHexSum(hex, Hex.new(-1, 0))
+            return self:GetHexInMap(adjHex.x, adjHex.y)
+        elseif directionIndex == DirectionTypes.DIRECTION_NORTHWEST then
+            adjHex = self:GetHexSum(hex, Hex.new(0, 1))
+            return self:GetHexInMap(adjHex.x, adjHex.y)
+        end
+   end
+end
+
 function HexMap:ContinentsInRange(hex, range)
     local hexes, _ = self:GetAllHexInRing(hex, range)
     local continentsInRange = 1
@@ -1555,7 +1600,7 @@ function HexMap:TerraformSetResource(hex, resourceId, forced)
             return true;
         end
         -- For specifics resources, we can force a good tile to meet the right conditions
-        if forced then
+        if forced and (hex:IsTundraLand() == false and hex:IsSnowLand() == false or hex:IsDesertLand() == false) then
             ResourceBuilder.SetResourceType(hex.Plot, g_RESOURCE_NONE);
             if resourceId == g_RESOURCE_HORSES then
                 self:TerraformToFlat(hex, true);
@@ -1693,6 +1738,7 @@ end
 function HexMap:TerraformTo4Yields(hex)
     -- Low yield strategics and lux are not changed here, floodplains untouched because placement is making sure we are not around 5 or 6 flood in ring 1
     if hex.Food + hex.Prod >= 4  
+        or hex:IsTundraLand() or hex:IsSnowLand() or hex:IsDesertLand()
         or g_RESOURCES_STRATEGICS[hex.ResourceType] 
         or g_RESOURCES_LUX_LIST[hex.ResourceType] 
         or hex:IsWater()
@@ -1798,6 +1844,100 @@ function HexMap:TerraformToFlat(hex, cleanTile)
 end
 
 
+function HexMap:AddCoastalRiver(hex)
+    if hex.IsCoastal == false or hex.IsFreshWater then
+        _Debug("addCoastalRiver - hex is not coastal or has fresh water");
+        return false;
+    end
+
+    local riverID = RiverManager.GetNumRivers();
+    _Debug("AddCoastalRiver")
+    if riverID == nil then
+        _Debug("addCoastalRiver - riverID", riverID);
+       return false; 
+    end
+    local hexNW = self:GetAdjDirectionInMap(hex, DirectionTypes.DIRECTION_NORTHWEST)
+    local hexNE = self:GetAdjDirectionInMap(hex, DirectionTypes.DIRECTION_NORTHEAST)
+    local hexE = self:GetAdjDirectionInMap(hex, DirectionTypes.DIRECTION_EAST)
+    local hexW = self:GetAdjDirectionInMap(hex, DirectionTypes.DIRECTION_WEST)
+    local hexSW = self:GetAdjDirectionInMap(hex, DirectionTypes.DIRECTION_SOUTHWEST)
+    local hexSE = self:GetAdjDirectionInMap(hex, DirectionTypes.DIRECTION_SOUTHEAST)
+
+    if (hexSW:IsWater() == false and hexW:IsWater() == false and hexSE:IsWater() == true) then
+        _Debug("Gonna put a river on S-W part of tile, flowing S-E");
+        TerrainBuilder.SetNEOfRiver(hex.Plot, true, FlowDirectionTypes.FLOWDIRECTION_SOUTHEAST, riverID);
+        return true;
+     end
+     
+     if (hexSW:IsWater() == false and hexSE:IsWater() == false and hexW:IsWater() == true) then
+        _Debug("Gonna put a river on S-W part of tile, flowing N-W");
+        TerrainBuilder.SetNEOfRiver(hex.Plot, true, FlowDirectionTypes.FLOWDIRECTION_NORTHWEST, riverID);
+        return true;
+     end
+     
+     if (hexNW:IsWater() == false and hexW:IsWater() == false and hexSW:IsWater() == true) then
+        _Debug("Gonna put a river on W part of tile, flowing S");
+        TerrainBuilder.SetWOfRiver(hexW.Plot, true, FlowDirectionTypes.FLOWDIRECTION_SOUTH, riverID);
+        return true;
+     end
+     
+     if (hexSW:IsWater() == false and hexW:IsWater() == false and hexNW:IsWater() == true) then
+        _Debug("Gonna put a river on W part of tile, flowing N");
+        TerrainBuilder.SetWOfRiver(hexW.Plot, true, FlowDirectionTypes.FLOWDIRECTION_NORTH, riverID);
+        return true;
+     end
+     
+     
+     if (hexNW:IsWater() == false and hexW:IsWater() == false and hexNE:IsWater() == true) then
+        _Debug("Gonna put a river on N-W part of tile, flowing N-E");
+        TerrainBuilder.SetNWOfRiver(hexNW.Plot, true, FlowDirectionTypes.FLOWDIRECTION_NORTHEAST, riverID);
+        return true;
+     end
+     
+     if (hexNW:IsWater() == false and hexNE:IsWater() == false and hexW:IsWater() == true) then
+        _Debug("Gonna put a river on N-W part of tile, flowing S-W");
+        TerrainBuilder.SetNWOfRiver(hexNW.Plot, true, FlowDirectionTypes.FLOWDIRECTION_SOUTHWEST, riverID);
+        return true;
+     end
+     
+     if (hexNE:IsWater() == false and hexNW:IsWater() == false and hexE:IsWater() == true) then
+        _Debug("Gonna put a river on N-E part of tile, flowing S-E");
+        TerrainBuilder.SetNEOfRiver(hexNE.Plot, true, FlowDirectionTypes.FLOWDIRECTION_SOUTHEAST, riverID);
+        return true;
+     end
+  
+     if (hexNE:IsWater() == false and hexE:IsWater() == false and hexW:IsWater() == true) then
+        _Debug("Gonna put a river on N-E part of tile, flowing N-W");
+        TerrainBuilder.SetNEOfRiver(hexNE.Plot, true, FlowDirectionTypes.FLOWDIRECTION_NORTHWEST, riverID);
+        return true;
+     end
+     
+     if (hexNE:IsWater() == false and hexE:IsWater() == false and hexSE:IsWater() == true) then
+        _Debug("Gonna put a river on E part of tile, flowing S");
+        TerrainBuilder.SetWOfRiver(hex.Plot, true, FlowDirectionTypes.FLOWDIRECTION_SOUTH, riverID);
+        return true;
+     end
+     
+     if (hexSE:IsWater() == false and hexE:IsWater() == false and hexNE:IsWater() == true) then
+        _Debug("Gonna put a river on E part of tile, flowing S");
+        TerrainBuilder.SetWOfRiver(hex.Plot, true, FlowDirectionTypes.FLOWDIRECTION_NORTH, riverID);
+        return true;
+     end
+     
+     if (hexSE:IsWater() == false and hexSW:IsWater() == false and hexE:IsWater() == true) then
+        _Debug("Gonna put a river on S-E part of tile, flowing N-E");
+        TerrainBuilder.SetNWOfRiver(hex.Plot, true, FlowDirectionTypes.FLOWDIRECTION_NORTHEAST, riverID);
+        return true;
+     end
+     
+     if (hexSE:IsWater() == false and hexE:IsWater() == false and hexSW:IsWater() == true) then
+        _Debug("Gonna put a river on S-E part of tile, flowing S-W");
+        TerrainBuilder.SetNWOfRiver(hex.Plot, true, FlowDirectionTypes.FLOWDIRECTION_SOUTHWEST, riverID);
+        return true;
+     end
+     _Debug("Could not add river !!");
+     return false;
+end
 
 function HexMap:RemoveVolcano(hex)
     if (hex:IsMountain() == true and hex.FeatureType == g_FEATURE_VOLCANO) then
@@ -2029,7 +2169,7 @@ function HexMap:GetAnyMinorSpawnablesTiles()
     for y = 0, self.height - 1 do
         for x = 0, self.width - 1 do
             local hex = self:GetHexInMap(x, y)
-            if hex:IsWater() == false and hex.IsMinorSpawnable then
+            if hex:IsWater() == false and hex:IsSnowLand() == false and hex.IsMinorSpawnable then
                 table.insert(valid, hex)
             end
         end
@@ -2440,7 +2580,7 @@ function SpawnBalancing:ApplyMinimalCoastalTiles()
         self:PlaceRelocatedHexOnRing(2);
     end
     -- 2) Adding river 
-
+    self.HexMap:AddCoastalRiver(self.Hex)
 
     -- 3) Changing ocean to coast in all round 2 tiles
     print("Number of water tiles R2 = "..tostring(#self.RingTables[2].WATER))
@@ -2740,25 +2880,26 @@ function SpawnBalancing:TerraformRandomInRing(i, terraformType, id, needToBeWalk
         -- if unable to place on low yield tile force if asked in paramter
         if #listLowYieldsTiles > 0 and forced then
             -- Already shuffled from before, just take the first hex and force desired terraform on it
-            local hex = listLowYieldsTiles[1];
             print("Try to force on ring "..tostring(i));
             -- Try to add Feature, exclude flood and geo
-            if terraformType == TerraformType[2] and hex.ResourceType == g_RESOURCE_NONE and hex:IsFloodplains() == false 
-                and hex.FeatureType ~= g_FEATURE_GEOTHERMAL_FISSURE then
-                self.HexMap:TerraformHex(hex, TerraformType[2], g_FEATURE_NONE, true);
-                if self.HexMap:TerraformHex(hex, terraformType, id, true) then
-                    print("Terraformed a "..tostring(hex.FeatureType).." feature "..hex:PrintXY());
-                    self:UpdateTableDataRing(hex, i, self.RingTables[i].LOW_YIELD_TILES);
-                    return true;
+            for _, hex in pairs(listLowYieldsTiles) do
+                if terraformType == TerraformType[2] and hex.ResourceType == g_RESOURCE_NONE and hex:IsFloodplains() == false 
+                    and hex.FeatureType ~= g_FEATURE_GEOTHERMAL_FISSURE then
+                    self.HexMap:TerraformHex(hex, TerraformType[2], g_FEATURE_NONE, true);
+                    if self.HexMap:TerraformHex(hex, terraformType, id, true) then
+                        print("Terraformed a "..tostring(hex.FeatureType).." feature "..hex:PrintXY());
+                        self:UpdateTableDataRing(hex, i, self.RingTables[i].LOW_YIELD_TILES);
+                        return true;
+                    end
                 end
-            end
-            -- Try to add Resource, relocate only bonus
-            if terraformType == TerraformType[3] and g_RESOURCES_BONUS_LIST[hex.ResourceType] then
-                self.HexMap:TerraformHex(hex, TerraformType[3], g_RESOURCE_NONE, true);
-                if self.HexMap:TerraformHex(hex, terraformType, id, true) then
-                    print("Terraformed a "..tostring(hex.ResourceType).." resource "..hex:PrintXY());
-                    self:UpdateTableDataRing(hex, i, self.RingTables[i].LOW_YIELD_TILES);
-                    return true;
+                -- Try to add Resource, relocate only bonus
+                if terraformType == TerraformType[3] and g_RESOURCES_BONUS_LIST[hex.ResourceType] then
+                    self.HexMap:TerraformHex(hex, TerraformType[3], g_RESOURCE_NONE, true);
+                    if self.HexMap:TerraformHex(hex, terraformType, id, true) then
+                        print("Terraformed a "..tostring(hex.ResourceType).." resource "..hex:PrintXY());
+                        self:UpdateTableDataRing(hex, i, self.RingTables[i].LOW_YIELD_TILES);
+                        return true;
+                    end
                 end
             end
         end
@@ -3217,6 +3358,7 @@ function SpawnBalancing:NerfCoastal()
         end
     end
 end
+
 
 function RemoveFromTable(table, valueToRemove)
     for i, v in pairs(table) do
