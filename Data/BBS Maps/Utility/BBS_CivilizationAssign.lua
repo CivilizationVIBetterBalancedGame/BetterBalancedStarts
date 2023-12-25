@@ -351,7 +351,9 @@ function CivilizationAssignSpawn:GetValidSpawnsInHexList(listHex)
     for _, hex in pairs(listHex) do
         if hex.IsMajorSpawnable then --pre calculation of technical spawns
             if self.IsTundraBias == false and self.IsDesertBias == false and (hex.IsCloseToTundra == false and hex.TundraScore < 24) then
-                if self.IsCoastalBias and hex.IsCoastal and hex:IsTundraLand() == false then
+                if self.IsHydrophobicBias and hex:IsTundraLand() == false then -- ignore freshwater ?
+                    table.insert(validTiles, hex);
+                elseif self.IsCoastalBias and hex.IsCoastal and hex:IsTundraLand() == false then
                     -- Fresh water is favored on score calculations
                     table.insert(validTiles, hex);
                 elseif (hex.IsFreshWater or hex.IsCoastal) and hex:IsTundraLand() == false then
@@ -500,6 +502,14 @@ function CivilizationAssignSpawn:ComputeHexScoreCiv(hex)
         score = score + thisBiasScore;
     end
 
+    local peninsulaScore = math.floor((hex.PeninsulaScore / 10) + 0.5)
+    if self.IsNoBias or self.IsKingNorthBias then
+        score = score + math.min(8, peninsulaScore)
+    else
+        -- especially for river and coastal else 5 pt is not much when testing other biases
+        score = score + math.min(5, peninsulaScore)
+    end
+    --[[
     local peninsulaScore = 0;
     -- Favor more open land for no bias and coastal civ
     if self.IsNoBias or self.IsCoastalBias or self.IsKingNorthBias or self.IsMountainBias then
@@ -513,7 +523,7 @@ function CivilizationAssignSpawn:ComputeHexScoreCiv(hex)
             score = score + math.min(8, peninsulaScore)
         end
     end
-    
+    ]]--
 
     -- Avoid unwanted tiles (score = percentage of tundraa tile in ring 6, with a little threshold, valid tile threshold is 16 atm)
     -- Desert not calculated because future terraforming

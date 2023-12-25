@@ -235,7 +235,7 @@ function BBS_AssignStartingPlots.Create(args)
     -- Recursive call 
     local BBS_AssignTries = 1;
     local BBS_Success = false;
-    while BBS_Success == false and BBS_AssignTries < 2 do
+    while BBS_Success == false and BBS_AssignTries <= 10 do
         -- Place all civs and fill BBS_HexMap.tempMajorSpawns
         local placementOK = instance:__PlaceMajorCivs(bbs_civilisations, BBS_HexMap, BBS_AssignTries);
         instance:__ResetMajorsSpawns(bbs_civilisations, BBS_HexMap);
@@ -244,7 +244,7 @@ function BBS_AssignStartingPlots.Create(args)
             BBS_HexMap.tempMajorSpawns[BBS_AssignTries] = {};
             print("Failed try number "..tostring(BBS_AssignTries))
         else 
-            print("BBS_Success on try "..tostring(BBS_AssignTries))
+            print("BBS_Success on try "..tostring(BBS_AssignTries),  os.date("%c"))
         end
         BBS_AssignTries = BBS_AssignTries + 1
     end

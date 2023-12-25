@@ -702,6 +702,7 @@ function HexMap.new(_width, _height, mapScript)
     instance.PeninsulaScoreThreshold = 35;
     instance:FillHexMapDatas();
     instance:StoreHexRings();
+    instance:RemoveCoastalMountains(); 
     instance:ComputeScoreHex();
     instance.ValidSpawnHexes = {};
     instance.tempMajorSpawns = {};
@@ -1049,7 +1050,7 @@ function HexMap:ComputeMajorSpawnableTiles(hex)
     local isCloseToMapBorderY = self.height - hex.y <= 3 or hex.y <= 3;
     local isTooCloseToNaturalWonder = false
     local isCloseToTooManyFlood = hex:IsHexNextTo5FloodTiles();
-    local isNextToVolcano = hex:IsHexNextToVolcano();
+    local isNextToVolcano = hex:IsCoastalNextToCoastalVolcano();
     local coastalNextToRiver = hex.IsCoastal and hex.IsFreshWater == false and hex:IsNextToCoastalFreshWater();
     for i, r in pairs(hex.AllRing6Map) do
         for _, h in pairs(r) do
@@ -1106,10 +1107,10 @@ function Hex:IsHexNextTo4ImpassableTiles()
     return false;
 end
 
-function Hex:IsHexNextToVolcano()
+function Hex:IsCoastalNextToCoastalVolcano()
     local ring1 = self.AllRing6Map[1];
     for _, r1 in pairs(ring1) do
-        if r1.FeatureType == g_FEATURE_VOLCANO then
+        if self.IsCoastal and r1.IsCoastal and r1.FeatureType == g_FEATURE_VOLCANO then
             return true;
         end
     end
@@ -1853,7 +1854,7 @@ function HexMap:AddCoastalRiver(hex)
     local riverID = RiverManager.GetNumRivers();
     _Debug("AddCoastalRiver")
     if riverID == nil then
-        _Debug("addCoastalRiver - riverID", riverID);
+        _Debug("addCoastalRiver - riverID ", riverID);
        return false; 
     end
     local hexNW = self:GetAdjDirectionInMap(hex, DirectionTypes.DIRECTION_NORTHWEST)
@@ -1862,6 +1863,10 @@ function HexMap:AddCoastalRiver(hex)
     local hexW = self:GetAdjDirectionInMap(hex, DirectionTypes.DIRECTION_WEST)
     local hexSW = self:GetAdjDirectionInMap(hex, DirectionTypes.DIRECTION_SOUTHWEST)
     local hexSE = self:GetAdjDirectionInMap(hex, DirectionTypes.DIRECTION_SOUTHEAST)
+    if hexNW == nil or hexNE == nil or hexE == nil or hexW == nil or hexSW == nil or hexSE == nil then
+        _Debug("addCoastalRiver - ERROR when getting adjacent tiles");
+        return false;
+    end
 
     if (hexSW:IsWater() == false and hexW:IsWater() == false and hexSE:IsWater() == true) then
         _Debug("Gonna put a river on S-W part of tile, flowing S-E");
@@ -1937,6 +1942,29 @@ function HexMap:AddCoastalRiver(hex)
      end
      _Debug("Could not add river !!");
      return false;
+end
+
+function HexMap:RemoveCoastalMountains() 
+    for y = 0, self.height - 1 do
+        for x = 0, self.width - 1 do
+            local hex = self:GetHexInMap(x, y);
+            if hex ~= nil and hex.IsCoastal and hex:IsMountain() then
+                -- Clear mountains around coastal volcano (can't terraform volcanoes)
+                if hex.FeatureType == g_FEATURE_VOLCANO then
+                   local ring1 = hex.AllRing6Map[1];
+                   for _, h in pairs(ring1) do
+                        if h:IsMountain() then
+                            self:TerraformMountainToHill(hex);
+                        end
+                   end
+                else
+                    -- Clear coastal mountain to hill
+                    self:TerraformMountainToHill(hex);
+                end
+            end
+        end
+    end
+
 end
 
 function HexMap:RemoveVolcano(hex)
@@ -2811,9 +2839,14 @@ end
 -- iMin and iMax are the respectively starting ring (most desired) to last possible ring
 -- terraformType is TerraformType[n] => sort of enum to choose terrain/feature/resource with its id  
 -- @param needToBeWalkableTo means the ring selected have no impassable obstacle between them
-function SpawnBalancing:TerraformInRingsOrder(iMin, iMax, terraformType, id, needToBeWalkableTo, forced) 
+function SpawnBalancing:TerraformInRingsOrder(iMin, iMax, terraformType, id, needToBeWalkableTo, forcedLastRing) 
     for i, _ in pairs(self.RingTables) do
         if i >= iMin and i < iMax + 1 then 
+            -- forced is applied only in the last ring 
+            local forced = false;
+            if i == iMax and forcedLastRing then
+                forced = true
+            end
             if self:TerraformRandomInRing(i, terraformType, id, needToBeWalkableTo, forced) then
                 print("TerraformInRingsOrderOK terraform "..terraformType.." "..tostring(id));
                 return true;
@@ -2881,9 +2914,9 @@ function SpawnBalancing:TerraformRandomInRing(i, terraformType, id, needToBeWalk
         if #listLowYieldsTiles > 0 and forced then
             -- Already shuffled from before, just take the first hex and force desired terraform on it
             print("Try to force on ring "..tostring(i));
-            -- Try to add Feature, exclude flood and geo
+            -- Try to add on Feature, exclude flood and geo
             for _, hex in pairs(listLowYieldsTiles) do
-                if terraformType == TerraformType[2] and hex.ResourceType == g_RESOURCE_NONE and hex:IsFloodplains() == false 
+                if hex.ResourceType == g_RESOURCE_NONE and hex:IsFloodplains() == false 
                     and hex.FeatureType ~= g_FEATURE_GEOTHERMAL_FISSURE then
                     self.HexMap:TerraformHex(hex, TerraformType[2], g_FEATURE_NONE, true);
                     if self.HexMap:TerraformHex(hex, terraformType, id, true) then
@@ -2892,8 +2925,8 @@ function SpawnBalancing:TerraformRandomInRing(i, terraformType, id, needToBeWalk
                         return true;
                     end
                 end
-                -- Try to add Resource, relocate only bonus
-                if terraformType == TerraformType[3] and g_RESOURCES_BONUS_LIST[hex.ResourceType] then
+                -- Try to add on Resource (feature or not), relocate only bonus
+                if g_RESOURCES_BONUS_LIST[hex.ResourceType] then
                     self.HexMap:TerraformHex(hex, TerraformType[3], g_RESOURCE_NONE, true);
                     if self.HexMap:TerraformHex(hex, terraformType, id, true) then
                         print("Terraformed a "..tostring(hex.ResourceType).." resource "..hex:PrintXY());
