@@ -2414,6 +2414,67 @@ function printAllStartYields(hexMap)
     print("meanProdR1 = "..tostring(meanProdR1));
 end
 
+function BalanceMap(hexMap)
+    local iCounter = 0;
+    for y = 0, hexMap.height - 1 do
+        for x = 0, hexMap.width - 1 do
+            local hex = hexMap:GetHexInMap(x, y);
+            if hex:IsImpassable() == false 
+                and hex.ResourceType == g_RESOURCE_NONE 
+                and hex.FeatureType == g_FEATURE_NONE then
+
+                local ring1 = hex.AllRing6Map[1];
+                local iForestScore = 0;
+                local iHillsScore = 0;
+
+                for _, h in pairs(ring1) do
+                    if h.FeatureType == g_FEATURE_FOREST or h.FeatureType == g_FEATURE_JUNGLE then
+                        iForestScore = iForestScore + 1;
+                    end
+                end
+                if BalanceMapForests(hexMap, hex, iForestScore) then
+                    iCounter = iCounter + 1;
+                end
+            end
+        end
+    end
+    print("Added "..tostring(iCounter).." Forest to the base map.")
+
+end
+
+---------------------------------------
+-- MapBalancing
+---------------------------------------
+
+function BalanceMapForests(hexMap, hex, iScore)
+    -- Check forest
+    -- if between 0 and 2 forest add one (randomly) | 0-50% | 1-40% | 2-20% | 3-10%
+    -- if more or equal to 3 jungle do not add
+    if iScore == 0 then
+        percentage = 40
+    elseif iScore == 1 then
+        percentage = 15
+    elseif iScore == 2 then
+        percentage = 10
+    elseif iScore == 3 then
+        percentage = 5
+    else
+        percentage = 0
+    end
+
+    local rng = TerrainBuilder.GetRandomNumber(100, "Terraform forest");
+    if rng < percentage then
+        if hexMap:TerraformSetFeature(hex, g_FEATURE_FOREST, false) then
+            return true;
+        end
+    end
+    return false;
+end
+
+
+
+
+
 function BalanceSpawns(hexMap, civ)
     local balancing = SpawnBalancing.new(civ.StartingHex, hexMap, civ);
     balancing:RemoveRing1MountainsOnRiver();

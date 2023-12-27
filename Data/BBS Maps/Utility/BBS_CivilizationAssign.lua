@@ -285,7 +285,7 @@ end
 -- Complete function of assigning spawn to a major civ 
 -- Add more random to calculations for non coastal and non bias ? 
 function CivilizationAssignSpawn:AssignSpawnByCentroid(BBS_HexMap)
-    print("AssignSpawnByCentroid for "..self.CivilizationLeader);
+    -- print("AssignSpawnByCentroid for "..self.CivilizationLeader);
     if self.CivilizationLeader == BBS_LEADER_TYPE_SPECTATOR then
         return true;
     end
@@ -465,7 +465,7 @@ function CivilizationAssignSpawn:GetHighestHexScore(hexList)
     local highestScoresTable = {}
     for _, s in pairs(scoring) do
         if s.Score == highestScore then
-            print("GetHighestHexScore - Highest score found = "..tostring(s.Score).." "..s.Hex:PrintXY());
+            -- print("GetHighestHexScore - Highest score found = "..tostring(s.Score).." "..s.Hex:PrintXY());
             table.insert(highestScoresTable, s)
         end
     end
