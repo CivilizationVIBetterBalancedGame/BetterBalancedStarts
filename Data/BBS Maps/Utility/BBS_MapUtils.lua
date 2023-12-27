@@ -1601,7 +1601,7 @@ function HexMap:TerraformSetResource(hex, resourceId, forced)
             return true;
         end
         -- For specifics resources, we can force a good tile to meet the right conditions
-        if forced and (hex:IsTundraLand() == false and hex:IsSnowLand() == false or hex:IsDesertLand() == false) then
+        if forced and (hex:IsTundraLand() == false and hex:IsSnowLand() == false and hex:IsDesertLand() == false) then
             ResourceBuilder.SetResourceType(hex.Plot, g_RESOURCE_NONE);
             if resourceId == g_RESOURCE_HORSES then
                 self:TerraformToFlat(hex, true);
@@ -1986,6 +1986,7 @@ function HexMap:RemoveVolcano(hex)
     hex:UpdateYields()
 end
 
+-- Sort of enum 
 local TerraformType = {};
 TerraformType[1] = "Terrain";
 TerraformType[2] = "Feature";
@@ -2479,11 +2480,10 @@ function BalanceSpawns(hexMap, civ)
     local balancing = SpawnBalancing.new(civ.StartingHex, hexMap, civ);
     balancing:RemoveRing1MountainsOnRiver();
     balancing:TerraformRing1Deserts();
-    --balancing:FillTablesRings();
-    --balancing:ApplyMinimalLandTiles(1, 3);
+    balancing:ApplyGaranteedStrategics();
     balancing:ApplyMinimalLandTiles(1, 3);
     balancing:ApplyMinimalCoastalTiles();
-    balancing:ApplyGaranteedStrategics();
+
     return balancing;
 end
 
@@ -2572,6 +2572,7 @@ function SpawnBalancing:RemoveRing1MountainsOnRiver()
     for _, h in pairs(self.RingTables[1].HexRings) do
         if (h.IsOnRiver or h.IsCoastal) and h:IsMountain() and h.FeatureType ~= g_FEATURE_VOLCANO then
             self.HexMap:TerraformMountainToHill(h);
+            self:UpdateTableDataRing(h, 1);
         end
     end
 end
@@ -3006,7 +3007,9 @@ function SpawnBalancing:ApplyGaranteedStrategics()
         return
     end
     -- Horse and iron in ring 1-3, other strats in ring 1-5
-    local ring1To2 = self.HexMap:GetAllHexInRing(self.Hex, 2);
+    local ring1To2 = {};
+    AddToTable(ring1To2, self.Hex.AllRing6Map[1]);
+    AddToTable(ring1To2, self.Hex.WalkableHexInRing[2]);
     local horsesOK = false;
     local ironOK = false;
     for _, h in pairs(ring1To2) do
@@ -3073,6 +3076,13 @@ function SpawnBalancing:ApplyGaranteedStrategics()
     end
 end
 
+function SpawnBalancing:Terraform(previousTable, ring, hex, terraformType, id, forced)
+    if self.HexMap:TerraformHex(hex, terraformType, id, forced) then
+        self:UpdateTableDataRing(hex, ring, previousTable);
+        return true;
+    end
+    return false;
+end
 
 -- Data for each ring around the designed spawn
 function SpawnBalancing:UpdateTableDataRing(h, i, previousTable)
@@ -3453,6 +3463,11 @@ function SpawnBalancing:NerfCoastal()
     end
 end
 
+function AddToTable(table1, tableToInsert)
+    for i, v in pairs(tableToInsert) do
+        table.insert(table1, v)
+    end
+end
 
 function RemoveFromTable(table, valueToRemove)
     for i, v in pairs(table) do
