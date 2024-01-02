@@ -438,12 +438,13 @@ function Hex:HexAdd(vec)
 end
 
 function Hex:DistanceTo(other)
-    local q = self:GetY() - (self:GetX() - even(self:GetX())) / 2
-    local r = self:GetX();
-    local otherQ = other.y - (other.x - even(other.x)) / 2;
-    local otherR = other.x;
-    local result = (math.abs(q - otherQ)+ math.abs(q - otherQ + r - otherR)+ math.abs(r - otherR)) / 2;
-    return result;
+    return Map.GetPlotDistance(self.x, self.y, other.x, other.y);
+    --local q = self:GetY() - (self:GetX() - even(self:GetX())) / 2
+    --local r = self:GetX();
+    --local otherQ = other.y - (other.x - even(other.x)) / 2;
+    --local otherR = other.x;
+    --local result = (math.abs(q - otherQ)+ math.abs(q - otherQ + r - otherR)+ math.abs(r - otherR)) / 2;
+    --return result;
 end
      
 
@@ -690,15 +691,15 @@ function HexMap.new(_width, _height, mapScript)
     instance.mapWonders = {};
     instance.map22 = {}
     instance.centroidsArray = {};
-    instance.mapResourcesLux = instance:GetMapResourcesLux();
-    instance.mapResourcesBonus = instance:GetMapResourcesBonus();
-    instance.mapResourcesStrategics = instance:GetMapResourcesStrategics();
-    instance.mapResourcesFarms =instance:GetMapResourcesFarms();
-    instance.mapResourcesPastures = instance:GetMapResourcesPastures();
-    instance.mapResourcesPlantations = instance:GetMapResourcesPlantations();
-    instance.mapResourcesMines = instance:GetMapResourcesMines();
-    instance.mapResourcesQuarries = instance:GetMapResourcesQuarries();
-    instance.mapResourcesFishings = instance:GetMapResourcesFishings();
+    --instance.mapResourcesLux = instance:GetMapResourcesLux();
+    --instance.mapResourcesBonus = instance:GetMapResourcesBonus();
+    --instance.mapResourcesStrategics = instance:GetMapResourcesStrategics();
+    --instance.mapResourcesFarms =instance:GetMapResourcesFarms();
+    --instance.mapResourcesPastures = instance:GetMapResourcesPastures();
+    --instance.mapResourcesPlantations = instance:GetMapResourcesPlantations();
+    --instance.mapResourcesMines = instance:GetMapResourcesMines();
+    --instance.mapResourcesQuarries = instance:GetMapResourcesQuarries();
+    --instance.mapResourcesFishings = instance:GetMapResourcesFishings();
     instance.PeninsulaScoreThreshold = 35;
     instance:FillHexMapDatas();
     instance:StoreHexRings();
@@ -747,7 +748,7 @@ function HexMap:FillHexMapDatas()
             if newHex.IsCoastal then
                 table.insert(self.mapCostal, newHex);
             end
-            self:InsertMapResources(newHex);
+            --self:InsertMapResources(newHex);
             self:InsertMapFeatures(newHex);
             self:InsertMapTerrains(newHex);
             if newHex.IdContinent ~= nil then
@@ -1633,7 +1634,7 @@ function HexMap:TerraformSetResource(hex, resourceId, forced)
             ResourceBuilder.SetResourceType(hex.Plot, resourceId, 1);
             hex.ResourceType = resourceId;
             hex.HexResource = HexResource.new(self.ResourceType);
-            self:InsertMapResources(hex);
+            --self:InsertMapResources(hex);
             hex:UpdateYields()
             _Debug("Terraform resource "..tostring(resourceId).." on "..hex:PrintXY())
             return true;
@@ -1830,15 +1831,15 @@ function HexMap:TerraformToFlat(hex, cleanTile)
         self:TerraformSetFeature(hex, g_FEATURE_NONE, true);
         self:TerraformSetResource(hex, g_RESOURCE_NONE);
     end
-    if hex.TerrainType == g_TERRAIN_TYPE_GRASS_HILLS then
+    if hex.TerrainType == g_TERRAIN_TYPE_GRASS_HILLS or hex.TerrainType == g_TERRAIN_TYPE_GRASS_MOUNTAIN then
         self:TerraformSetTerrain(hex, g_TERRAIN_TYPE_GRASS)
-    elseif hex.TerrainType == g_TERRAIN_TYPE_PLAINS_HILLS then
+    elseif hex.TerrainType == g_TERRAIN_TYPE_PLAINS_HILLS or hex.TerrainType == g_TERRAIN_TYPE_PLAINS_MOUNTAIN then
         self:TerraformSetTerrain(hex, g_TERRAIN_TYPE_PLAINS)
-    elseif hex.TerrainType == g_TERRAIN_TYPE_DESERT_HILLS then
+    elseif hex.TerrainType == g_TERRAIN_TYPE_DESERT_HILLS or hex.TerrainType == g_TERRAIN_TYPE_DESERT_MOUNTAIN then
         self:TerraformSetTerrain(hex, g_TERRAIN_TYPE_DESERT)
-    elseif hex.TerrainType == g_TERRAIN_TYPE_TUNDRA_HILLS then
+    elseif hex.TerrainType == g_TERRAIN_TYPE_TUNDRA_HILLS or hex.TerrainType == g_TERRAIN_TYPE_TUNDRA_MOUNTAIN then
         self:TerraformSetTerrain(hex, g_TERRAIN_TYPE_TUNDRA)
-    elseif hex.TerrainType == g_TERRAIN_TYPE_SNOW_HILLS then
+    elseif hex.TerrainType == g_TERRAIN_TYPE_SNOW_HILLS or hex.TerrainType == g_TERRAIN_TYPE_SNOW_MOUNTAIN then
         self:TerraformSetTerrain(hex, g_TERRAIN_TYPE_SNOW)
     end
     hex:UpdateYields()
@@ -2008,12 +2009,6 @@ function HexMap:TerraformHex(hex, type, id, forced)
     end
 end
 
-function HexMap:TerraformEmpty(hex, type, id, forced) 
-    if hex.ResourceType ~= g_RESOURCE_NONE or hex.FeatureType ~= g_FEATURE_NONE then
-        return false;
-    end
-    return self:TerraformHex(hex, type, id, forced);
-end
 ---------------------------------------
 -- DEBUGGING prints
 ---------------------------------------
@@ -2507,8 +2502,8 @@ CoastalScoring.TURTLES_R2 = 120
 CoastalScoring.TURTLES_R3 = 95
 CoastalScoring.REEF_R2 = 20
 CoastalScoring.REEF_R3 = 10
-CoastalScoring.REEF_CAMPUS = 20
-CoastalScoring.HARBOR_ADJ = 30
+CoastalScoring.REEF_CAMPUS = 20--unused
+CoastalScoring.HARBOR_ADJ = 30--unused
 CoastalScoring.BASE_COASTAL_SCORE = 180 --210
 CoastalScoring.COASTAL_MARGIN = 20 --30
 
@@ -2541,7 +2536,7 @@ function SpawnBalancing:CanAddToCoastalScore(testScore)
 end
 
 function SpawnBalancing:FillTablesRings() 
-    print("SpawnBalancing FillTablesRings")
+    print("SpawnBalancing FillTablesRings - "..self.Civ.CivilizationLeader)
     for i = 1, self.MaxRing do
         self.RingTables[i] = {};
         self.RingTables[i].HexRings = self.Hex.AllRing6Map[i];
@@ -2559,7 +2554,7 @@ function SpawnBalancing:FillTablesRings()
         for _, h in pairs(self.RingTables[i].HexRings) do
             self:UpdateTableDataRing(h, i, nil);
         end
-        print(self.Civ.CivilizationLeader)
+       
         print(self.Hex:PrintXY().." - WATER "..tostring(i).. " = "..tostring(#self.RingTables[i].WATER))
         print(self.Hex:PrintXY().." - EMPTY_TILES "..tostring(i).. " = "..tostring(#self.RingTables[i].EMPTY_TILES))
         print(self.Hex:PrintXY().." - LOW_YIELD_TILES "..tostring(i).. " = "..tostring(#self.RingTables[i].LOW_YIELD_TILES))
@@ -2601,6 +2596,10 @@ end
 -- If a resource or feature prevents terraforming, it is removed and relocated to the next ring if possible
 -- Standard yields balance (avoiding only 1/3 spawns for example) is in BalanceAllCivYields
 function SpawnBalancing:ApplyMinimalLandTiles(iMin, iMax)
+    -- Hills start for Menelik
+    if self.Civ.CivilizationLeader == "LEADER_MENELIK" then
+        self.HexMap:TerraformToHill(self.Hex, true);
+    end
     -- At least 2 4yields tiles workables ring1
     if self.Hex.ResourceType ~= g_RESOURCE_NONE then
         local hexData = { TerrainId = self.Hex.TerrainType,  FeatureId = self.Hex.FeatureType, ResourceId = self.Hex.ResourceType, Relocated = false}
@@ -2625,8 +2624,7 @@ function SpawnBalancing:ApplyMinimalLandTiles(iMin, iMax)
             -- If left to update, it means there were obstacle to the terraformation (existing resources or features) if possible, relocate them in next ring
             while tileToUp > 0 and i < self.MaxRing do
                 local relocatedHex = self:RelocateRandomHexToNextRing(self.RingTables[i].LOW_YIELD_TILES, i)
-                if relocatedHex ~= nil and self.HexMap:TerraformTo4Yields(relocatedHex) then 
-                    self:UpdateTableDataRing(relocatedHex, i, self.RingTables[i].LOW_YIELD_TILES);
+                if relocatedHex ~= nil and self:TerraformHex(self.RingTables[i].LOW_YIELD_TILES, i, relocatedHex, TerraformType[4]) then
                     tileToUp = tileToUp - 1;
                 else 
                     print("Can't relocate to meet requirements") --desert/tundra civ, see how to deal 
@@ -2813,14 +2811,14 @@ function SpawnBalancing:PlaceRelocatedHexOnRing(i)
     if totalRelocating > 0 then
         for _, hexData in pairs(self.RingTables[i].RELOCATING_TILES) do
             local isRelocated = false;
-            if #self.RingTables[i].WATER_EMPTY > 0 then
+            if #self.RingTables[i].WATER_EMPTY > 0 and hexData.TerrainId == g_TERRAIN_TYPE_COAST then
                 local listWater = self.RingTables[i].WATER_EMPTY;
                 if #listWater > 1 then
                     listWater = GetShuffledCopyOfTable(listWater);
                 end
                 for _, hex in pairs(listWater) do
                     local canFeat = hexData.FeatureId == g_FEATURE_NONE or (hexData.FeatureId ~= g_FEATURE_NONE and TerrainBuilder.CanHaveFeature(hex.Plot, hexData.FeatureId))
-                    local canRes = hexData.ResourceId == g_RESOURCE_NONE or (hexData.ResourceId ~= g_FEATURE_NONE and ResourceBuilder.CanHaveResource(hex.Plot, hexData.ResourceId))
+                    local canRes = hexData.ResourceId == g_RESOURCE_NONE or (hexData.ResourceId ~= g_RESOURCE_NONE and ResourceBuilder.CanHaveResource(hex.Plot, hexData.ResourceId))
                     if canFeat and canRes then
                         self:TerraformHex(self.RingTables[i].WATER_EMPTY, i, hex, TerraformType[1], hexData.TerrainId, false);
                         self:TerraformHex(self.RingTables[i].WATER_EMPTY, i, hex, TerraformType[2], hexData.FeatureId, false);
@@ -2869,6 +2867,16 @@ function SpawnBalancing:PlaceRelocatedHexOnRing(i)
                             totalRelocating = totalRelocating - 1;
                             isRelocated = true;
                         end
+                        -- if relocating strategics, force to the next ring
+                    elseif hexData.ResourceId ~= nil and g_RESOURCES_STRATEGICS[hexData.ResourceId] then
+                        self:TerraformHex(self.RingTables[i].LOW_YIELD_TILES, i, hex, TerraformType[1], hexData.TerrainId, true);
+                        self:TerraformHex(self.RingTables[i].LOW_YIELD_TILES, i, hex, TerraformType[2], hexData.FeatureId, true);
+                        if self:TerraformHex(self.RingTables[i].LOW_YIELD_TILES, i, hex, TerraformType[3], hexData.ResourceId, true) then
+                            _Debug("Relocated feat = "..tostring(hexData.FeatureId).." res = "..tostring(hexData.ResourceId).." on "..hex:PrintXY())
+                            totalRelocating = totalRelocating - 1;
+                            isRelocated = true;
+                        end
+
                     end
                 end
             end
@@ -3008,7 +3016,8 @@ function SpawnBalancing:ApplyGaranteedStrategics()
         self:TerraformInRingsOrder(1, 3, TerraformType[3], g_RESOURCE_IRON, true, true);
     end
 
-    local ring1To5 = self.HexMap:GetAllHexInRing(self.Hex, 5);
+    local ring1To5, _ = self.HexMap:GetAllHexInRing(self.Hex, 5);
+    table.insert(ring1To5, self.Hex)
     local niterOK = false;
     local coalOK = false;
     local oilOK = false;
@@ -3198,12 +3207,12 @@ function SpawnBalancing:ImproveCoastal()
                         self:TerraformHex(self.RingTables[3].WATER_RF, 3, h, TerraformType[3], g_RESOURCE_FISH, true);
                         self:UpdateCoastalScore(CoastalScoring.FISH_REEF_R3 - CoastalScoring.CRABS_R3)
                         stepDone = true;
-                        _Debug(h:PrintXY().." ImproveCoastal - Crab to FishReef R2")
+                        _Debug(h:PrintXY().." ImproveCoastal - Crab to FishReef R3")
                     elseif self:CanAddToCoastalScore(CoastalScoring.FISH_R3 - CoastalScoring.CRABS_R3) then
                         self:TerraformHex(self.RingTables[3].WATER_EMPTY, 3, h, TerraformType[3], g_RESOURCE_FISH, true);
                         self:UpdateCoastalScore(CoastalScoring.FISH_R3 - CoastalScoring.CRABS_R3)
                         stepDone = true;
-                        _Debug(h:PrintXY().." ImproveCoastal - Crab to Fish R2")
+                        _Debug(h:PrintXY().." ImproveCoastal - Crab to Fish R3")
                     end
                 end
             end
