@@ -412,12 +412,6 @@ function Hex:IsCloseToCoast()
     return false;
 end
 
--- Test if a different continent is present in the range (ring in parameter). Return boolean
-function Hex:HasContinentInRange(range) 
-    -- TODO : Maybe check if we can walk to that second continent in given range?
-    return Map.FindSecondContinent(self.Plot, range);
-end
-
 function Hex:IsNextToCoastalFreshWater()
     for _, h in pairs(self.AllRing6Map[1]) do
         if h.IsCoastal and h.IsOnRiver then
@@ -1056,7 +1050,7 @@ function HexMap:ComputeMajorSpawnableTiles(hex)
     for i, r in pairs(hex.AllRing6Map) do
         for _, h in pairs(r) do
             -- Limit to 5 tiles like now
-            if h.IsNaturalWonder or hex.IsNaturalWonder and i < 5 then
+            if hex.IsNaturalWonder or (h.IsNaturalWonder and i < 5) then
                 isTooCloseToNaturalWonder = true;
                 break;
             end
@@ -1561,10 +1555,14 @@ function Hex:HasContinentInWalkableRange(range)
         print("WARN - Walkable tiles limited at 6 by default")
         return false;
     end
-    for _, h in pairs(self.WalkableHexInRing[range]) do
-        if h.IdContinent ~= self.IdContinent then
-            return true;
+    local i = 1;
+    while(i < range + 1) do
+        for _, h in pairs(self.WalkableHexInRing[i]) do
+            if h.IdContinent ~= self.IdContinent then
+                return true;
+            end
         end
+        i = i + 1;
     end
     return false;
 end
@@ -1704,10 +1702,10 @@ function HexMap:TerraformMountainToHill(hex)
 end
 
 function HexMap:TerraformDesert(hex) 
-    --50% plain/grass
-    if hex.FeatureType == g_FEATURE_FLOODPLAINS then
-        self:TerraformSetFeature(hex, g_FEATURE_NONE, true);
+    if hex:IsDesertLand() == false then
+        return false;
     end
+    --50% plain/grass
     if hex.FeatureType == g_FEATURE_OASIS then
         self:TerraformSetTerrain(hex, g_TERRAIN_TYPE_COAST)
         self:TerraformSetFeature(hex, g_FEATURE_NONE, true);
@@ -1721,6 +1719,9 @@ function HexMap:TerraformDesert(hex)
         elseif hex.TerrainType == g_TERRAIN_TYPE_DESERT_MOUNTAIN then
             self:TerraformSetTerrain(hex, g_TERRAIN_TYPE_GRASS_HILLS)
         end
+        if hex.FeatureType == g_FEATURE_FLOODPLAINS then
+            self:TerraformSetFeature(hex, g_FEATURE_FLOODPLAINS_GRASSLAND, true);
+        end
     else
         if hex.TerrainType == g_TERRAIN_TYPE_DESERT then
             self:TerraformSetTerrain(hex, g_TERRAIN_TYPE_PLAINS)
@@ -1729,8 +1730,14 @@ function HexMap:TerraformDesert(hex)
         elseif hex.TerrainType == g_TERRAIN_TYPE_DESERT_MOUNTAIN then
             self:TerraformSetTerrain(hex, g_TERRAIN_TYPE_PLAINS_HILLS)
         end
+        if hex.FeatureType == g_FEATURE_FLOODPLAINS then
+            self:TerraformSetFeature(hex, g_FEATURE_FLOODPLAINS_PLAINS, true);
+        end
     end
-    
+    if rng <= 10 and hex.FeatureType == g_FEATURE_NONE then
+        self:TerraformSetFeature(hex, g_FEATURE_FOREST, true);
+    end
+    return true;
 end
 
 -- TODO Add rng
@@ -1993,7 +2000,7 @@ TerraformType[1] = "Terrain";
 TerraformType[2] = "Feature";
 TerraformType[3] = "Resource";
 TerraformType[4] = "To4Yields";
-
+TerraformType[5] = "Desert";
 -- Call basic terraforming method depending on type
 function HexMap:TerraformHex(hex, type, id, forced)
     if type == TerraformType[1] then
@@ -2004,6 +2011,8 @@ function HexMap:TerraformHex(hex, type, id, forced)
         return self:TerraformSetResource(hex, id, forced);
     elseif type == TerraformType[4] then
         return self:TerraformTo4Yields(hex);
+    elseif type == TerraformType[5] then
+        return self:TerraformDesert(hex);
     else 
         return false;
     end
@@ -2474,11 +2483,10 @@ end
 function BalanceSpawns(hexMap, civ)
     local balancing = SpawnBalancing.new(civ.StartingHex, hexMap, civ);
     balancing:RemoveRing1MountainsOnRiver();
-    balancing:TerraformRing1Deserts();
+    balancing:TerraformRing6Deserts();
     balancing:ApplyGaranteedStrategics();
     balancing:ApplyMinimalLandTiles(1, 3);
     balancing:ApplyMinimalCoastalTiles();
-
     return balancing;
 end
 
@@ -2516,7 +2524,7 @@ function SpawnBalancing.new(hex, hexMap, civ)
     instance.HexMap = hexMap;
     instance.Civ = civ
     instance.RingTables = {};
-    instance.MaxRing = 5;
+    instance.MaxRing = 6;
     instance.CoastalScore = 0;
     instance.AimedCoastalScore = 0;
     instance:FillTablesRings();
@@ -2546,6 +2554,7 @@ function SpawnBalancing:FillTablesRings()
         self.RingTables[i].COAST = {};
         self.RingTables[i].LAKES = {}; 
         self.RingTables[i].IMPASSABLE = {};  --mountain or water
+        self.RingTables[i].DESERT = {};
         self.RingTables[i].EMPTY_TILES = {}; -- grasslands or plains without feature or resource
         self.RingTables[i].LOW_YIELD_TILES = {}; --yields < 2 food or < 2 prod with feature or resource 
         self.RingTables[i].STANDARD_YIELD_TILES = {}; -- 4 yields tiles
@@ -2555,7 +2564,7 @@ function SpawnBalancing:FillTablesRings()
             self:UpdateTableDataRing(h, i, nil);
         end
        
-        print(self.Hex:PrintXY().." - WATER "..tostring(i).. " = "..tostring(#self.RingTables[i].WATER))
+        print(self.Hex:PrintXY().." - IMPASSABLE "..tostring(i).. " = "..tostring(#self.RingTables[i].IMPASSABLE))
         print(self.Hex:PrintXY().." - EMPTY_TILES "..tostring(i).. " = "..tostring(#self.RingTables[i].EMPTY_TILES))
         print(self.Hex:PrintXY().." - LOW_YIELD_TILES "..tostring(i).. " = "..tostring(#self.RingTables[i].LOW_YIELD_TILES))
         print(self.Hex:PrintXY().." - STANDARD_YIELD_TILES "..tostring(i).. " = "..tostring(#self.RingTables[i].STANDARD_YIELD_TILES))
@@ -2567,26 +2576,48 @@ end
 function SpawnBalancing:RemoveRing1MountainsOnRiver()
     for _, h in pairs(self.RingTables[1].HexRings) do
         if (h.IsOnRiver or h.IsCoastal) and h:IsMountain() and h.FeatureType ~= g_FEATURE_VOLCANO then
+            _Debug(self.Hex:PrintXY().." - Removed a mountain on river ring 1 "..h:PrintXY())
             self.HexMap:TerraformMountainToHill(h);
-            self:UpdateTableDataRing(h, 1);
+            self:UpdateTableDataRing(h, 1, self.RingTables[1].IMPASSABLE);
+            print(self.Hex:PrintXY().." - IMPASSABLE "..tostring(1).. " = "..tostring(#self.RingTables[1].IMPASSABLE))
+            print(self.Hex:PrintXY().." - EMPTY_TILES "..tostring(1).. " = "..tostring(#self.RingTables[1].EMPTY_TILES))
         end
     end
 end
 
-function SpawnBalancing:TerraformRing1Deserts()
+-- Max 20+ tiles of tundra on the spawn but might need to terraform some tundra that come too far from map border
+function SpawnBalancing:TerraformRing3Tundra()
+
+end
+
+
+function SpawnBalancing:TerraformRing6Deserts()
     if self.Civ.IsDesertBias then
         _Debug("Desert bias check fresh water");
         if self.Hex.IsFreshWater == false then
             _Debug("Desert bias need to add oasis");
-            self:TerraformRandomInRing(1, TerraformType[2], g_FEATURE_OASIS, true, false);
+            self:TerraformRandomInRing(1, TerraformType[2], g_FEATURE_OASIS, true, true);
         else
             _Debug("Desert bias is on fresh tile");
         end
     else 
-        print("TerraformRing1Deserts")
-        self.HexMap:TerraformDesert(self.Hex);
-        for _, h in pairs(self.RingTables[1].HexRings) do
-            self.HexMap:TerraformDesert(h);
+        local i = 1;
+        _Debug("TerraformRing6Deserts");
+        self:TerraformHex(self.RingTables[i].DESERT, i, self.Hex, TerraformType[5], 0, false)
+        while (i < 7) do
+            for _, h in pairs(self.RingTables[i].HexRings) do
+                if h:IsDesertLand() then
+                    if h:IsFloodplains() or h:IsMountain() then
+                        self:TerraformHex(self.RingTables[i].DESERT, i, h, TerraformType[5], 0, false)
+                    else
+                        local rng = TerrainBuilder.GetRandomNumber(100, "Desert terraform");
+                        if rng <= 90 then
+                            self:TerraformHex(self.RingTables[i].DESERT, i, h, TerraformType[5], 0, false)
+                        end
+                    end
+                end
+            end
+            i = i + 1;
         end
     end
 end
@@ -3008,12 +3039,12 @@ function SpawnBalancing:ApplyGaranteedStrategics()
         end
     end
     if horsesOK == false then 
-        print("Adding horses 1-3")
+        print("Adding horses 1-2")
         self:TerraformInRingsOrder(1, 2, TerraformType[3], g_RESOURCE_HORSES, true, true);
     end
     if ironOK == false then 
-        print("Adding iron 1-3")
-        self:TerraformInRingsOrder(1, 3, TerraformType[3], g_RESOURCE_IRON, true, true);
+        print("Adding iron 2-3")
+        self:TerraformInRingsOrder(2, 3, TerraformType[3], g_RESOURCE_IRON, true, true);
     end
 
     local ring1To5, _ = self.HexMap:GetAllHexInRing(self.Hex, 5);
@@ -3084,6 +3115,7 @@ function SpawnBalancing:UpdateTableDataRing(h, i, previousTable)
         RemoveFromTable(previousTable, h);
     end
     h:UpdateYields();
+    _Debug("UpdateTableDataRing "..h:PrintXY()..tostring(h.Food)..tostring(h.Prod).." Terrain = "..tostring(h.TerrainType).." Feature = "..tostring(h.FeatureType).." Resource = "..tostring(h.ResourceType))
     if h:IsWater() then
         table.insert(self.RingTables[i].WATER, h) -- not used ?
         -- Directly separate empty water tiles and with resources for easier management
@@ -3100,13 +3132,15 @@ function SpawnBalancing:UpdateTableDataRing(h, i, previousTable)
         end
     elseif h:IsImpassable() then
         table.insert(self.RingTables[i].IMPASSABLE, h)
+    elseif h:IsDesertLand() then
+        table.insert(self.RingTables[i].DESERT, h)
     elseif h.ResourceType == g_RESOURCE_NONE and h.FeatureType == g_FEATURE_NONE then
         table.insert(self.RingTables[i].EMPTY_TILES, h)
     elseif h.Food + h.Prod < 4 then
         table.insert(self.RingTables[i].LOW_YIELD_TILES, h)
     elseif h.Food + h.Prod == 4 and h.Prod > 0 then
         table.insert(self.RingTables[i].STANDARD_YIELD_TILES, h)
-    elseif h.Food + h.Prod > 4 or h.Food == 0 then
+    elseif h.Food + h.Prod > 4 or h.Food == 4 then
         table.insert(self.RingTables[i].HIGH_YIELD_TILES, h)
     end
 end
