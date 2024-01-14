@@ -3115,7 +3115,7 @@ function SpawnBalancing:UpdateTableDataRing(h, i, previousTable)
         RemoveFromTable(previousTable, h);
     end
     h:UpdateYields();
-    _Debug("UpdateTableDataRing "..h:PrintXY()..tostring(h.Food)..tostring(h.Prod).." Terrain = "..tostring(h.TerrainType).." Feature = "..tostring(h.FeatureType).." Resource = "..tostring(h.ResourceType))
+    --_Debug("UpdateTableDataRing "..h:PrintXY()..tostring(h.Food)..tostring(h.Prod).." Terrain = "..tostring(h.TerrainType).." Feature = "..tostring(h.FeatureType).." Resource = "..tostring(h.ResourceType))
     if h:IsWater() then
         table.insert(self.RingTables[i].WATER, h) -- not used ?
         -- Directly separate empty water tiles and with resources for easier management

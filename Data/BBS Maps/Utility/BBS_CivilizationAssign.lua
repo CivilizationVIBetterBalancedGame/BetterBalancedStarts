@@ -351,9 +351,8 @@ function CivilizationAssignSpawn:GetValidSpawnsInHexList(listHex)
     for _, hex in pairs(listHex) do
         if hex.IsMajorSpawnable then --pre calculation of technical spawns
             if self.IsTundraBias == false and self.IsDesertBias == false and (hex.TundraScore < 24) then
-                if self.IsHydrophobicBias and hex:IsTundraLand() == false then -- ignore freshwater ?
-                    table.insert(validTiles, hex);
-                elseif self.IsCoastalBias and hex.IsCoastal and hex:IsTundraLand() == false then
+                -- If Maya ignore fresh water, it will be placed last because there is too much valid tiles
+                if self.IsCoastalBias and hex.IsCoastal and hex:IsTundraLand() == false then
                     -- Fresh water is favored on score calculations
                     table.insert(validTiles, hex);
                 elseif self.IsCoastalBias == false and (hex.IsFreshWater or hex.IsCoastal) and hex:IsTundraLand() == false then
@@ -479,55 +478,53 @@ end
 
 
 -- Calculate the hex score for a civ, taking account for the bias score + extra parameters like fresh water/yield etc (to determine) 
--- TODO Define scores
 function CivilizationAssignSpawn:ComputeHexScoreCiv(hex)
     local score = 100
 
-    -- Favor fresh water in almost every case 
+    -------------------
+    -- 1 - Fresh water - Slight preference for fresh water on coastal spawn or no bias civ
+    -------------------
     if self.IsNoFreshWaterBias or hex.IsFreshWater  then
         score = score + 20;
     elseif  hex.IsCoastal and (self.IsNoBias or self.IsCoastalBias) then -- coastal for no bias TEST
         score = score + 18;
     end
-
+    -------------------
+    -- 2 - Bias score - Density of desired tiles around the spawn - capped 
+    -------------------
     local baseScore = tostring(score);
     local totalBiasScore = 0
     local countBias = 0;
     for _, bias in pairs(self.CivilizationBiases) do
         local thisBiasScore = ComputeHexScoreByBias(hex, bias);
-        if thisBiasScore > 0 then
+        if bias.Value ~= g_TERRAIN_TYPE_COAST then
             countBias = countBias + 1;
         end
+        _Debug(self.CivilizationLeader.." Bias score for "..tostring(bias.Type).." "..tostring(bias.Value).." = "..tostring(thisBiasScore))
         totalBiasScore = totalBiasScore + thisBiasScore
-        score = score + thisBiasScore;
+        --score = score + thisBiasScore;
     end
+    if countBias > 0 then
+        totalBiasScore = totalBiasScore / countBias;
+    end
+    score = score + totalBiasScore;
 
-    local peninsulaScore = math.floor((hex.PeninsulaScore / 10) + 0.5)
+    -------------------
+    -- 3 - Peninsula score - Amount of walkable tiles around spawn to avoid tiny peninsulas or islands 
+    -------------------
+    local peninsulaScore = math.floor((hex.PeninsulaScore / 10) + 0.5) * 10
     if self.IsNoBias or self.IsKingNorthBias then
-        score = score + math.min(7, peninsulaScore)
+        score = score + math.min(70, peninsulaScore)
     else
         -- especially for river and coastal else 5 pt is not much when testing other biases
-        score = score + math.min(5, peninsulaScore)
+        score = score + math.min(50, peninsulaScore)
     end
-    --[[
-    local peninsulaScore = 0;
-    -- Favor more open land for no bias and coastal civ
-    if self.IsNoBias or self.IsCoastalBias or self.IsKingNorthBias or self.IsMountainBias then
-        -- Rounding the score
-        peninsulaScore = math.floor((hex.PeninsulaScore / 10) + 0.5)
-        -- Cap peninsula score avoid every on inland sea for naval civ and favor spawns with more land (ex small seas inland)
-        if self.IsCoastalBias or self.IsMountainBias or self.IsMountainLoverBias then
-            score = score + math.min(5, peninsulaScore)
-        else
-            -- Select hex at random when >80% score 
-            score = score + math.min(8, peninsulaScore)
-        end
-    end
-    ]]--
 
-    -- Avoid unwanted tiles (score = percentage of tundraa tile in ring 6, with a little threshold, valid tile threshold is 16 atm)
+    -------------------
+    -- 4 - Tundra score - Discourage from spawning too close to tundra, reducing the score for non tundra civ (unspawnable after a certain threshold)
+    -------------------
     -- Desert not calculated because future terraforming
-    local tundraScore = math.floor(hex.TundraScore / 4 + 0.5);
+    local tundraScore = math.floor(hex.TundraScore / 4 + 0.5) * 10;
     if self.IsTundraBias == false then
         score = score - tundraScore;
     end
@@ -569,56 +566,48 @@ end
 -- Get the hex score for a given bias
 -- Score for each tile are from the HexMap:ComputeScores -- TODO : takes into account the tile surroundings in ring 6 for now
 -- Weighted by bias tier TODO : determine the weight for each tier
+-- Score max per bias = 120 -- Higher Tier = need more tiles to get to the max score (= prio on placement and higher chance of highroll)
 function ComputeHexScoreByBias(hex, bias)
     local biasScore = 0;
     -- TODO : Bias threshold and factor : highter tier = higher threshold ?
-    local scoreThreshold = 25; -- to determine
+    local scoreThreshold = 120; -- to determine
     if bias.Value == g_TERRAIN_TYPE_COAST and hex.IsCoastal then
         -- Not taking into account the number of coastal tiles in the centroid for now 
         return biasScore;
     elseif (bias.Type == "TERRAINS" and bias.Value ~= g_TERRAIN_TYPE_COAST) then
         if hex.TerrainsScore[bias.Value] ~= nil  then
             -- Terrains are more common (hills, plains etc) so factoring less 
-            if IsMountain() then
-                biasScore = hex.TerrainsScore[bias.Value] * GetBiasFactor(bias);
-            else
-                biasScore = math.ceil((hex.TerrainsScore[bias.Value] * GetBiasFactor(bias) / 3) + 0.5);
-            end
-            scoreThreshold = 25; -- to determine
+            biasScore = hex.TerrainsScore[bias.Value] * GetBiasFactorV2(bias);
         end
     elseif (bias.Type == "FEATURES") then
         if hex.FeaturesScore[bias.Value] ~= nil  then
-            biasScore = hex.FeaturesScore[bias.Value] * GetBiasFactor(bias)
-            scoreThreshold = 20;
+            biasScore = hex.FeaturesScore[bias.Value] * GetBiasFactorV2(bias)
         end
     elseif (bias.Type == "RIVERS") then
         if hex.IsOnRiver  then
-            biasScore = hex.RiverScore * GetBiasFactor(bias);
-            scoreThreshold = 25;
+            biasScore = hex.RiverScore * GetBiasFactorV2(bias);
         end
     elseif (bias.Type == "RESOURCES") then
         if hex.ResourcesScore[bias.Value] ~= nil  then
-            biasScore = hex.ResourcesScore[bias.Value] * GetBiasFactor(bias)
-            scoreThreshold = 3;
+            biasScore = hex.ResourcesScore[bias.Value] * GetBiasFactorV2(bias)
         end
     -- Negative Biases are optionnal and act as repellents 	
     elseif (bias.Type == "NEGATIVE_TERRAINS") then
         if hex.TerrainsScore[bias.Value] ~= nil  then
-            biasScore = - math.ceil((hex.TerrainsScore[bias.Value] * GetBiasFactor(bias) / 3) + 0.5);
-            scoreThreshold = -20;
+            biasScore = - hex.TerrainsScore[bias.Value] * GetBiasFactorV2(bias);
         end
     elseif (bias.Type == "NEGATIVE_FEATURES") then
         if hex.FeaturesScore[bias.Value] ~= nil  then
-            biasScore = - hex.FeaturesScore[bias.Value] * GetBiasFactor(bias)
-            scoreThreshold = -2;
+            biasScore = - hex.FeaturesScore[bias.Value] * GetBiasFactorV2(bias)
         end
     -- not exist atm
     elseif (bias.Type == "NEGATIVE_RESOURCES") then
         if hex.ResourcesScore[bias.Value] ~= nil  then
-            biasScore = - hex.ResourcesScore[bias.Value] * GetBiasFactor(bias)
+            biasScore = - hex.ResourcesScore[bias.Value] * GetBiasFactorV2(bias)
         end
     -- Custom Biases are usually computed in valid tiles and isBiasRespected method, not in the score
     end
+   
     return math.min(biasScore, scoreThreshold);
 end
 
@@ -636,6 +625,86 @@ function GetBiasFactor(bias)
         return 1.1;
     end
 end
+
+function GetBiasFactorV2(bias)
+    if (bias.Type == "TERRAINS" and bias.Value ~= g_TERRAIN_TYPE_COAST) then
+        if IsMountain(bias.Value) then
+            if bias.Tier == 1 then
+                return 3;
+            elseif bias.Tier == 2 then
+                return 4;
+            elseif bias.Tier == 3 then
+                return 5;
+            elseif bias.Tier == 4 then
+                return 7,5;
+            elseif bias.Tier == 5 then
+                return 10;
+            end
+        else
+            if bias.Tier == 1 then
+                return 2;
+            elseif bias.Tier == 2 then
+                return 3;
+            elseif bias.Tier == 3 then
+                return 4;
+            elseif bias.Tier == 4 then
+                return 6;
+            elseif bias.Tier == 5 then
+                return 8;
+            end
+        end
+    elseif (bias.Type == "FEATURES") then
+        if bias.Tier == 1 then
+            return 6;
+        elseif bias.Tier == 2 then
+            return 8;
+        elseif bias.Tier == 3 then
+            return 10;
+        elseif bias.Tier == 4 then
+            return 12;
+        elseif bias.Tier == 5 then
+            return 15;
+        end
+    elseif (bias.Type == "RIVERS") then
+        if bias.Tier == 1 then
+            return 5;
+        elseif bias.Tier == 2 then
+            return 6;
+        elseif bias.Tier == 3 then
+            return 7;
+        elseif bias.Tier == 4 then
+            return 8;
+        elseif bias.Tier == 5 then
+            return 10;
+        end
+    elseif (bias.Type == "RESOURCES") then
+        if bias.Tier == 1 then
+            return 10;
+        elseif bias.Tier == 2 then
+            return 12;
+        elseif bias.Tier == 3 then
+            return 20;
+        elseif bias.Tier == 4 then
+            return 30;
+        elseif bias.Tier == 5 then
+            return 40;
+        end
+    -- Negative Biases are optionnal and act as repellents 	
+    elseif (bias.Type == "NEGATIVE_TERRAINS" or bias.Type == "NEGATIVE_FEATURES" or bias.Type == "NEGATIVE_RESOURCES") then
+        if bias.Tier == 1 then
+            return 10;
+        elseif bias.Tier == 2 then
+            return 4;
+        elseif bias.Tier == 3 then
+            return 3;
+        elseif bias.Tier == 4 then
+            return 2;
+        elseif bias.Tier == 5 then
+            return 1;
+        end
+    end
+end
+
 
 -- Set the starting hex
 -- Firaxis method SetStartingPlot called in BBS_AssignStartingPlots
