@@ -685,6 +685,7 @@ function HexMap.new(_width, _height, mapScript)
     instance.mapWonders = {};
     instance.map22 = {}
     instance.centroidsArray = {};
+    instance.LuxTable = {};
     --instance.mapResourcesLux = instance:GetMapResourcesLux();
     --instance.mapResourcesBonus = instance:GetMapResourcesBonus();
     --instance.mapResourcesStrategics = instance:GetMapResourcesStrategics();
@@ -730,6 +731,7 @@ end
 
 -- Put datas of every hex in map
 function HexMap:FillHexMapDatas()
+    local luxTable = {}
     for y = 0, self.height - 1 do
         self.map[y] = {};
         for x = 0, self.width - 1 do
@@ -767,9 +769,20 @@ function HexMap:FillHexMapDatas()
             if newHex:IsDesertLand() == true then
                 table.insert(self.mapDesert, newHex);
             end
+            -- Lux analysis
+            --_Debug(newHex:PrintXY().." - IdContinent = "..tostring(newHex.IdContinent))
+            if g_RESOURCES_LUX_LIST[newHex.ResourceType] then
+                luxTable[newHex.IdContinent] = luxTable[newHex.IdContinent] or {}
+                if Contains(luxTable[newHex.IdContinent], newHex.ResourceType) == false then
+                    table.insert(luxTable[newHex.IdContinent], newHex.ResourceType)
+                end
+            end
         end
     end
     self:UpdateYieldMap();
+    self.LuxTable = luxTable;
+    
+
 end
 
 -- Pre store rings data for each hex for later uses and improve performances
@@ -1833,6 +1846,13 @@ function HexMap:TerraformTo4YieldsNoResource(hex)
     hex:UpdateYields()
 end
 
+function HexMap:AddRandomLux(hex)
+    local idCont = hex.IdContinent
+    --self.
+
+end
+
+
 function HexMap:TerraformToFlat(hex, cleanTile)
     if (cleanTile) then
         self:TerraformSetFeature(hex, g_FEATURE_NONE, true);
@@ -2585,11 +2605,6 @@ function SpawnBalancing:RemoveRing1MountainsOnRiver()
     end
 end
 
--- Max 20+ tiles of tundra on the spawn but might need to terraform some tundra that come too far from map border
-function SpawnBalancing:TerraformRing3Tundra()
-
-end
-
 
 function SpawnBalancing:TerraformRing6Deserts()
     if self.Civ.IsDesertBias then
@@ -2597,6 +2612,14 @@ function SpawnBalancing:TerraformRing6Deserts()
         if self.Hex.IsFreshWater == false then
             _Debug("Desert bias need to add oasis");
             self:TerraformRandomInRing(1, TerraformType[2], g_FEATURE_OASIS, true, true);
+            for _, h in pairs(self.RingTables[1].DESERT) do
+                if self:TerraformHex(self.RingTables[1].DESERT, 1, h, TerraformType[2], g_FEATURE_OASIS, false) then
+                    self:TerraformHex(self.RingTables[1].DESERT, 1, h, TerraformType[1], g_TERRAIN_TYPE_DESERT, false)
+                    self:TerraformHex(self.RingTables[1].DESERT, 1, h, TerraformType[3], g_RESOURCE_NONE, false)
+                    _Debug("Added oasis at "..h:PrintXY())
+                    break;
+                end 
+            end
         else
             _Debug("Desert bias is on fresh tile");
         end
@@ -2671,10 +2694,9 @@ end
 function SpawnBalancing:ApplyMinimalCoastalTiles()
     -- Check if harbor tile, else clean and relocate
     if self.Hex.IsCoastal == false then
-        print("Not coastal tile")
         return;
     end
-    print("Coastal tile")
+    print("Coastal start "..self.Civ.CivilizationLeader)
     -- 1) Get a valid harbor tile
     local waterR1 = self.RingTables[1].WATER_EMPTY;
     local validHarborTile = false;
@@ -2691,7 +2713,9 @@ function SpawnBalancing:ApplyMinimalCoastalTiles()
         self:PlaceRelocatedHexOnRing(2);
     end
     -- 2) Adding river 
-    self.HexMap:AddCoastalRiver(self.Hex)
+    if self.Civ.IsSaltyBias == false then
+        self.HexMap:AddCoastalRiver(self.Hex)
+    end
 
     -- 3) Changing ocean to coast in all round 2 tiles
     print("Number of water tiles R2 = "..tostring(#self.RingTables[2].WATER))
@@ -2942,6 +2966,16 @@ function SpawnBalancing:TerraformInRingsOrder(iMin, iMax, terraformType, id, nee
     return false;
 end
 
+-- Used the TerraformInRingsOrder but do a shuffle before 
+function SpawnBalancing:TerraformInRingsRandomOrder(iMin, iMax, terraformType, id, needToBeWalkableTo, forcedLastRing) 
+    local order = {}
+    for i = iMin, iMax do
+        table.insert(order, i)
+    end
+    order = GetShuffledCopyOfTable(order)
+    self:TerraformInRingsOrder(iMin, iMax, terraformType, id, needToBeWalkableTo, forcedLastRing);
+end
+
 
 -- Add a terraformation given in parameter in the given ring, for empty or low yields tiles
 function SpawnBalancing:TerraformRandomInRing(i, terraformType, id, needToBeWalkableTo, forced)
@@ -3175,6 +3209,7 @@ function BalanceAllCivYields(spawns)
             end   
         end
     end
+
 end
 
 -- Increase the coastal score based on difference between aimed coastal score and current score
@@ -3466,6 +3501,16 @@ function SpawnBalancing:CanNerfFishR2()
         end
     end
     return fishR2count > 1;
+end
+
+
+function Contains(table1, value)
+    for _, v in pairs(table1) do
+        if v == value then
+          return true
+        end
+      end
+    return false
 end
 
 function AddToTable(table1, tableToInsert)
