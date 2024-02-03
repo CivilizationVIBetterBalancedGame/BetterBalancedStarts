@@ -249,23 +249,34 @@ function BBS_AssignStartingPlots.Create(args)
         BBS_AssignTries = BBS_AssignTries + 1
     end
     local maxMeanScore = 0
+    local globalMinDiffScore = 9999;
     local maxMeanScoreIndex = 0
     for index, c in pairs(BBS_HexMap.tempMajorSpawns) do
         local list = BBS_HexMap.tempMajorSpawns[index]
+        local minLocalScore = 9999;
+        local maxLocalScore = 0;
+        local minDiffScore = 0;
         local meanScore = 0
         if #list > 0 then
             local totalScore = 0
             for _, civscore in pairs(list) do
                 totalScore = totalScore + civscore.Score;
+                if civscore.Score < minLocalScore then
+                    minLocalScore = civscore.Score;
+                end
+                if civscore.Score > maxLocalScore then
+                    maxLocalScore = civscore.Score;
+                end
             end
             meanScore = totalScore / #list
-            if maxMeanScore < meanScore then
+            minDiffScore = maxLocalScore - minLocalScore
+            if minDiffScore < globalMinDiffScore or (minDiffScore == globalMinDiffScore and maxMeanScore < meanScore) then
                 BBS_Success = true;
                 maxMeanScore = meanScore;
                 maxMeanScoreIndex = index;
             end
         end
-        print("Assign mean score for try "..tostring(index).." = "..meanScore)
+        print("Assign mean score for try "..tostring(index).." = "..meanScore.." with minimum score of "..tostring(minLocalScore).." and maximum of "..tostring(maxLocalScore))
     end
     
     print("End Assign spawn order",  os.date("%c"))
@@ -292,17 +303,19 @@ function BBS_AssignStartingPlots.Create(args)
         BalanceMap(BBS_HexMap);
 
 
-        print("Start BalanceSpawns",  os.date("%c"))
+        print("Start InitSpawnBalancing",  os.date("%c"))
         local allSpawnBalancing = {}
         for _, civ in pairs(bbs_civilisations) do
             if civ.CivilizationLeader ~= BBS_LEADER_TYPE_SPECTATOR then
-                local spawn = BalanceSpawns(BBS_HexMap, civ);
+                local spawn = InitSpawnBalancing(BBS_HexMap, civ);
                 table.insert(allSpawnBalancing, spawn);
             end
         end
+
+
         printAllStartYields(BBS_HexMap);
         BalanceAllCivYields(allSpawnBalancing)
-        print("End BalanceSpawns",  os.date("%c"))
+        print("End InitSpawnBalancing",  os.date("%c"))
         -- randomly place cs in free space
         for i, cs in pairs(bbs_citystates) do
             local foundSpawn = false
