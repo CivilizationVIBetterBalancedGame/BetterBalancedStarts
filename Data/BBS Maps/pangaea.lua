@@ -212,7 +212,6 @@ function GeneratePlotTypes(world_age)
 		g_continentsFrac = nil;
 		InitFractal{continent_grain = grain_dice, rift_grain = rift_dice};
 		iWaterThreshold = g_continentsFrac:GetHeight(water_percent);
-		local landmassOnBorders = false;
 		local landmassOnBordersCount = 0;
 		g_iNumTotalLandTiles = 0;
 		local oceanTable = {};
@@ -228,7 +227,6 @@ function GeneratePlotTypes(world_age)
 					TerrainBuilder.SetTerrainType(pPlot, g_TERRAIN_TYPE_DESERT);  -- temporary setting so can calculate areas
 					g_iNumTotalLandTiles = g_iNumTotalLandTiles + 1;
 					if x < g_iW * 0.05 or x > g_iW * 0.95 then
-						landmassOnBorders = true;
 						landmassOnBordersCount = landmassOnBordersCount + 1;
 					end
 				else
@@ -242,8 +240,11 @@ function GeneratePlotTypes(world_age)
 			end
 		end
 
-		local maxWaterCenter = 0.45 * g_iH * 0.1 * g_iW
-		local maxWaterNextToCenter = 0.6 * g_iH * 0.1 * g_iW
+		local maxWaterCenter = 0.45 * g_iH * 0.1 * g_iW;
+		local maxWaterNextToCenter = 0.6 * g_iH * 0.1 * g_iW;
+		-- Maximum 5% land on border to avoid long peninsula
+		local maxLandBorder = 0.05 * g_iH * 0.1 * g_iW;
+		local isLandmassOnBordersOK = landmassOnBordersCount < maxLandBorder;
 		_Debug("Max water per 10th index 3 to 6 : ", maxWaterCenter)
 		_Debug("Max water per 10th index 2 and 7 : ", maxWaterNextToCenter)
 		-- Index going from 0 to 9, excluding 30% of the map each side, we inspect index 3, 4, 5, 6 to check water
@@ -260,7 +261,7 @@ function GeneratePlotTypes(world_age)
 		local totalTiles =  g_iW * g_iH
 		local landPercent = (g_iNumTotalLandTiles / totalTiles) * 100;
 		-- Now test the biggest landmass to see if it is large enough.
-		if iNumBiggestAreaTiles >= g_iNumTotalLandTiles * 0.94 and landmassOnBorders == false and hasEnoughLandMiddle then
+		if iNumBiggestAreaTiles >= g_iNumTotalLandTiles * 0.94 and isLandmassOnBordersOK and hasEnoughLandMiddle then
 			done = true;
 			iBiggestID = biggest_area:GetID();
 		end
@@ -276,7 +277,8 @@ function GeneratePlotTypes(world_age)
 		_Debug("- Continent Grain for this attempt: ", grain_dice);
 		_Debug("- Rift Grain for this attempt: ", rift_dice);
 		_Debug("- Landmass on border count: ", landmassOnBordersCount)
-		_Debug("- hasEnoughLandMiddle : ", hasEnoughLandMiddle)
+		_Debug("- isLandmassOnBordersOK: ", isLandmassOnBordersOK)
+		_Debug("- hasEnoughLandMiddle: ", hasEnoughLandMiddle)
 		_Debug("- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -");
 	end
 	
