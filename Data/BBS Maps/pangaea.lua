@@ -212,45 +212,72 @@ function GeneratePlotTypes(world_age)
 		g_continentsFrac = nil;
 		InitFractal{continent_grain = grain_dice, rift_grain = rift_dice};
 		iWaterThreshold = g_continentsFrac:GetHeight(water_percent);
-		
+		local landmassOnBorders = false;
+		local landmassOnBordersCount = 0;
 		g_iNumTotalLandTiles = 0;
+		local oceanTable = {};
+		local hasEnoughLandMiddle = true;
 		for x = 0, g_iW - 1 do
 			for y = 0, g_iH - 1 do
 				local i = y * g_iW + x;
 				local val = g_continentsFrac:GetHeight(x, y);
 				local pPlot = Map.GetPlotByIndex(i);
-				if(val <= iWaterThreshold) then
-					plotTypes[i] = g_PLOT_TYPE_OCEAN;
-					TerrainBuilder.SetTerrainType(pPlot, g_TERRAIN_TYPE_OCEAN);  -- temporary setting so can calculate areas
-				else
+				--if (val > iWaterThreshold or ((g_iW * 0.3 < x and x < g_iW * 0.7) and (g_iH * 0.3 < y and y < g_iH * 0.7))) then
+				if (val > iWaterThreshold) then
 					plotTypes[i] = g_PLOT_TYPE_LAND;
 					TerrainBuilder.SetTerrainType(pPlot, g_TERRAIN_TYPE_DESERT);  -- temporary setting so can calculate areas
 					g_iNumTotalLandTiles = g_iNumTotalLandTiles + 1;
+					if x < g_iW * 0.05 or x > g_iW * 0.95 then
+						landmassOnBorders = true;
+						landmassOnBordersCount = landmassOnBordersCount + 1;
+					end
+				else
+					plotTypes[i] = g_PLOT_TYPE_OCEAN;
+					TerrainBuilder.SetTerrainType(pPlot, g_TERRAIN_TYPE_OCEAN);  -- temporary setting so can calculate areas
+					-- split the map in 10 regions horizontally, check we have enough land (>40%?) around pangaea center
+					local mapVerticalRegionIndex = math.floor((x * 100 / g_iW) / 10);
+					local oceanTileAdded = oceanTable[mapVerticalRegionIndex] or 0
+					oceanTable[mapVerticalRegionIndex] = oceanTileAdded + 1;
 				end
+			end
+		end
+
+		local maxWaterCenter = 0.45 * g_iH * 0.1 * g_iW
+		local maxWaterNextToCenter = 0.6 * g_iH * 0.1 * g_iW
+		_Debug("Max water per 10th index 3 to 6 : ", maxWaterCenter)
+		_Debug("Max water per 10th index 2 and 7 : ", maxWaterNextToCenter)
+		-- Index going from 0 to 9, excluding 30% of the map each side, we inspect index 3, 4, 5, 6 to check water
+		for i, waterCount in pairs(oceanTable) do
+			_Debug("Ocean table index ; ", i, oceanTable[i])
+			if (i >= 3 and i <= 6 and waterCount > maxWaterCenter) or ((i == 2 or i == 7) and waterCount > maxWaterNextToCenter) then
+				hasEnoughLandMiddle = false;
 			end
 		end
 		
 		AreaBuilder.Recalculate();
 		local biggest_area = Areas.FindBiggestArea(false);
 		iNumBiggestAreaTiles = biggest_area:GetPlotCount();
-		
+		local totalTiles =  g_iW * g_iH
+		local landPercent = (g_iNumTotalLandTiles / totalTiles) * 100;
 		-- Now test the biggest landmass to see if it is large enough.
-		if iNumBiggestAreaTiles >= g_iNumTotalLandTiles * 0.84 then
+		if iNumBiggestAreaTiles >= g_iNumTotalLandTiles * 0.94 and landmassOnBorders == false and hasEnoughLandMiddle then
 			done = true;
 			iBiggestID = biggest_area:GetID();
 		end
 		iAttempts = iAttempts + 1;
-		
+
 		-- Printout for debug use only
-		-- print("-"); print("--- Pangea landmass generation, Attempt#", iAttempts, "---");
-		-- print("- This attempt successful: ", done);
-		-- print("- Total Land Plots in world:", g_iNumTotalLandTiles);
-		-- print("- Land Plots belonging to biggest landmass:", iNumBiggestAreaTiles);
-		-- print("- Percentage of land belonging to Pangaea: ", 100 * iNumBiggestAreaTiles / g_iNumTotalLandTiles);
-		-- print("- Continent Grain for this attempt: ", grain_dice);
-		-- print("- Rift Grain for this attempt: ", rift_dice);
-		-- print("- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -");
-		-- print(".");
+		_Debug("--- Pangea landmass generation, Attempt#", iAttempts, "---");
+		_Debug("- This attempt successful: ", done);
+		_Debug("- Total Land Plots in world:", g_iNumTotalLandTiles);
+		_Debug("- Land percentage : ", landPercent)
+		_Debug("- Land Plots belonging to biggest landmass:", iNumBiggestAreaTiles);
+		_Debug("- Percentage of land belonging to Pangaea: ", 100 * iNumBiggestAreaTiles / g_iNumTotalLandTiles);
+		_Debug("- Continent Grain for this attempt: ", grain_dice);
+		_Debug("- Rift Grain for this attempt: ", rift_dice);
+		_Debug("- Landmass on border count: ", landmassOnBordersCount)
+		_Debug("- hasEnoughLandMiddle : ", hasEnoughLandMiddle)
+		_Debug("- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -");
 	end
 	
 	local args = {};

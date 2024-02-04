@@ -199,8 +199,8 @@ g_RESOURCES_STRATEGICS[g_RESOURCE_ALUMINUM]= true;
 g_RESOURCES_STRATEGICS[g_RESOURCE_URANIUM]= true;
 
 
-function _Debug(str)
-    print(str)
+function _Debug(...)
+    print(...);
 end
 
 ---------------------------------------
