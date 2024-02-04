@@ -1892,11 +1892,11 @@ function HexMap:TerraformAdd1Food(hex, canMinusProd)
             return self:TerraformSetResource(hex, g_RESOURCE_WHEAT);
         elseif hex.TerrainType == g_TERRAIN_TYPE_GRASS_HILLS or hex.TerrainType == g_TERRAIN_TYPE_PLAINS_HILLS or hex.TerrainType == g_TERRAIN_TYPE_DESERT_HILLS then
             return self:TerraformSetResource(hex, g_RESOURCE_SHEEP);
-        -- Plain forest are common and cannot be directly given +1food (do not erase possible strat resource below)
-        elseif hex.Food == 1 and hex.Prod == 2 then 
-            _Debug("From 1-2 to 2-2 No resource")
-            return self:TerraformTo22YieldsNoResource(hex, false)
-        end 
+        end
+       -- Plain forest are common and cannot be directly given +1food (do not erase possible strat resource below)
+    elseif hex.Food == 1 and hex.Prod == 2 then 
+        _Debug("From 1-2 to 2-2 No resource")
+        return self:TerraformTo22YieldsNoResource(hex, false);
     end
 
     -- TODO Tundra civ ?

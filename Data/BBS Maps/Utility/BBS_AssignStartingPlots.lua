@@ -272,6 +272,7 @@ function BBS_AssignStartingPlots.Create(args)
             minDiffScore = maxLocalScore - minLocalScore
             if minDiffScore < globalMinDiffScore or (minDiffScore == globalMinDiffScore and maxMeanScore < meanScore) then
                 BBS_Success = true;
+                globalMinDiffScore = minDiffScore;
                 maxMeanScore = meanScore;
                 maxMeanScoreIndex = index;
             end

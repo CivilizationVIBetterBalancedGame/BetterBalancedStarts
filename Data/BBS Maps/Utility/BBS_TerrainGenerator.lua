@@ -37,7 +37,7 @@ function BBS_GenerateTerrainTypes(plotTypes, iW, iH, iFlags, bNoCoastalMountains
 	local fDesertShiftBottom = fDesertTopLatitudeArg or 0.0;
 	
 	-- Set terrain bands.
-	local iDesertPercent = 16; -- Was 30% then 26% while making desert more centered put 18% after Mali's rework
+	local iDesertPercent = 18; -- Was 30% then 26% while making desert more centered put 18% after Mali's rework
 	local iPlainsPercent = 50; 
 	local fSnowLatitude  = 0.86 + coldShift; -- was 0.84 in 1.4.1 put back 0.86
 	local fTundraLatitude = 0.63 + coldShift; -- was 0.65 put 0.63
