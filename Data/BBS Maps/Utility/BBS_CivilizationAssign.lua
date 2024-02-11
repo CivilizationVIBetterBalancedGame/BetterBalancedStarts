@@ -500,9 +500,7 @@ function CivilizationAssignSpawn:ComputeHexScoreCiv(hex)
         if bias.Value ~= g_TERRAIN_TYPE_COAST then
             countBias = countBias + 1;
         end
-        _Debug(self.CivilizationLeader.." Bias score for "..tostring(bias.Type).." "..tostring(bias.Value).." = "..tostring(thisBiasScore))
         totalBiasScore = totalBiasScore + thisBiasScore
-        --score = score + thisBiasScore;
     end
     if countBias > 0 then
         totalBiasScore = totalBiasScore / countBias;
@@ -558,7 +556,6 @@ function CivilizationAssignSpawn:ComputeBiasScoreCiv(centroid)
     else
         centScore = centScore / (#centroid.HexCluster * nbBias)
     end
-    -- print("Centroid score = "..tostring(centScore).." for civ "..civ.CivilizationLeader)
     return centScore;
 end
 
@@ -718,7 +715,7 @@ function CivilizationAssignSpawn:AssignMajorCivSpawn(BBS_HexMap, startingHex)
     startingHex.IsMajorSpawnable = false;
     startingHex.IsMinorSpawnable = false;
     -- Set minimum distance around starting hex
-    local list, mappedHex = BBS_HexMap:GetAllHexInRing(startingHex, BBS_HexMap.minimumDistanceMajortoMajorCivs)
+    local list, mappedHex = BBS_HexMap:GetAllHexInRing(startingHex, BBS_HexMap.minimumDistanceMajorToMajorCivs)
     for i, ringHexes in pairs(mappedHex) do
         for _, h in pairs(ringHexes) do
             h.IsMajorSpawnable = false;
@@ -762,8 +759,8 @@ function CivilizationAssignSpawn:IsBiasRespected(hex, hexMap)
         -- Mandatory biases
         if bias.Type == "TERRAINS" and IsTundraLand(bias.Value) and hex:IsTundraLand() == false then
             return false;
-        elseif bias.Type == "TERRAINS" and IsDesertLand(bias.Value) and hex:IsDesertLand() == false then
-            return false;
+        --elseif bias.Type == "TERRAINS" and IsDesertLand(bias.Value) and hex:IsDesertLand() == false then
+        --    return false;
         elseif bias.Type == "RIVERS" then
             if hex.IsOnRiver then
                 isOneOfBiasRespected = true;

@@ -1,30 +1,31 @@
 ---------------------------------------
 -- Firaxis constants maps scripts
 ---------------------------------------
-MAP_HIGHLANDS = "Highlands_XP2.lua"
-MAP_RICH_HIGHLANDS = "rich_highlands_xp2.lua"
-MAP_LAKES = "Lakes.lua"
-MAP_INLAND_SEA = "InlandSea.lua"
-MAP_SEVEN_SEAS = "Seven_Seas.lua"
-MAP_PRIMORDIAL = "Primordial.lua"
-MAP_PANGAEA = "Pangaea.lua"
-MAP_DW_PANGAEA = "DWPangaea.lua"
-MAP_SHUFFLE = "Shuffle.lua"
-MAP_TILTED_AXIS = "Tilted_Axis.lua"
-MAP_FRACTAL = "Fractal.lua"
-MAP_ISLAND_PLATES = "Island_Plates.lua"
-MAP_SMALL_CONTINENTS = "Small_Continents.lua"
-MAP_ARCHIPELAGO = "Archipelago_XP2.lua"
-MAP_CONTINENTS = "Continents.lua"
-MAP_WETLANDS = "Wetlands_XP2.lua"
-MAP_CONTINENTS_ISLANDS = "Continents_Islands.lua"
-MAP_SPLINTERED_FRACTAL = "Splintered_Fractal.lua"
-MAP_DW_ARCHIPELAGO = "DWArchipelago.lua"
-MAP_DW_FRACTAL = "DWFractal.lua"
-MAP_DW_MIXED_LANDS = "DWMixedLand.lua"
-MAP_DW_SMALL_CONTINENTS = "DWSmallContinents.lua"
-MAP_DW_MIXEDISLANDS = "DWMixedIslands.lua"
-MAP_TERRA = "Terra.lua"
+MapScripts = {};
+MapScripts.MAP_HIGHLANDS = "Highlands_XP2.lua"
+MapScripts.MAP_RICH_HIGHLANDS = "rich_highlands_xp2.lua"
+MapScripts.MAP_LAKES = "Lakes.lua"
+MapScripts.MAP_INLAND_SEA = "InlandSea.lua"
+MapScripts.MAP_SEVEN_SEAS = "Seven_Seas.lua"
+MapScripts.MAP_PRIMORDIAL = "Primordial.lua"
+MapScripts.MAP_PANGAEA = "Pangaea.lua"
+MapScripts.MAP_DW_PANGAEA = "DWPangaea.lua"
+MapScripts.MAP_SHUFFLE = "Shuffle.lua"
+MapScripts.MAP_TILTED_AXIS = "Tilted_Axis.lua"
+MapScripts.MAP_FRACTAL = "Fractal.lua"
+MapScripts.MAP_ISLAND_PLATES = "Island_Plates.lua"
+MapScripts.MAP_SMALL_CONTINENTS = "Small_Continents.lua"
+MapScripts.MAP_ARCHIPELAGO = "Archipelago_XP2.lua"
+MapScripts.MAP_CONTINENTS = "Continents.lua"
+MapScripts.MAP_WETLANDS = "Wetlands_XP2.lua"
+MapScripts.MAP_CONTINENTS_ISLANDS = "Continents_Islands.lua"
+MapScripts.MAP_SPLINTERED_FRACTAL = "Splintered_Fractal.lua"
+MapScripts.MAP_DW_ARCHIPELAGO = "DWArchipelago.lua"
+MapScripts.MAP_DW_FRACTAL = "DWFractal.lua"
+MapScripts.MAP_DW_MIXED_LANDS = "DWMixedLand.lua"
+MapScripts.MAP_DW_SMALL_CONTINENTS = "DWSmallContinents.lua"
+MapScripts.MAP_DW_MIXEDISLANDS = "DWMixedIslands.lua"
+MapScripts.MAP_TERRA = "Terra.lua"
 
 g_FEATURE_VOLCANO			    = GetGameInfoIndex("Features", "FEATURE_VOLCANO");
 g_FEATURE_VOLCANIC_SOIL			= GetGameInfoIndex("Features", "FEATURE_VOLCANIC_SOIL");
@@ -668,7 +669,7 @@ function HexMap.new(_width, _height, mapScript)
     instance.height = _height;
     instance.mapScript = mapScript;
     instance.canCircumnavigate = instance:CanCircumnavigate();
-    instance.minimumDistanceMajortoMajorCivs = instance:SetMinimumDistanceMajortoMajorCivs();
+    instance.minimumDistanceMajorToMajorCivs = instance:SetMinimumDistanceMajorToMajorCivs();
     instance.minimumDistanceMinorToMajorCivs = GlobalParameters.START_DISTANCE_MINOR_MAJOR_CIVILIZATION or 8;
     instance.minimumDistanceMinorToMinorCivs = GlobalParameters.START_DISTANCE_MINOR_CIVILIZATION_START or 7;
     instance.map = {};
@@ -699,13 +700,14 @@ function HexMap.new(_width, _height, mapScript)
     instance.PeninsulaScoreThreshold = 35;
     instance:FillHexMapDatas();
     instance:StoreHexRings();
-    instance:RemoveCoastalMountains(); 
+    instance:RemoveCoastalMountains();
+    instance:TerraformCoastalVolcanoes();
     instance:ComputeScoreHex();
     instance.ValidSpawnHexes = {};
     instance.tempMajorSpawns = {};
     instance.majorSpawns = {};
     instance.minorSpawns = {};
-    -- instance:InitSetSpawnableWater -- too close to border, non fresh or coast, peninsula score 
+    -- instance:InitSetSpawnableWater -- too close to border, non fresh or coast, peninsula score
     -- Put maps parameters here ? (world age, temperature, rainfall etc)
     return instance;
 end
@@ -714,16 +716,16 @@ function HexMap:CanCircumnavigate()
     return self.mapScript ~= MAP_INLAND_SEA and self.mapScript ~= MAP_TILTED_AXIS;
 end
 
-function HexMap:SetMinimumDistanceMajortoMajorCivs()
-    if self.mapScript == MAP_HIGHLANDS or self.mapScript == MAP_LAKES or self.MAP_RICH_HIGHLANDS then
+function HexMap:SetMinimumDistanceMajorToMajorCivs()
+    if self.mapScript == MapScripts.MAP_HIGHLANDS or self.mapScript == MapScripts.MAP_LAKES or self.mapScript == MapScripts.MAP_RICH_HIGHLANDS then
         return 15;
-    elseif self.mapScript == MAP_INLAND_SEA then
+    elseif self.mapScript == MapScripts.MAP_INLAND_SEA then
         return 14;
-    elseif self.mapScript == MAP_SEVEN_SEAS or self.mapScript == MAP_PRIMORDIAL then
+    elseif self.mapScript == MapScripts.MAP_SEVEN_SEAS or self.mapScript == MapScripts.MAP_PRIMORDIAL then
         return 13;
-    elseif self.mapScript == MAP_PANGAEA or self.mapScript == MAP_DW_PANGAEA or self.mapScript == MAP_SHUFFLE or self.mapScript == MAP_TILTED_AXIS then
+    elseif self.mapScript == MapScripts.MAP_PANGAEA or self.mapScript == MapScripts.MAP_DW_PANGAEA or self.mapScript == MapScripts.MAP_SHUFFLE or self.mapScript == MapScripts.MAP_TILTED_AXIS then
         return 12;
-    elseif self.mapScript == MAP_TERRA then
+    elseif self.mapScript == MapScripts.MAP_TERRA then
         return 8;
     else
         return 10;
@@ -1652,7 +1654,7 @@ function HexMap:TerraformSetResource(hex, resourceId, forced)
         end
         -- Forcing to do try on desert, tundra if it can not have the resource
         if ResourceBuilder.CanHaveResource(hex.Plot, resourceId) 
-            or (forced and hex:IsDesertLand() == false and hex:IsTundraLand() == false and hex:IsSnowLand() == false) then
+            or (forced and hex:IsTundraLand() == false and hex:IsWater() == false and hex:IsDesertLand() == false and hex:IsSnowLand() == false) then
             --self:RemoveMapResources(hex);
             ResourceBuilder.SetResourceType(hex.Plot, g_RESOURCE_NONE);
             ResourceBuilder.SetResourceType(hex.Plot, resourceId, 1);
@@ -1674,7 +1676,7 @@ end
 ---------------------------------------
 function HexMap:TerraformSetFeature(hex, featureId, forced)
     if hex.Plot ~= nil and (TerrainBuilder.CanHaveFeature(hex.Plot, featureId) 
-        or (forced and hex:IsDesertLand() == false and hex:IsTundraLand() == false and hex:IsSnowLand() == false)) then
+        or (forced and hex:IsWater() == false and hex:IsDesertLand() == false and hex:IsSnowLand() == false)) then
         self:RemoveMapFeatures(hex)
         TerrainBuilder.SetFeatureType(hex.Plot, featureId);
         hex.FeatureType = featureId;
@@ -1727,6 +1729,29 @@ function HexMap:TerraformMountainToHill(hex)
     hex:UpdateYields()
 end
 
+-- Used when terraforming water to land for example
+function HexMap:TerraformBasicTile(hex)
+    local rng = TerrainBuilder.GetRandomNumber(100, "Plain or grass terraform");
+    local rngHills = TerrainBuilder.GetRandomNumber(100, "Hills terraform");
+    local rngForest = TerrainBuilder.GetRandomNumber(100, "Forest terraform");
+    if rng <= 50 then
+        if rngHills <= 50 then
+            self:TerraformSetTerrain(hex, g_TERRAIN_TYPE_GRASS_HILLS)
+        else
+            self:TerraformSetTerrain(hex, g_TERRAIN_TYPE_GRASS)
+        end
+    else
+        if rngHills <= 50 then
+            self:TerraformSetTerrain(hex, g_TERRAIN_TYPE_PLAINS_HILLS)
+        else
+            self:TerraformSetTerrain(hex, g_TERRAIN_TYPE_PLAINS)
+        end
+    end
+    if rngForest <= 25 then
+        self:TerraformSetFeature(hex, g_FEATURE_FOREST, false);
+    end
+end
+
 function HexMap:TerraformDesert(hex) 
     if hex:IsDesertLand() == false then
         return false;
@@ -1775,6 +1800,9 @@ function HexMap:TerraformTo4Yields(hex)
     if self:HasTerraformTo4YieldsRequirements(hex) == false then
         return false;
     end
+    if hex:IsTundraLand() then
+        return self:TerraformTo4YieldsTundra(hex)
+    end
     -- Low yields upgrades
     if hex.TerrainType == g_TERRAIN_TYPE_GRASS and hex.FeatureType == g_FEATURE_FOREST then
         self:TerraformSetTerrain(hex, g_TERRAIN_TYPE_GRASS_HILLS);
@@ -1804,8 +1832,9 @@ function HexMap:TerraformTo4Yields(hex)
 end
 
 function HexMap:HasTerraformTo4YieldsRequirements(hex)
-    if hex.Food + hex.Prod >= 4  
-        or hex:IsTundraLand() or hex:IsSnowLand() or hex:IsDesertLand()
+    if hex.Food + hex.Prod >= 4
+        or hex.IsNaturalWonder
+        or hex:IsSnowLand() or hex:IsDesertLand()
         or g_RESOURCES_STRATEGICS[hex.ResourceType] 
         or g_RESOURCES_LUX_LIST[hex.ResourceType] 
         or hex:IsWater()
@@ -1814,6 +1843,10 @@ function HexMap:HasTerraformTo4YieldsRequirements(hex)
             return false;
     end
     return true;
+end
+
+function HexMap:TerraformTo4YieldsTundra(hex)
+
 end
 
 function HexMap:TerraformTo22Yields(hex, emptyTileBeforeTerraform)
@@ -1863,7 +1896,7 @@ function HexMap:TerraformAdd1Food(hex, canMinusProd)
         end
     end
     -- Can change no resources (with possibly forest/jungle) from plain to grass
-    if canMinusProd and hex.ResourceType == g_RESOURCE_NONE and (hex.FeatureType == g_FEATURE_FOREST or hex.FeatureType == g_FEATURE_JUNGLE) then
+    if canMinusProd and hex.ResourceType == g_RESOURCE_NONE and hex.FeatureType == g_FEATURE_FOREST then
         if hex.TerrainType == g_TERRAIN_TYPE_PLAINS then
             return self:TerraformSetTerrain(hex, g_TERRAIN_TYPE_GRASS);
         elseif hex.TerrainType == g_TERRAIN_TYPE_PLAINS_HILLS then
@@ -2205,19 +2238,19 @@ function HexMap:AddCoastalRiver(hex)
      return false;
 end
 
-function HexMap:RemoveCoastalMountains() 
+function HexMap:RemoveCoastalMountains()
     for y = 0, self.height - 1 do
         for x = 0, self.width - 1 do
             local hex = self:GetHexInMap(x, y);
             if hex ~= nil and hex.IsCoastal and hex:IsMountain() then
                 -- Clear mountains around coastal volcano (can't terraform volcanoes)
                 if hex.FeatureType == g_FEATURE_VOLCANO then
-                   local ring1 = hex.AllRing6Map[1];
-                   for _, h in pairs(ring1) do
+                    local ring1 = hex.AllRing6Map[1];
+                    for _, h in pairs(ring1) do
                         if h:IsMountain() then
                             self:TerraformMountainToHill(hex);
                         end
-                   end
+                    end
                 else
                     -- Clear coastal mountain to hill
                     self:TerraformMountainToHill(hex);
@@ -2225,7 +2258,26 @@ function HexMap:RemoveCoastalMountains()
             end
         end
     end
+end
 
+function HexMap:TerraformCoastalVolcanoes()
+    for y = 0, self.height - 1 do
+        for x = 0, self.width - 1 do
+            local hex = self:GetHexInMap(x, y);
+            local ring1 = hex.AllRing6Map[1];
+            if hex ~= nil and hex.IsCoastal and hex:IsMountain() and hex.FeatureType == g_FEATURE_VOLCANO then
+                for _, h in pairs(ring1) do
+                    if h:IsWater() then
+                        self:TerraformBasicTile(h);
+                    elseif h:IsMountain() then
+                        self:TerraformMountainToHill(hex);
+                    end
+                end
+            end
+        end
+    end
+
+    --TerraformBasicTile
 end
 
 function HexMap:RemoveVolcano(hex)
@@ -2254,18 +2306,30 @@ TerraformType[2] = "Feature";
 TerraformType[3] = "Resource";
 TerraformType[4] = "To4Yields";
 TerraformType[5] = "Desert";
+TerraformType[6] = "Add1Food";
+TerraformType[7] = "Remove1Food";
+TerraformType[8] = "Add1Prod";
+TerraformType[9] = "Remove1Prod";
 -- Call basic terraforming method depending on type
-function HexMap:TerraformHex(hex, type, id, forced)
+function HexMap:TerraformHex(hex, type, id, boolParam)
     if type == TerraformType[1] then
         return self:TerraformSetTerrain(hex, id);
     elseif type == TerraformType[2] then
-        return self:TerraformSetFeature(hex, id, forced);
+        return self:TerraformSetFeature(hex, id, boolParam);
     elseif type == TerraformType[3] then
-        return self:TerraformSetResource(hex, id, forced);
+        return self:TerraformSetResource(hex, id, boolParam);
     elseif type == TerraformType[4] then
         return self:TerraformTo4Yields(hex);
     elseif type == TerraformType[5] then
         return self:TerraformDesert(hex);
+    elseif type == TerraformType[6] then
+        return self:TerraformAdd1Food(hex, boolParam);
+    elseif type == TerraformType[7] then
+        return self:TerraformRemove1Food(hex, boolParam);
+    elseif type == TerraformType[8] then
+        return self:TerraformAdd1Prod(hex, boolParam);
+    elseif type == TerraformType[9] then
+        return self:TerraformRemove1Prod(hex, boolParam);
     else 
         return false;
     end
@@ -2739,7 +2803,7 @@ function InitSpawnBalancing(hexMap, civ)
     balancing:RemoveRing1MountainsOnRiver();
     balancing:TerraformRing6Deserts();
     balancing:ApplyGaranteedStrategics();
-    balancing:ApplyMinimalLandTiles(1, 3);
+    balancing:ApplyMinimalLandTiles(1, 6);
     balancing:ApplyMinimalCoastalTiles();
     balancing:CheckMinimumWorkable();
     return balancing;
@@ -2784,8 +2848,25 @@ function SpawnBalancing.new(hex, hexMap, civ)
     instance.AimedCoastalScore = 0;
     instance:FillTablesRings();
     instance.TerraformedTiles = {};
+    instance.BaseFood = 2;
+    instance.BaseProd = GetBaseProd(hex);
     print("Init SpawnBalancing")
     return instance;
+end
+
+function GetBaseProd(hex)
+    -- BBCC_SETTING
+    local bcySetting = GameConfiguration.GetValue("BBCC_SETTING");
+    local bcySettingYield = GameConfiguration.GetValue("BBCC_SETTING_YIELD");
+    local bcyBalancedSetting = bcySetting ==1 and bcySettingYield == 0;
+    -- Resource under spawn is cleaned
+    -- TODO Check ring1 base prod to avoid 2/3 start T2 or 4/1
+    _Debug("BCY Config found = ", bcySetting, "Yield param = ", bcySettingYield)
+    if bcyBalancedSetting or hex.TerrainType == g_TERRAIN_TYPE_PLAINS_HILLS then
+        return 2;
+    else
+        return 1;
+    end
 end
 
 function SpawnBalancing:CanAddToCoastalScore(testScore)
@@ -2807,8 +2888,6 @@ function SpawnBalancing:FillTablesRings()
         self.RingTables[i].WATER = {}; 
         self.RingTables[i].WATER_EMPTY = {}; 
         self.RingTables[i].WATER_RF = {}; -- water with resource or reef
-        self.RingTables[i].COAST = {};
-        self.RingTables[i].LAKES = {}; 
         self.RingTables[i].IMPASSABLE = {};  --mountain or water
         self.RingTables[i].DESERT = {};
         self.RingTables[i].EMPTY_TILES = {}; -- grasslands or plains without feature or resource
@@ -2819,7 +2898,7 @@ function SpawnBalancing:FillTablesRings()
         self.RingTables[i].WORKABLE = {}; -- food+prod >=3
         self.RingTables[i].RELOCATING_TILES = {}; -- Used during process to relocate existing tiles
         for _, h in pairs(self.RingTables[i].HexRings) do
-            self:UpdateTableDataRing(h, i, nil);
+            self:UpdateTableDataRing(h, i);
         end
        
         print(self.Hex:PrintXY().." - IMPASSABLE "..tostring(i).. " = "..tostring(#self.RingTables[i].IMPASSABLE))
@@ -2850,9 +2929,9 @@ function SpawnBalancing:TerraformRing6Deserts()
         if self.Hex.IsOnRiver == false or self.Hex:IsNextToOasis() == false then
             _Debug("Desert bias need to add oasis");
             for _, h in pairs(self.RingTables[1].DESERT) do
-                if self:TerraformHex(self.RingTables[1].DESERT, 1, h, TerraformType[2], g_FEATURE_OASIS, false) then
-                    self:TerraformHex(self.RingTables[1].DESERT, 1, h, TerraformType[1], g_TERRAIN_TYPE_DESERT, false)
-                    self:TerraformHex(self.RingTables[1].DESERT, 1, h, TerraformType[3], g_RESOURCE_NONE, false)
+                if self:TerraformHex(h, 1, TerraformType[2], g_FEATURE_OASIS, false) then
+                    self:TerraformHex(h, 1, TerraformType[1], g_TERRAIN_TYPE_DESERT, false)
+                    self:TerraformHex(h, 1, TerraformType[3], g_RESOURCE_NONE, false)
                     _Debug("Added oasis at "..h:PrintXY())
                     break;
                 end 
@@ -2868,11 +2947,11 @@ function SpawnBalancing:TerraformRing6Deserts()
             for _, h in pairs(self.RingTables[i].HexRings) do
                 if h:IsDesertLand() then
                     if h:IsFloodplains() or h:IsMountain() then
-                        self:TerraformHex(self.RingTables[i].DESERT, i, h, TerraformType[5], 0, false)
+                        self:TerraformHex(h, i, TerraformType[5], 0, false)
                     else
                         local rng = TerrainBuilder.GetRandomNumber(100, "Desert terraform");
                         if rng <= 90 then
-                            self:TerraformHex(self.RingTables[i].DESERT, i, h, TerraformType[5], 0, false)
+                            self:TerraformHex(h, i, TerraformType[5], 0, false)
                         end
                     end
                 end
@@ -2911,13 +2990,13 @@ function SpawnBalancing:ApplyMinimalLandTiles(iMin, iMax)
     for _, h in pairs(self.RingTables[1].HIGH_YIELD_TILES) do
         if h.Food >= 4 then
             _Debug("ApplyMinimalLandTiles - Found a 4+ food tile ring 1 "..h:PrintXY())
-            self:RelocateHex(self.RingTables[1].HIGH_YIELD_TILES, 1, 3, h);
+            self:RelocateHex(1, 3, h);
         end 
     end
     for _, h in pairs(self.RingTables[2].HIGH_YIELD_TILES) do
         if h.Food >= 4 then
             _Debug("ApplyMinimalLandTiles - Found a 4+ food tile ring 2 "..h:PrintXY())
-            self:RelocateHex(self.RingTables[2].HIGH_YIELD_TILES, 2, 3, h);
+            self:RelocateHex(2, 3, h);
         end 
     end
     -- Apply minimum yields tiles
@@ -2937,8 +3016,9 @@ function SpawnBalancing:ApplyMinimalLandTiles(iMin, iMax)
             end
             -- If left to update, it means there were obstacle to the terraformation (existing resources or features) if possible, relocate them in next ring
             while tileToUp > 0 and i < self.MaxRing do
-                local relocatedHex = self:RelocateRandomHexToNextRing(self.RingTables[i].LOW_YIELD_TILES, i, i + 1)
-                if relocatedHex ~= nil and self:TerraformHex(self.RingTables[i].LOW_YIELD_TILES, i, relocatedHex, TerraformType[4]) then
+                local nextIndex= i + 1;
+                local relocatedHex = self:RelocateRandomHexToNextRing(self.RingTables[i].LOW_YIELD_TILES, i, nextIndex)
+                if relocatedHex ~= nil and self:TerraformHex(relocatedHex, i, TerraformType[4]) then
                     tileToUp = tileToUp - 1;
                 else 
                     print("Can't relocate to meet requirements") --desert/tundra civ, see how to deal 
@@ -2986,7 +3066,7 @@ function SpawnBalancing:ApplyMinimalCoastalTiles()
     print("Number of water tiles R2 = "..tostring(#self.RingTables[2].WATER))
     for _, h in pairs(self.RingTables[2].WATER) do
         if h.TerrainType == g_TERRAIN_TYPE_OCEAN then
-            self:TerraformHex(self.RingTables[2].WATER, 2, h, TerraformType[1], g_TERRAIN_TYPE_COAST, false)
+            self:TerraformHex(h, 2, TerraformType[1], g_TERRAIN_TYPE_COAST, false)
         end
     end
 
@@ -3010,7 +3090,7 @@ function SpawnBalancing:ApplyMinimalCoastalTiles()
             local relocatedHex = self:RelocateRandomHexToNextRing(self.RingTables[2].WATER_RF, 2, 3)
             if relocatedHex then
                 _Debug("Need to add a fish in "..relocatedHex:PrintXY().." in ring 2 for "..self.Civ.CivilizationLeader)
-                self:TerraformHex(self.RingTables[2].WATER_RF, 2, relocatedHex, TerraformType[3], g_RESOURCE_FISH, false)
+                self:TerraformHex(relocatedHex, 2, TerraformType[3], g_RESOURCE_FISH, false)
             end
         end
     end
@@ -3020,7 +3100,7 @@ function SpawnBalancing:ApplyMinimalCoastalTiles()
         if h.TerrainType == g_TERRAIN_TYPE_OCEAN then
             local rng = TerrainBuilder.GetRandomNumber(100, "Ring3 Ocean to coast");
             if rng <= 50 then
-                self:TerraformHex(self.RingTables[3].WATER, 3, h, TerraformType[1], g_TERRAIN_TYPE_COAST, false);
+                self:TerraformHex(h, 3, TerraformType[1], g_TERRAIN_TYPE_COAST, false);
             end
         end
         if g_RESOURCES_FISHINGBOAT_LIST[h.ResourceType] then
@@ -3036,22 +3116,39 @@ function SpawnBalancing:ApplyMinimalCoastalTiles()
     self:GetCoastalScoreHex();
 end
 
+-- For balancing, we consider tundra tiles as grassland so we add +1 food on tundra bias
+function SpawnBalancing:GetHexBaseFood(hex)
+    local bonusFood = 0;
+    local isTundra = hex:IsTundraLand()
+    if isTundra then
+        bonusFood = 1;
+    end
+    return hex.Food + bonusFood;
+end
+
+function SpawnBalancing:GetHexBaseProd(hex)
+    local bonusProd = 0;
+    -- See if needed
+    return hex.Prod + bonusProd;
+end
+
+
 -- Rules : Minimum of 4+ yield tiles to work in ring 1 + a minimum of 4food + 4prod on 2 tiles ring 1
 function SpawnBalancing:CheckMinimumWorkable() 
     local combinaisonList = {}
     for _, mainHex in pairs(self.RingTables[1].WORKABLE) do
         -- Tae standard and high yields
-        if mainHex.Food + mainHex.Prod >= 4 then
+        if self:GetHexBaseFood(mainHex) + mainHex.Prod >= 4 then
             for _, secondHex in pairs(self.RingTables[1].WORKABLE) do
                 if mainHex ~= secondHex then
                     local combinaisonTable = {};
-                    combinaisonTable.FoodDiff = mainHex.Food + secondHex.Food - 4;
-                    combinaisonTable.ProdDiff = mainHex.Prod + secondHex.Prod - 4;
+                    combinaisonTable.FoodDiff = self:GetHexBaseFood(mainHex) + self:GetHexBaseFood(secondHex) - 4;
+                    combinaisonTable.ProdDiff = self:GetHexBaseProd(mainHex) + self:GetHexBaseProd(secondHex) - 4;
                     combinaisonTable.Hex1 = mainHex;
                     combinaisonTable.Hex2 = secondHex;
                     table.insert(combinaisonList, combinaisonTable);
                     _Debug("CheckMinimumWorkable - test "..mainHex:PrintXY().." + "..secondHex:PrintXY().." - Diff food/prod = "..tostring(combinaisonTable.FoodDiff).." "..tostring(combinaisonTable.ProdDiff))
-                    -- Total valid == 4 food and f prod OR 5 food 3 prod (3/1 + 2/2) 
+                    -- Total valid == 4 food and f prod OR 5 food 3 prod (3/1 + 2/2)
                     local isValid1 = combinaisonTable.FoodDiff >= 0 and combinaisonTable.ProdDiff >= 0 and combinaisonTable.FoodDiff + combinaisonTable.ProdDiff >= 0;
                     local isValid2 = combinaisonTable.FoodDiff == 1 and combinaisonTable.ProdDiff == -1 and combinaisonTable.FoodDiff + combinaisonTable.ProdDiff >= 0;
                     if isValid1 or isValid2 then
@@ -3092,23 +3189,24 @@ function SpawnBalancing:CheckMinimumWorkable()
             local rng = TerrainBuilder.GetRandomNumber(100, "Random");
             -- Little rng to check the highest tile first
             if rng <= 20 then
-                if self.HexMap:TerraformAdd1Food(comb.Hex1, canRemoveProd) then
-                    comb.FoodDiff = comb.Hex1.Food + comb.Hex2.Food - 4;
-                    comb.ProdDiff = comb.Hex1.Prod + comb.Hex2.Prod - 4;
+
+                if self:TerraformHex(comb.Hex1, 1, TerraformType[6], 0, canRemoveProd) then
+                    comb.FoodDiff = self:GetHexBaseFood(comb.Hex1) + self:GetHexBaseFood(comb.Hex2) - 4;
+                    comb.ProdDiff = self:GetHexBaseProd(comb.Hex1) + self:GetHexBaseProd(comb.Hex2) - 4;
                     _Debug("Added 1 food in Hex1 "..tostring(comb.FoodDiff).." "..tostring(comb.ProdDiff))
-                elseif self.HexMap:TerraformAdd1Food(comb.Hex2, canRemoveProd) then
-                    comb.FoodDiff = comb.Hex1.Food + comb.Hex2.Food - 4;
-                    comb.ProdDiff = comb.Hex1.Prod + comb.Hex2.Prod - 4;
+                elseif self:TerraformHex(comb.Hex2, 1, TerraformType[6], 0, canRemoveProd) then
+                    comb.FoodDiff = self:GetHexBaseFood(comb.Hex1) + self:GetHexBaseFood(comb.Hex2) - 4;
+                    comb.ProdDiff = self:GetHexBaseProd(comb.Hex1) + self:GetHexBaseProd(comb.Hex2) - 4;
                     _Debug("Added 1 food in Hex2 "..tostring(comb.FoodDiff).." "..tostring(comb.ProdDiff))
                 end
             else
-                if self.HexMap:TerraformAdd1Food(comb.Hex2, canRemoveProd) then
-                    comb.FoodDiff = comb.Hex1.Food + comb.Hex2.Food - 4;
-                    comb.ProdDiff = comb.Hex1.Prod + comb.Hex2.Prod - 4;
+                if self:TerraformHex(comb.Hex2, 1, TerraformType[6], 0, canRemoveProd) then
+                    comb.FoodDiff = self:GetHexBaseFood(comb.Hex1) + self:GetHexBaseFood(comb.Hex2) - 4;
+                    comb.ProdDiff = self:GetHexBaseProd(comb.Hex1) + self:GetHexBaseProd(comb.Hex2) - 4;
                     _Debug("Added 1 food in Hex2 "..tostring(comb.FoodDiff).." "..tostring(comb.ProdDiff))
-                elseif self.HexMap:TerraformAdd1Food(comb.Hex1, canRemoveProd) then
-                    comb.FoodDiff = comb.Hex1.Food + comb.Hex2.Food - 4;
-                    comb.ProdDiff = comb.Hex1.Prod + comb.Hex2.Prod - 4;
+                elseif self:TerraformHex(comb.Hex1, 1, TerraformType[6], 0, canRemoveProd) then
+                    comb.FoodDiff = self:GetHexBaseFood(comb.Hex1) + self:GetHexBaseFood(comb.Hex2) - 4;
+                    comb.ProdDiff = self:GetHexBaseProd(comb.Hex1) + self:GetHexBaseProd(comb.Hex2) - 4;
                     _Debug("Added 1 food in Hex1 "..tostring(comb.FoodDiff).." "..tostring(comb.ProdDiff))
                 end
             end            
@@ -3124,23 +3222,23 @@ function SpawnBalancing:CheckMinimumWorkable()
             local rng = TerrainBuilder.GetRandomNumber(100, "Random");
             -- Little rng to check the highest tile first
             if rng <= 20 then
-                if self.HexMap:TerraformAdd1Prod(comb.Hex1, canRemoveFood) then
-                    comb.FoodDiff = comb.Hex1.Food + comb.Hex2.Food - 4;
-                    comb.ProdDiff = comb.Hex1.Prod + comb.Hex2.Prod - 4;
+                if self:TerraformHex(comb.Hex1, 1, TerraformType[8], 0, canRemoveFood) then
+                    comb.FoodDiff = self:GetHexBaseFood(comb.Hex1) + self:GetHexBaseFood(comb.Hex2) - 4;
+                    comb.ProdDiff = self:GetHexBaseProd(comb.Hex1) + self:GetHexBaseProd(comb.Hex2) - 4;
                     _Debug("Added 1 prod in Hex1 "..tostring(comb.FoodDiff).." "..tostring(comb.ProdDiff))
-                elseif self.HexMap:TerraformAdd1Prod(comb.Hex2, canRemoveFood) then
-                    comb.FoodDiff = comb.Hex1.Food + comb.Hex2.Food - 4;
-                    comb.ProdDiff = comb.Hex1.Prod + comb.Hex2.Prod - 4;
+                elseif self:TerraformHex(comb.Hex2, 1, TerraformType[8], 0, canRemoveFood) then
+                    comb.FoodDiff = self:GetHexBaseFood(comb.Hex1) + self:GetHexBaseFood(comb.Hex2) - 4;
+                    comb.ProdDiff = self:GetHexBaseProd(comb.Hex1) + self:GetHexBaseProd(comb.Hex2) - 4;
                     _Debug("Added 1 prod in Hex2 "..tostring(comb.FoodDiff).." "..tostring(comb.ProdDiff))
                 end
             else
-                if self.HexMap:TerraformAdd1Prod(comb.Hex2, canRemoveFood) then
-                    comb.FoodDiff = comb.Hex1.Food + comb.Hex2.Food - 4;
-                    comb.ProdDiff = comb.Hex1.Prod + comb.Hex2.Prod - 4;
+                if self:TerraformHex(comb.Hex2, 1, TerraformType[8], 0, canRemoveFood) then
+                    comb.FoodDiff = self:GetHexBaseFood(comb.Hex1) + self:GetHexBaseFood(comb.Hex2) - 4;
+                    comb.ProdDiff = self:GetHexBaseProd(comb.Hex1) + self:GetHexBaseProd(comb.Hex2) - 4;
                     _Debug("Added 1 prod in Hex2 "..tostring(comb.FoodDiff).." "..tostring(comb.ProdDiff))
-                elseif self.HexMap:TerraformAdd1Prod(comb.Hex1, canRemoveFood) then
-                    comb.FoodDiff = comb.Hex1.Food + comb.Hex2.Food - 4;
-                    comb.ProdDiff = comb.Hex1.Prod + comb.Hex2.Prod - 4;
+                elseif self:TerraformHex(comb.Hex1, 1, TerraformType[8], 0, canRemoveFood) then
+                    comb.FoodDiff = self:GetHexBaseFood(comb.Hex1) + self:GetHexBaseFood(comb.Hex2) - 4;
+                    comb.ProdDiff = self:GetHexBaseProd(comb.Hex1) + self:GetHexBaseProd(comb.Hex2) - 4;
                     _Debug("Added 1 prod in Hex1 "..tostring(comb.FoodDiff).." "..tostring(comb.ProdDiff))
                 end
             end
@@ -3153,10 +3251,6 @@ function SpawnBalancing:CheckMinimumWorkable()
             return;
         end
     end
-end
-
-function SpawnBalancing:TestTilesCombinaison()
-
 end
 
 function SpawnBalancing:GetCoastalScoreHex()
@@ -3230,22 +3324,25 @@ function SpawnBalancing:RelocateRandomHexToNextRing(tableToRelocateFrom, ringTab
     tableToRelocateFrom = GetShuffledCopyOfTable(tableToRelocateFrom);
     for _, hex in pairs(tableToRelocateFrom) do
         -- Do not relocate floodplains, desert and tundra
-        if hex:IsFloodplains() == false and hex:IsDesertLand() == false and hex:IsTundraLand() == false and hex:IsSnowLand() == false then
-            return self:RelocateHex(tableToRelocateFrom, ringTableIndex, destinationRingIndex, hex);
+        print("Try relocate : ", hex:PrintXY(), hex.TerrainType, hex.FeatureType, hex.ResourceType, " from low yields tiles")
+        if hex:IsFloodplains() == false and hex:IsDesertLand() == false and hex:IsTundraLand() == false and hex:IsSnowLand() == false
+            and self:RelocateHex(ringTableIndex, destinationRingIndex, hex) then
+            return hex;
         end
     end
-    print("RelocateRandomHexToNextRingERROR - No hex to relocate")
+    print("RelocateRandomHexToNextRingERROR - No hex to relocate", #tableToRelocateFrom)
     return nil;
 end
 
-function SpawnBalancing:RelocateHex(tableToRelocateFrom, ringTableIndex, destinationRingIndex, hex)
+function SpawnBalancing:RelocateHex(ringTableIndex, destinationRingIndex, hex)
+    _Debug(hex:PrintXY(), hex.TerrainType, hex.FeatureType, hex.ResourceType)
     local hexData = { TerrainId = hex.TerrainType,  FeatureId = hex.FeatureType, ResourceId = hex.ResourceType, Relocated = false }
     print("Relocating "..hex:PrintXY().." : "..tostring(hex.TerrainType).." "..tostring(hex.FeatureType).." "..tostring(hex.ResourceType))
     table.insert(self.RingTables[destinationRingIndex].RELOCATING_TILES, hexData);
     self.HexMap:TerraformSetResource(hex, g_RESOURCE_NONE, false);
     self.HexMap:TerraformSetFeature(hex, g_FEATURE_NONE, false);
-    self:UpdateTableDataRing(hex, ringTableIndex, tableToRelocateFrom);
-    return hex
+    self:UpdateTableDataRing(hex, ringTableIndex);
+    return true;
 end
 
 
@@ -3265,9 +3362,9 @@ function SpawnBalancing:PlaceRelocatedHexOnRing(i)
                     local canFeat = hexData.FeatureId == g_FEATURE_NONE or (hexData.FeatureId ~= g_FEATURE_NONE and TerrainBuilder.CanHaveFeature(hex.Plot, hexData.FeatureId))
                     local canRes = hexData.ResourceId == g_RESOURCE_NONE or (hexData.ResourceId ~= g_RESOURCE_NONE and ResourceBuilder.CanHaveResource(hex.Plot, hexData.ResourceId))
                     if canFeat and canRes then
-                        self:TerraformHex(self.RingTables[i].WATER_EMPTY, i, hex, TerraformType[1], hexData.TerrainId, false);
-                        self:TerraformHex(self.RingTables[i].WATER_EMPTY, i, hex, TerraformType[2], hexData.FeatureId, false);
-                        if self:TerraformHex(self.RingTables[i].WATER_EMPTY, i, hex, TerraformType[3], hexData.ResourceId, false) then
+                        self:TerraformHex(hex, i, TerraformType[1], hexData.TerrainId, false);
+                        self:TerraformHex(hex, i, TerraformType[2], hexData.FeatureId, false);
+                        if self:TerraformHex(hex, i, TerraformType[3], hexData.ResourceId, false) then
                             _Debug("PlaceRelocatedHexOnRing "..tostring(i).." "..hex:PrintXY())
                             totalRelocating = totalRelocating - 1;
                             isRelocated = true;
@@ -3283,9 +3380,9 @@ function SpawnBalancing:PlaceRelocatedHexOnRing(i)
                     local canFeat = hexData.FeatureId == g_FEATURE_NONE or (hexData.FeatureId ~= g_FEATURE_NONE and TerrainBuilder.CanHaveFeature(hex.Plot, hexData.FeatureId))
                     local canRes = hexData.ResourceId == g_RESOURCE_NONE or (hexData.ResourceId ~= g_FEATURE_NONE and ResourceBuilder.CanHaveResource(hex.Plot, hexData.ResourceId))
                     if canFeat and canRes then
-                        self:TerraformHex(self.RingTables[i].EMPTY_TILES, i, hex, TerraformType[1], hexData.TerrainId, false);
-                        self:TerraformHex(self.RingTables[i].EMPTY_TILES, i, hex, TerraformType[2], hexData.FeatureId, false);
-                        if self:TerraformHex(self.RingTables[i].EMPTY_TILES, i, hex, TerraformType[3], hexData.ResourceId, false) then
+                        self:TerraformHex(hex, i, TerraformType[1], hexData.TerrainId, false);
+                        self:TerraformHex(hex, i, TerraformType[2], hexData.FeatureId, false);
+                        if self:TerraformHex(hex, i, TerraformType[3], hexData.ResourceId, false) then
                             _Debug("Relocated feat = "..tostring(hexData.FeatureId).." res = "..tostring(hexData.ResourceId).." on "..hex:PrintXY())
                             isRelocated = true;
                         end
@@ -3305,18 +3402,18 @@ function SpawnBalancing:PlaceRelocatedHexOnRing(i)
                     local canFeat = hexData.FeatureId == g_FEATURE_NONE or (hexData.FeatureId ~= g_FEATURE_NONE and TerrainBuilder.CanHaveFeature(hex.Plot, hexData.FeatureId))
                     local canRes = hexData.ResourceId == g_RESOURCE_NONE or (hexData.ResourceId ~= g_FEATURE_NONE and ResourceBuilder.CanHaveResource(hex.Plot, hexData.ResourceId))
                     if canFeat and canRes then
-                        self:TerraformHex(self.RingTables[i].LOW_YIELD_TILES, i, hex, TerraformType[1], hexData.TerrainId, false);
-                        self:TerraformHex(self.RingTables[i].LOW_YIELD_TILES, i, hex, TerraformType[2], hexData.FeatureId, false);
-                        if self:TerraformHex(self.RingTables[i].LOW_YIELD_TILES, i, hex, TerraformType[3], hexData.ResourceId, false) then
+                        self:TerraformHex(hex, i, TerraformType[1], hexData.TerrainId, false);
+                        self:TerraformHex(hex, i, TerraformType[2], hexData.FeatureId, false);
+                        if self:TerraformHex(hex, i, TerraformType[3], hexData.ResourceId, false) then
                             _Debug("Relocated feat = "..tostring(hexData.FeatureId).." res = "..tostring(hexData.ResourceId).." on "..hex:PrintXY())
                             totalRelocating = totalRelocating - 1;
                             isRelocated = true;
                         end
                         -- if relocating strategics, force to the next ring
                     elseif hexData.ResourceId ~= nil and g_RESOURCES_STRATEGICS[hexData.ResourceId] then
-                        self:TerraformHex(self.RingTables[i].LOW_YIELD_TILES, i, hex, TerraformType[1], hexData.TerrainId, true);
-                        self:TerraformHex(self.RingTables[i].LOW_YIELD_TILES, i, hex, TerraformType[2], hexData.FeatureId, true);
-                        if self:TerraformHex(self.RingTables[i].LOW_YIELD_TILES, i, hex, TerraformType[3], hexData.ResourceId, true) then
+                        self:TerraformHex(hex, i, TerraformType[1], hexData.TerrainId, true);
+                        self:TerraformHex(hex, i, TerraformType[2], hexData.FeatureId, true);
+                        if self:TerraformHex(hex, i, TerraformType[3], hexData.ResourceId, true) then
                             _Debug("Relocated feat = "..tostring(hexData.FeatureId).." res = "..tostring(hexData.ResourceId).." on "..hex:PrintXY())
                             totalRelocating = totalRelocating - 1;
                             isRelocated = true;
@@ -3363,7 +3460,11 @@ function SpawnBalancing:TerraformInRingsRandomOrder(iMin, iMax, terraformType, i
         table.insert(order, i)
     end
     order = GetShuffledCopyOfTable(order)
-    self:TerraformInRingsOrder(iMin, iMax, terraformType, id, needToBeWalkableTo, forcedLastRing);
+    for _, iRing in pairs(order) do
+        if self:TerraformRandomInRing(iRing, terraformType, id, needToBeWalkableTo, forcedLastRing) then
+            return;
+        end
+    end
 end
 
 
@@ -3380,7 +3481,7 @@ function SpawnBalancing:TerraformRandomInRing(i, terraformType, id, needToBeWalk
                 listWater = GetShuffledCopyOfTable(listWater);
             end
             for _, hex in pairs(listWater) do
-                if self:TerraformHex(self.RingTables[i].WATER_EMPTY, i, hex, terraformType, id, true) then
+                if self:TerraformHex(hex, i, terraformType, id, true) then
                     _Debug("Added "..tostring(terraformType).." id "..tostring(id).." to "..hex:PrintXY())
                     return true;
                 else 
@@ -3396,7 +3497,7 @@ function SpawnBalancing:TerraformRandomInRing(i, terraformType, id, needToBeWalk
         end
         for _, hex in pairs(listEmpty) do
             if needToBeWalkableTo == false or (needToBeWalkableTo and self.Hex:IsWalkableInRange(hex, i)) then
-                if self:TerraformHex(self.RingTables[i].EMPTY_TILES, i, hex, terraformType, id, true) then
+                if self:TerraformHex(hex, i, terraformType, id, true) then
                     print("Found a empty tile "..hex:PrintXY().." to add "..tostring(terraformType).." "..tostring(id))
                     return true;
                 end 
@@ -3410,7 +3511,7 @@ function SpawnBalancing:TerraformRandomInRing(i, terraformType, id, needToBeWalk
         end
         for _, hex in pairs(listLowYieldsTiles) do
             if needToBeWalkableTo == false or (needToBeWalkableTo and self.Hex:IsWalkableInRange(hex, i)) then
-                if self:TerraformHex(self.RingTables[i].LOW_YIELD_TILES, i, hex, terraformType, id, false) then
+                if self:TerraformHex(hex, i, terraformType, id, false) then
                     print("Found a low yield tile "..hex:PrintXY().." to add "..tostring(terraformType).." "..tostring(id))
                     return true;
                 end
@@ -3424,20 +3525,31 @@ function SpawnBalancing:TerraformRandomInRing(i, terraformType, id, needToBeWalk
             for _, hex in pairs(listLowYieldsTiles) do
                 if hex.ResourceType == g_RESOURCE_NONE and hex:IsFloodplains() == false 
                     and hex.FeatureType ~= g_FEATURE_GEOTHERMAL_FISSURE then
-                    if self:TerraformHex(self.RingTables[i].LOW_YIELD_TILES, i, hex, terraformType, id, true) then
+                    if self:TerraformHex(hex, i, terraformType, id, true) then
                         print("Terraformed a "..tostring(hex.FeatureType).." feature "..hex:PrintXY());
                         return true;
                     end
                 end
                 -- Try to add on Resource (feature or not), relocate only bonus
                 if g_RESOURCES_BONUS_LIST[hex.ResourceType] then
-                    if self:TerraformHex(self.RingTables[i].LOW_YIELD_TILES, i, hex, terraformType, id, true) then
+                    if self:TerraformHex(hex, i, terraformType, id, true) then
                         print("Terraformed a "..tostring(hex.ResourceType).." resource "..hex:PrintXY());
                         return true;
                     end
                 end
             end
         end
+    end
+    return false;
+end
+
+
+-- In garanteed strategics settings
+function SpawnBalancing:CanRelocateStrategics(resId, i)
+    local maxRingAllowedForHorses = 2
+    local maxRingAllowedForIron = 3
+    if (resId == RESOURCE_HORSES and i < maxRingAllowedForHorses) or (resId == RESOURCE_IRON and i < maxRingAllowedForIron) then
+        return true;
     end
     return false;
 end
@@ -3462,7 +3574,7 @@ function SpawnBalancing:ApplyGaranteedStrategics()
             ironOK = true;
         end
     end
-    if horsesOK == false then 
+    if horsesOK == false then
         print("Adding horses 1-2")
         self:TerraformInRingsRandomOrder(1, 2, TerraformType[3], g_RESOURCE_HORSES, true, true);
     end
@@ -3525,20 +3637,41 @@ end
 -- @param terraformType is the "enum" type for the terraform to apply 
 -- @param id is the corresponding resource/feature/terrain to apply (some terraformType do not use this)
 -- @param forced is a boolean to change the tile even if it do not meet all conditions (some terraformType do not use this)
-function SpawnBalancing:TerraformHex(previousTable, ring, hex, terraformType, id, forced)
+function SpawnBalancing:TerraformHex(hex, ring, terraformType, id, forced)
     if self.HexMap:TerraformHex(hex, terraformType, id, forced) then
-        self:UpdateTableDataRing(hex, ring, previousTable);
+        self:UpdateTableDataRing(hex, ring);
         table.insert(self.TerraformedTiles, hex);
         return true;
     end
     return false;
 end
 
+function SpawnBalancing:RemoveFromDataTables(hex, i)
+    RemoveFromTable(self.RingTables[i].WATER, hex);
+    RemoveFromTable(self.RingTables[i].WATER_EMPTY, hex);
+    RemoveFromTable(self.RingTables[i].WATER_RF, hex);
+    RemoveFromTable(self.RingTables[i].IMPASSABLE, hex);
+    RemoveFromTable(self.RingTables[i].DESERT, hex);
+    RemoveFromTable(self.RingTables[i].EMPTY_TILES, hex);
+    RemoveFromTable(self.RingTables[i].LOW_YIELD_TILES, hex);
+    RemoveFromTable(self.RingTables[i].STANDARD_YIELD_TILES, hex);
+    RemoveFromTable(self.RingTables[i].HIGH_YIELD_TILES, hex);
+    RemoveFromTable(self.RingTables[i].EXTRA_YIELDS, hex);
+    RemoveFromTable(self.RingTables[i].WORKABLE, hex);
+end
+
+
 -- Data for each ring around the designed spawn
-function SpawnBalancing:UpdateTableDataRing(h, i, previousTable)
-    if previousTable ~= nil then
-        RemoveFromTable(previousTable, h);
+function SpawnBalancing:UpdateTableDataRing(h, i)
+    if h.ResourceType == g_RESOURCE_HORSES then
+        print("UpdateTableDataRing Horses before remove")
+        print(self.Hex:PrintXY().." - IMPASSABLE "..tostring(i).. " = "..tostring(#self.RingTables[i].IMPASSABLE))
+        print(self.Hex:PrintXY().." - EMPTY_TILES "..tostring(i).. " = "..tostring(#self.RingTables[i].EMPTY_TILES))
+        print(self.Hex:PrintXY().." - LOW_YIELD_TILES "..tostring(i).. " = "..tostring(#self.RingTables[i].LOW_YIELD_TILES))
+        print(self.Hex:PrintXY().." - STANDARD_YIELD_TILES "..tostring(i).. " = "..tostring(#self.RingTables[i].STANDARD_YIELD_TILES))
+        print(self.Hex:PrintXY().." - HIGH_YIELD_TILES "..tostring(i).. " = "..tostring(#self.RingTables[i].HIGH_YIELD_TILES))
     end
+    self:RemoveFromDataTables(h, i);
     h:UpdateYields();
     --_Debug("UpdateTableDataRing "..h:PrintXY()..tostring(h.Food)..tostring(h.Prod).." Terrain = "..tostring(h.TerrainType).." Feature = "..tostring(h.FeatureType).." Resource = "..tostring(h.ResourceType))
     if h:IsWater() then
@@ -3548,12 +3681,6 @@ function SpawnBalancing:UpdateTableDataRing(h, i, previousTable)
             table.insert(self.RingTables[i].WATER_EMPTY, h)
         else
             table.insert(self.RingTables[i].WATER_RF, h)
-        end
-        -- todo useful ?
-        if h:IsCoast() then
-            table.insert(self.RingTables[i].COAST, h)
-        elseif h.Plot:IsLake() then
-            table.insert(self.RingTables[i].LAKES, h)
         end
     elseif h:IsImpassable() then
         table.insert(self.RingTables[i].IMPASSABLE, h)
@@ -3575,6 +3702,15 @@ function SpawnBalancing:UpdateTableDataRing(h, i, previousTable)
     if h.Food + h.Prod >= 3 then
         table.insert(self.RingTables[i].WORKABLE, h)
     end
+    if h.ResourceType == g_RESOURCE_HORSES then
+        print("UpdateTableDataRing Horses after")
+        print(self.Hex:PrintXY().." - IMPASSABLE "..tostring(i).. " = "..tostring(#self.RingTables[i].IMPASSABLE))
+        print(self.Hex:PrintXY().." - EMPTY_TILES "..tostring(i).. " = "..tostring(#self.RingTables[i].EMPTY_TILES))
+        print(self.Hex:PrintXY().." - LOW_YIELD_TILES "..tostring(i).. " = "..tostring(#self.RingTables[i].LOW_YIELD_TILES))
+        print(self.Hex:PrintXY().." - STANDARD_YIELD_TILES "..tostring(i).. " = "..tostring(#self.RingTables[i].STANDARD_YIELD_TILES))
+        print(self.Hex:PrintXY().." - HIGH_YIELD_TILES "..tostring(i).. " = "..tostring(#self.RingTables[i].HIGH_YIELD_TILES))
+    end
+
 end
 
 function SpawnBalancing:UpdateCoastalScore(score)
@@ -3619,8 +3755,6 @@ function BalanceAllCivYields(spawns)
     print("meanInnerRingWorkable = "..tostring(meanInnerRingWorkable));
     print("meanOuterRingWorkable = "..tostring(meanOuterRingWorkable));
     print("nbCivExtraYieldRing3 = "..tostring(nbCivExtraYieldRing3));
-    
-
 
     -- Balancing coastal resources on coastal 
     if nbCoastal > 0 then
@@ -3646,13 +3780,13 @@ function SpawnBalancing:GetInnerRingWorkable()
 
     local ring1workable = #self.RingTables[1].STANDARD_YIELD_TILES + #self.RingTables[1].HIGH_YIELD_TILES;
     for _, h in pairs(self.RingTables[1].WORKABLE) do
-        innerRingFood = innerRingFood + h.Food;
-        innerRingProd = innerRingProd + h.Prod;
+        innerRingFood = innerRingFood + self:GetHexBaseFood(h);
+        innerRingProd = innerRingProd + self:GetHexBaseProd(h);
     end
     local ring2workable = #self.RingTables[2].STANDARD_YIELD_TILES + #self.RingTables[2].HIGH_YIELD_TILES;
     for _, h in pairs(self.RingTables[2].WORKABLE) do
-        innerRingFood = innerRingFood + h.Food;
-        innerRingProd = innerRingProd + h.Prod;
+        innerRingFood = innerRingFood + self:GetHexBaseFood(h);
+        innerRingProd = innerRingProd + self:GetHexBaseProd(h);
     end
     print(tostring(self.Civ.CivilizationLeader).." GetInnerRingWorkable R1 : "..tostring(ring1workable).." R2 : "..tostring(ring2workable))
     return ring1workable + ring2workable, innerRingFood, innerRingProd;
@@ -3663,13 +3797,13 @@ function SpawnBalancing:GetOuterRingWorkable()
     local outerRingProd = 0;
     local ring3workable = #self.RingTables[3].STANDARD_YIELD_TILES + #self.RingTables[3].HIGH_YIELD_TILES;
     for _, h in pairs(self.RingTables[3].WORKABLE) do
-        outerRingFood = outerRingFood + h.Food;
-        outerRingProd = outerRingProd + h.Prod;
+        outerRingFood = outerRingFood + self:GetHexBaseFood(h);
+        outerRingProd = outerRingProd + self:GetHexBaseProd(h);
     end
     local ring4workable = #self.RingTables[4].STANDARD_YIELD_TILES + #self.RingTables[4].HIGH_YIELD_TILES;
     for _, h in pairs(self.RingTables[4].WORKABLE) do
-        outerRingFood = outerRingFood + h.Food;
-        outerRingProd = outerRingProd + h.Prod;
+        outerRingFood = outerRingFood + self:GetHexBaseFood(h);
+        outerRingProd = outerRingProd + self:GetHexBaseProd(h);
     end
     print(tostring(self.Civ.CivilizationLeader).." GetInnerRingWorkable R3 : "..tostring(ring3workable).." R4 : "..tostring(ring4workable))
     return ring3workable + ring4workable, outerRingFood, outerRingProd;
@@ -3689,26 +3823,26 @@ function SpawnBalancing:ImproveCoastal()
         for _, h in pairs(waterRFRing2) do
             if h.ResourceType == g_RESOURCE_FISH and h.FeatureType == g_FEATURE_NONE 
                 and self:CanAddToCoastalScore(CoastalScoring.FISH_REEF_R2 - CoastalScoring.FISH_R2) then
-                self:TerraformHex(self.RingTables[2].WATER_RF, 2, h, TerraformType[2], g_FEATURE_REEF, true);
-                self:TerraformHex(self.RingTables[2].WATER_RF, 2, h, TerraformType[3], g_RESOURCE_FISH, true);
+                self:TerraformHex(h, 2, TerraformType[2], g_FEATURE_REEF, true);
+                self:TerraformHex(h, 2, TerraformType[3], g_RESOURCE_FISH, true);
                 self:UpdateCoastalScore(CoastalScoring.FISH_REEF_R2 - CoastalScoring.FISH_R2)
                 stepDone = true;
                 _Debug(h:PrintXY().." ImproveCoastal - Fish to FishReef R2")
             elseif h.ResourceType == g_RESOURCE_NONE and h.FeatureType == g_FEATURE_REEF 
                 and self:CanAddToCoastalScore(CoastalScoring.FISH_REEF_R2 - CoastalScoring.REEF_R2) then
-                self:TerraformHex(self.RingTables[2].WATER_RF, 2, h, TerraformType[3], g_RESOURCE_FISH, true);
+                self:TerraformHex(h, 2, TerraformType[3], g_RESOURCE_FISH, true);
                 self:UpdateCoastalScore(CoastalScoring.FISH_REEF_R2 - CoastalScoring.REEF_R2)
                 stepDone = true;
                 _Debug(h:PrintXY().." ImproveCoastal - Reef to FishReef R2")
             elseif h.ResourceType == g_RESOURCE_CRABS then
                 if self:CanAddToCoastalScore(CoastalScoring.FISH_REEF_R2 - CoastalScoring.CRABS_R2) then
-                    self:TerraformHex(self.RingTables[2].WATER_RF, 2, h, TerraformType[2], g_FEATURE_REEF, true);
-                    self:TerraformHex(self.RingTables[2].WATER_RF, 2, h, TerraformType[3], g_RESOURCE_FISH, true);
+                    self:TerraformHex(h, 2, TerraformType[2], g_FEATURE_REEF, true);
+                    self:TerraformHex(h, 2, TerraformType[3], g_RESOURCE_FISH, true);
                     self:UpdateCoastalScore(CoastalScoring.FISH_REEF_R2 - CoastalScoring.CRABS_R2)
                     stepDone = true;
                     _Debug(h:PrintXY().." ImproveCoastal - Crab to FishReef R2")
                 elseif self:CanAddToCoastalScore(CoastalScoring.FISH_R2 - CoastalScoring.CRABS_R2) then
-                    self:TerraformHex(self.RingTables[2].WATER_RF, 2, h, TerraformType[3], g_RESOURCE_FISH, true);
+                    self:TerraformHex(h, 2, TerraformType[3], g_RESOURCE_FISH, true);
                     self:UpdateCoastalScore(CoastalScoring.FISH_R2 - CoastalScoring.CRABS_R2)
                     stepDone = true;
                     _Debug(h:PrintXY().." ImproveCoastal - Crab to Fish R2")
@@ -3722,26 +3856,26 @@ function SpawnBalancing:ImproveCoastal()
                 if h.ResourceType == g_RESOURCE_FISH and h.FeatureType == g_FEATURE_NONE 
                     and self:CanAddToCoastalScore(CoastalScoring.FISH_REEF_R3 - CoastalScoring.FISH_R3) then
                     -- TODO add calculations costal score
-                    self:TerraformHex(self.RingTables[3].WATER_RF, 3, h, TerraformType[2], g_FEATURE_REEF, true);
-                    self:TerraformHex(self.RingTables[3].WATER_RF, 3, h, TerraformType[3], g_RESOURCE_FISH, true);
+                    self:TerraformHex(h, 3, TerraformType[2], g_FEATURE_REEF, true);
+                    self:TerraformHex(h, 3, TerraformType[3], g_RESOURCE_FISH, true);
                     self:UpdateCoastalScore(CoastalScoring.FISH_REEF_R3 - CoastalScoring.FISH_R3)
                     stepDone = true;
                     _Debug(h:PrintXY().." ImproveCoastal - Fish to FishReef R3")
                 elseif h.ResourceType == g_RESOURCE_NONE and h.FeatureType == g_FEATURE_REEF 
                     and self:CanAddToCoastalScore(CoastalScoring.FISH_REEF_R3 - CoastalScoring.REEF_R3) then
-                    self:TerraformHex(self.RingTables[3].WATER_RF, 3, h, TerraformType[3], g_RESOURCE_FISH, true);
+                    self:TerraformHex(h, 3, TerraformType[3], g_RESOURCE_FISH, true);
                     self:UpdateCoastalScore(CoastalScoring.FISH_REEF_R3 - CoastalScoring.REEF_R3)
                     stepDone = true;
                     _Debug(h:PrintXY().." ImproveCoastal - Reef to FishReef R3")
                 elseif h.ResourceType == g_RESOURCE_CRABS then
                     if self:CanAddToCoastalScore(CoastalScoring.FISH_REEF_R3 - CoastalScoring.CRABS_R3) then
-                        self:TerraformHex(self.RingTables[3].WATER_RF, 3, h, TerraformType[2], g_FEATURE_REEF, true);
-                        self:TerraformHex(self.RingTables[3].WATER_RF, 3, h, TerraformType[3], g_RESOURCE_FISH, true);
+                        self:TerraformHex(h, 3, TerraformType[2], g_FEATURE_REEF, true);
+                        self:TerraformHex(h, 3, TerraformType[3], g_RESOURCE_FISH, true);
                         self:UpdateCoastalScore(CoastalScoring.FISH_REEF_R3 - CoastalScoring.CRABS_R3)
                         stepDone = true;
                         _Debug(h:PrintXY().." ImproveCoastal - Crab to FishReef R3")
                     elseif self:CanAddToCoastalScore(CoastalScoring.FISH_R3 - CoastalScoring.CRABS_R3) then
-                        self:TerraformHex(self.RingTables[3].WATER_EMPTY, 3, h, TerraformType[3], g_RESOURCE_FISH, true);
+                        self:TerraformHex(h, 3, TerraformType[3], g_RESOURCE_FISH, true);
                         self:UpdateCoastalScore(CoastalScoring.FISH_R3 - CoastalScoring.CRABS_R3)
                         stepDone = true;
                         _Debug(h:PrintXY().." ImproveCoastal - Crab to Fish R3")
@@ -3755,23 +3889,23 @@ function SpawnBalancing:ImproveCoastal()
             for _, h in pairs(waterEmptyRing2) do
                 -- Fish reef test -- TODO if reef is near coast ?
                 if self:CanAddToCoastalScore(CoastalScoring.FISH_REEF_R2) then
-                    self:TerraformHex(self.RingTables[2].WATER_EMPTY, 2, h, TerraformType[2], g_FEATURE_REEF, true);
-                    self:TerraformHex(self.RingTables[2].WATER_EMPTY, 2, h, TerraformType[3], g_RESOURCE_FISH, true);
+                    self:TerraformHex(h, 2, TerraformType[2], g_FEATURE_REEF, true);
+                    self:TerraformHex(h, 2, h, TerraformType[3], g_RESOURCE_FISH, true);
                     self:UpdateCoastalScore(CoastalScoring.FISH_REEF_R2)
                     stepDone = true;
                     _Debug(h:PrintXY().." ImproveCoastal - Empty to FishReef R2")
                 elseif self:CanAddToCoastalScore(CoastalScoring.FISH_R2) then
-                    self:TerraformHex(self.RingTables[2].WATER_EMPTY, 2, h, TerraformType[3], g_RESOURCE_FISH, true);
+                    self:TerraformHex(h, 2, h, TerraformType[3], g_RESOURCE_FISH, true);
                     self:UpdateCoastalScore(CoastalScoring.FISH_R2)
                     stepDone = true;
                     _Debug(h:PrintXY().." ImproveCoastal - Empty to Fish R2")
                 elseif self:CanAddToCoastalScore(CoastalScoring.CRABS_R2) then
-                    self:TerraformHex(self.RingTables[2].WATER_EMPTY, 2, h, TerraformType[3], g_RESOURCE_CRABS, true);
+                    self:TerraformHex(h, 2, TerraformType[3], g_RESOURCE_CRABS, true);
                     self:UpdateCoastalScore(CoastalScoring.CRABS_R2)
                     stepDone = true;
                     _Debug(h:PrintXY().." ImproveCoastal - Empty to Crab R2")
                 elseif self:CanAddToCoastalScore(CoastalScoring.REEF_R2) then
-                    self:TerraformHex(self.RingTables[2].WATER_EMPTY, 2, h, TerraformType[2], g_FEATURE_REEF, true);
+                    self:TerraformHex(h, 2, TerraformType[2], g_FEATURE_REEF, true);
                     self:UpdateCoastalScore(CoastalScoring.REEF_R2)
                     stepDone = true;
                     _Debug(h:PrintXY().." ImproveCoastal - Empty to Reef R2")
@@ -3784,23 +3918,23 @@ function SpawnBalancing:ImproveCoastal()
             for _, h in pairs(waterEmptyRing3) do
                 -- Fish reef test -- TODO if reef is near coast ?
                 if self:CanAddToCoastalScore(CoastalScoring.FISH_REEF_R3) then
-                    self:TerraformHex(self.RingTables[3].WATER_EMPTY, 3, h, TerraformType[2], g_FEATURE_REEF, true); 
-                    self:TerraformHex(self.RingTables[3].WATER_EMPTY, 3, h, TerraformType[3], g_RESOURCE_FISH, true); 
+                    self:TerraformHex(h, 3, TerraformType[2], g_FEATURE_REEF, true);
+                    self:TerraformHex(h, 3, TerraformType[3], g_RESOURCE_FISH, true);
                     self:UpdateCoastalScore(CoastalScoring.FISH_REEF_R3)
                     stepDone = true;
                     _Debug(h:PrintXY().." ImproveCoastal - Empty to FishReef R3")
                 elseif self:CanAddToCoastalScore(CoastalScoring.FISH_R3) then
-                    self:TerraformHex(self.RingTables[3].WATER_EMPTY, 3, h, TerraformType[3], g_RESOURCE_FISH, true); 
+                    self:TerraformHex(h, 3, TerraformType[3], g_RESOURCE_FISH, true);
                     self:UpdateCoastalScore(CoastalScoring.FISH_R3)
                     stepDone = true;
                     _Debug(h:PrintXY().." ImproveCoastal - Empty to Fish R3")
                 elseif self:CanAddToCoastalScore(CoastalScoring.CRABS_R3) then
-                    self:TerraformHex(self.RingTables[3].WATER_EMPTY, 3, h, TerraformType[3], g_RESOURCE_CRABS, true); 
+                    self:TerraformHex(h, 3, TerraformType[3], g_RESOURCE_CRABS, true);
                     self:UpdateCoastalScore(CoastalScoring.CRABS_R3)
                     stepDone = true;
                     _Debug(h:PrintXY().." ImproveCoastal - Empty to Crab R3")
                 elseif self:CanAddToCoastalScore(CoastalScoring.REEF_R3) then
-                    self:TerraformHex(self.RingTables[3].WATER_EMPTY, 3, h, TerraformType[2], g_FEATURE_REEF, true); 
+                    self:TerraformHex(h, 3, TerraformType[2], g_FEATURE_REEF, true);
                     self:UpdateCoastalScore(CoastalScoring.REEF_R3)
                     stepDone = true;
                     _Debug(h:PrintXY().." ImproveCoastal - Empty to Reef R3")
@@ -3828,24 +3962,24 @@ function SpawnBalancing:NerfCoastal()
         for _, h in pairs(waterRFRing2) do
             if h.ResourceType == g_RESOURCE_FISH and h.FeatureType == g_FEATURE_REEF then
                 if self:CanAddToCoastalScore(- CoastalScoring.FISH_REEF_R2) and self:CanNerfFishR2() then 
-                    self:TerraformHex(self.RingTables[2].WATER_RF, 2, h, TerraformType[2], g_FEATURE_NONE, true); 
-                    self:TerraformHex(self.RingTables[2].WATER_RF, 2, h, TerraformType[3], g_RESOURCE_NONE, true); 
+                    self:TerraformHex(h, 2, TerraformType[2], g_FEATURE_NONE, true);
+                    self:TerraformHex(h, 2, TerraformType[3], g_RESOURCE_NONE, true);
                     self:UpdateCoastalScore(- CoastalScoring.FISH_REEF_R2)
                     stepDone = true;
                     _Debug(h:PrintXY().." NerfCoastal - FishReef to Empty R2");
                 elseif self:CanAddToCoastalScore(CoastalScoring.REEF_R2 - CoastalScoring.FISH_REEF_R2) and self:CanNerfFishR2() then 
-                    self:TerraformHex(self.RingTables[2].WATER_RF, 2, h, TerraformType[3], g_RESOURCE_NONE, true); 
+                    self:TerraformHex(h, 2, TerraformType[3], g_RESOURCE_NONE, true);
                     self:UpdateCoastalScore(CoastalScoring.REEF_R2 - CoastalScoring.FISH_REEF_R2)
                     stepDone = true;
                     _Debug(h:PrintXY().." NerfCoastal - FishReef to Reef R2");
                 elseif self:CanAddToCoastalScore(CoastalScoring.CRABS_R2 - CoastalScoring.FISH_REEF_R2) and self:CanNerfFishR2() then      
-                    self:TerraformHex(self.RingTables[2].WATER_RF, 2, h, TerraformType[2], g_FEATURE_NONE, true); 
-                    self:TerraformHex(self.RingTables[2].WATER_RF, 2, h, TerraformType[3], g_RESOURCE_CRABS, true); 
+                    self:TerraformHex(h, 2, TerraformType[2], g_FEATURE_NONE, true);
+                    self:TerraformHex(h, 2, TerraformType[3], g_RESOURCE_CRABS, true);
                     self:UpdateCoastalScore(CoastalScoring.CRABS_R2 - CoastalScoring.FISH_REEF_R2)
                     stepDone = true;
                     _Debug(h:PrintXY().." NerfCoastal - FishReef to Crabs R2");
                 elseif self:CanAddToCoastalScore(CoastalScoring.FISH_R2 - CoastalScoring.FISH_REEF_R2) then 
-                    self:TerraformHex(self.RingTables[2].WATER_RF, 2, h, TerraformType[2], g_FEATURE_NONE, true); 
+                    self:TerraformHex(h, 2, TerraformType[2], g_FEATURE_NONE, true);
                     self:UpdateCoastalScore(CoastalScoring.FISH_R2 - CoastalScoring.FISH_REEF_R2)
                     stepDone = true;
                     _Debug(h:PrintXY().." NerfCoastal - FishReef to Fish R2");
@@ -3853,24 +3987,24 @@ function SpawnBalancing:NerfCoastal()
             end
             if stepDone == false and h.ResourceType == g_RESOURCE_FISH and h.FeatureType == g_FEATURE_NONE and self:CanNerfFishR2() then
                 if self:CanAddToCoastalScore(- CoastalScoring.FISH_R2) then
-                    self:TerraformHex(self.RingTables[2].WATER_RF, 2, h, TerraformType[3], g_RESOURCE_NONE, true); 
+                    self:TerraformHex(h, 2, TerraformType[3], g_RESOURCE_NONE, true);
                     self:UpdateCoastalScore(- CoastalScoring.FISH_R2)
                     stepDone = true;
                     _Debug(h:PrintXY().." NerfCoastal - Fish to Empty R2");
                 elseif self:CanAddToCoastalScore(CoastalScoring.CRABS_R2 - CoastalScoring.FISH_R2) then 
-                    self:TerraformHex(self.RingTables[2].WATER_RF, 2, h, TerraformType[3], g_RESOURCE_CRABS, true); 
+                    self:TerraformHex(h, 2, TerraformType[3], g_RESOURCE_CRABS, true);
                     self:UpdateCoastalScore(CoastalScoring.CRABS_R2 - CoastalScoring.FISH_R2)
                     stepDone = true;
                     _Debug(h:PrintXY().." NerfCoastal - Fish to Crabs R2");
                 end
             elseif h.ResourceType == g_RESOURCE_NONE and h.FeatureType == g_FEATURE_REEF 
                 and self:CanAddToCoastalScore(- CoastalScoring.REEF_R2) then 
-                self:TerraformHex(self.RingTables[2].WATER_RF, 2, h, TerraformType[2], g_FEATURE_NONE, true); 
+                self:TerraformHex(h, 2, TerraformType[2], g_FEATURE_NONE, true);
                 self:UpdateCoastalScore(- CoastalScoring.REEF_R2)
                 stepDone = true;
                 _Debug(h:PrintXY().." NerfCoastal - Reef to Empty R2");
             elseif h.ResourceType == g_RESOURCE_CRABS then
-                self:TerraformHex(self.RingTables[2].WATER_RF, 2, h, TerraformType[3], g_RESOURCE_NONE, true); 
+                self:TerraformHex(h, 2, TerraformType[3], g_RESOURCE_NONE, true);
                 self:UpdateCoastalScore(- CoastalScoring.CRABS_R2)
                 stepDone = true;
                 _Debug(h:PrintXY().." NerfCoastal - Crabs to Empty R2");
@@ -3883,24 +4017,24 @@ function SpawnBalancing:NerfCoastal()
             for _, h in pairs(waterRFRing3) do
                 if h.ResourceType == g_RESOURCE_FISH and h.FeatureType == g_FEATURE_REEF then
                     if self:CanAddToCoastalScore(- CoastalScoring.FISH_REEF_R3) then 
-                        self:TerraformHex(self.RingTables[3].WATER_RF, 3, h, TerraformType[2], g_FEATURE_NONE, true); 
-                        self:TerraformHex(self.RingTables[3].WATER_RF, 3, h, TerraformType[3], g_RESOURCE_NONE, true); 
+                        self:TerraformHex(h, 3, TerraformType[2], g_FEATURE_NONE, true);
+                        self:TerraformHex(h, 3, TerraformType[3], g_RESOURCE_NONE, true);
                         self:UpdateCoastalScore(- CoastalScoring.FISH_REEF_R3)
                         stepDone = true;
                         _Debug(h:PrintXY().." NerfCoastal - FishReef to Empty R3");
                     elseif self:CanAddToCoastalScore(CoastalScoring.REEF_R3 - CoastalScoring.FISH_REEF_R3) then 
-                        self:TerraformHex(self.RingTables[3].WATER_RF, 3, h, TerraformType[3], g_RESOURCE_NONE, true); 
+                        self:TerraformHex(h, 3, TerraformType[3], g_RESOURCE_NONE, true);
                         self:UpdateCoastalScore(CoastalScoring.REEF_R3 - CoastalScoring.FISH_REEF_R3)
                         stepDone = true;
                         _Debug(h:PrintXY().." NerfCoastal - FishReef to Reef R3");
                     elseif self:CanAddToCoastalScore(CoastalScoring.CRABS_R3 - CoastalScoring.FISH_REEF_R3) then      
-                        self:TerraformHex(self.RingTables[3].WATER_RF, 3, h, TerraformType[2], g_FEATURE_NONE, true); 
-                        self:TerraformHex(self.RingTables[3].WATER_RF, 3, h, TerraformType[3], g_RESOURCE_CRABS, true); 
+                        self:TerraformHex(h, 3, TerraformType[2], g_FEATURE_NONE, true);
+                        self:TerraformHex(h, 3, TerraformType[3], g_RESOURCE_CRABS, true);
                         self:UpdateCoastalScore(CoastalScoring.CRABS_R3 - CoastalScoring.FISH_REEF_R3)
                         stepDone = true;
                         _Debug(h:PrintXY().." NerfCoastal - FishReef to Crabs R3");
                     elseif self:CanAddToCoastalScore(CoastalScoring.FISH_R3 - CoastalScoring.FISH_REEF_R3) then 
-                        self:TerraformHex(self.RingTables[3].WATER_RF, 3, h, TerraformType[2], g_FEATURE_NONE, true); 
+                        self:TerraformHex(h, 3, TerraformType[2], g_FEATURE_NONE, true);
                         self:UpdateCoastalScore(CoastalScoring.FISH_R3 - CoastalScoring.FISH_REEF_R3)
                         stepDone = true;
                         _Debug(h:PrintXY().." NerfCoastal - FishReef to Fish R3");
@@ -3908,25 +4042,25 @@ function SpawnBalancing:NerfCoastal()
                 end
                 if stepDone == false and h.ResourceType == g_RESOURCE_FISH and h.FeatureType == g_FEATURE_NONE then
                     if self:CanAddToCoastalScore(- CoastalScoring.FISH_R3) then
-                        self:TerraformHex(self.RingTables[3].WATER_RF, 3, h, TerraformType[3], g_RESOURCE_NONE, true); 
+                        self:TerraformHex(h, 3, TerraformType[3], g_RESOURCE_NONE, true);
                         self:UpdateCoastalScore(- CoastalScoring.FISH_R3)
                         stepDone = true;
                         _Debug(h:PrintXY().." NerfCoastal - Fish to Empty R3");
                     elseif self:CanAddToCoastalScore(CoastalScoring.CRABS_R3 - CoastalScoring.FISH_R3) then 
-                        self:TerraformHex(self.RingTables[3].WATER_RF, 3, h, TerraformType[3], g_RESOURCE_CRABS, true); 
+                        self:TerraformHex(h, 3, TerraformType[3], g_RESOURCE_CRABS, true);
                         self:UpdateCoastalScore(CoastalScoring.CRABS_R3 - CoastalScoring.FISH_R3)
                         stepDone = true;
                         _Debug(h:PrintXY().." NerfCoastal - Fish to Crabs R3");
                     end
                 elseif stepDone == false and h.ResourceType == g_RESOURCE_NONE and h.FeatureType == g_FEATURE_REEF 
-                    and self:CanAddToCoastalScore(- CoastalScoring.REEF_R3) then 
-                    self:TerraformHex(self.RingTables[3].WATER_RF, 3, h, TerraformType[2], g_FEATURE_NONE, true); 
+                    and self:CanAddToCoastalScore(- CoastalScoring.REEF_R3) then
+                    self:TerraformHex(h, 3, TerraformType[2], g_FEATURE_NONE, true);
                     self:UpdateCoastalScore(- CoastalScoring.REEF_R3)
                     stepDone = true;
                     _Debug(h:PrintXY().." NerfCoastal - Reef to Empty R3");
                 elseif stepDone == false and h.ResourceType == g_RESOURCE_CRABS 
                     and self:CanAddToCoastalScore(- CoastalScoring.CRABS_R3) then 
-                    self:TerraformHex(self.RingTables[3].WATER_RF, 3, h, TerraformType[3], g_RESOURCE_NONE, true); 
+                    self:TerraformHex(h, 3, TerraformType[3], g_RESOURCE_NONE, true);
                     self:UpdateCoastalScore(- CoastalScoring.CRABS_R3)
                     stepDone = true;
                     _Debug(h:PrintXY().." NerfCoastal - Crabs to Empty R3");
@@ -3937,11 +4071,11 @@ function SpawnBalancing:NerfCoastal()
         if stepDone == false then
             for _, h in pairs(waterRFRing2) do
                 if h.ResourceType == g_RESOURCE_TURTLES and self:CanAddToCoastalScore(CoastalScoring.FISH_REEF_R2 - CoastalScoring.TURTLES_R2) then
-                    self:TerraformHex(self.RingTables[2].WATER_RF, 2, h, TerraformType[3], g_RESOURCE_FISH, true);
+                    self:TerraformHex(h, 2, TerraformType[3], g_RESOURCE_FISH, true);
                     self:UpdateCoastalScore(CoastalScoring.FISH_REEF_R2 - CoastalScoring.TURTLES_R2)
                     _Debug(h:PrintXY().." NerfCoastal - Turtles to FishReef R3");
                 elseif h.ResourceType == g_RESOURCE_WHALES and self:CanAddToCoastalScore(CoastalScoring.FISH_REEF_R2 - CoastalScoring.WHALES_R2) then
-                    self:TerraformHex(self.RingTables[2].WATER_RF, 2, h, TerraformType[3], g_RESOURCE_FISH, true);
+                    self:TerraformHex(h, 2, TerraformType[3], g_RESOURCE_FISH, true);
                     self:UpdateCoastalScore(CoastalScoring.FISH_REEF_R2 - CoastalScoring.WHALES_R2)
                     _Debug(h:PrintXY().." NerfCoastal - Whales to FishReef R3");
                 end
@@ -3967,6 +4101,8 @@ function SpawnBalancing:CanNerfFishR2()
 end
 
 
+
+
 function Contains(table1, value)
     for _, v in pairs(table1) do
         if v == value then
@@ -3982,11 +4118,12 @@ function AddToTable(table1, tableToInsert)
     end
 end
 
-function RemoveFromTable(table, valueToRemove)
-    for i, v in pairs(table) do
+function RemoveFromTable(table1, valueToRemove)
+    for i, v in pairs(table1) do
         if v == valueToRemove then
-            table[i] = nil  -- Set the value at index i to nil to remove it
-            break  -- Exit the loop after the first occurrence is removed
+            table1[i] = nil  -- Set the value at index i to nil to remove it
+            return true;
         end
     end
+    return false;
 end
