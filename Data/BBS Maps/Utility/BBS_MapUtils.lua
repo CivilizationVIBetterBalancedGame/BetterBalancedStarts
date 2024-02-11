@@ -1604,6 +1604,9 @@ end
 ---------------------------------------
 function HexMap:TerraformSetTerrain(hex, terrainId) 
     if hex ~= nil and hex.TerrainType ~= g_TERRAIN_TYPE_NONE then
+        if IsTundraLand(hex.TerrainType) then
+            _Debug("Tundra is terraformed")
+        end
         self:RemoveMapTerrains(hex);
         TerrainBuilder.SetTerrainType(hex.Plot, terrainId);
         hex.TerrainType = terrainId
@@ -1631,12 +1634,18 @@ function HexMap:TerraformSetResource(hex, resourceId, forced)
         if forced and (hex:IsTundraLand() == false and hex:IsSnowLand() == false and hex:IsDesertLand() == false) then
             ResourceBuilder.SetResourceType(hex.Plot, g_RESOURCE_NONE);
             if resourceId == g_RESOURCE_HORSES then
+                if IsPlainLand(hex.TerrainType) == false and IsGrassLand(hex.TerrainType) == false then
+                    return false;
+                end
                 self:TerraformToFlat(hex, true);
             elseif resourceId == g_RESOURCE_IRON then
                 self:TerraformToHill(hex, true);
             elseif resourceId == g_RESOURCE_NITER then
                 self:TerraformToFlat(hex, true);
             elseif resourceId == g_RESOURCE_COAL then
+                if IsPlainLand(hex.TerrainType) == false and IsGrassLand(hex.TerrainType) == false then
+                    return false;
+                end
                 local rng = TerrainBuilder.GetRandomNumber(100, "Coal terraform");
                 if rng <= 50 then
                     self:TerraformSetFeature(hex, g_FEATURE_FOREST);
@@ -1646,10 +1655,12 @@ function HexMap:TerraformSetResource(hex, resourceId, forced)
             elseif resourceId == g_RESOURCE_ALUMINUM then
                 if self:CanHaveJungle(hex) then
                     self:TerraformSetFeature(hex, g_FEATURE_JUNGLE);
-                else 
+                elseif hex.TerrainType == g_TERRAIN_TYPE_DESERT_HILLS then
+                    self:TerraformToFlat(hex, true);
+                elseif IsTundraLand(hex.TerrainType) == false and IsSnowLand(hex.TerrainType) == false then
                     self:TerraformToFlat(hex, true);
                     self:TerraformSetTerrain(hex, g_TERRAIN_TYPE_PLAINS);
-                end  
+                end
             end
         end
         -- Forcing to do try on desert, tundra if it can not have the resource
@@ -1846,7 +1857,18 @@ function HexMap:HasTerraformTo4YieldsRequirements(hex)
 end
 
 function HexMap:TerraformTo4YieldsTundra(hex)
-
+    -- 4yields considered as 1/2 or 1/3
+    if hex.TerrainType ~= g_TERRAIN_TYPE_TUNDRA_HILLS then
+        self:TerraformSetTerrain(hex, g_TERRAIN_TYPE_TUNDRA_HILLS);
+    end
+    if hex.FeatureType ~= g_FEATURE_FOREST then
+        self:TerraformSetFeature(hex, g_FEATURE_FOREST);
+    end
+    local rngProd = TerrainBuilder.GetRandomNumber(100, "Random deer");
+    if rngProd <= 25 then
+        self:TerraformSetResource(hex, g_RESOURCE_DEER, false);
+    end
+    return true;
 end
 
 function HexMap:TerraformTo22Yields(hex, emptyTileBeforeTerraform)
@@ -1896,7 +1918,7 @@ function HexMap:TerraformAdd1Food(hex, canMinusProd)
         end
     end
     -- Can change no resources (with possibly forest/jungle) from plain to grass
-    if canMinusProd and hex.ResourceType == g_RESOURCE_NONE and hex.FeatureType == g_FEATURE_FOREST then
+    if canMinusProd and hex.ResourceType == g_RESOURCE_NONE and (hex.FeatureType == g_FEATURE_FOREST or hex.FeatureType == g_FEATURE_NONE) then
         if hex.TerrainType == g_TERRAIN_TYPE_PLAINS then
             return self:TerraformSetTerrain(hex, g_TERRAIN_TYPE_GRASS);
         elseif hex.TerrainType == g_TERRAIN_TYPE_PLAINS_HILLS then
@@ -1950,7 +1972,7 @@ function HexMap:TerraformAdd1Prod(hex, canMinusFood)
     end
     local rng = TerrainBuilder.GetRandomNumber(100, "Random"); 
     -- Can change grassland to plain
-    if canMinusFood and hex.ResourceType == g_RESOURCE_NONE and (hex.FeatureType == g_FEATURE_FOREST or hex.FeatureType == g_FEATURE_JUNGLE) then
+    if canMinusFood and hex.ResourceType == g_RESOURCE_NONE and (hex.FeatureType == g_FEATURE_FOREST or hex.FeatureType == g_FEATURE_NONE) then
         if hex.TerrainType == g_TERRAIN_TYPE_GRASS then
             return self:TerraformSetTerrain(hex, g_TERRAIN_TYPE_PLAINS);
         elseif hex.TerrainType == g_TERRAIN_TYPE_GRASS_HILLS then
@@ -3663,17 +3685,8 @@ end
 
 -- Data for each ring around the designed spawn
 function SpawnBalancing:UpdateTableDataRing(h, i)
-    if h.ResourceType == g_RESOURCE_HORSES then
-        print("UpdateTableDataRing Horses before remove")
-        print(self.Hex:PrintXY().." - IMPASSABLE "..tostring(i).. " = "..tostring(#self.RingTables[i].IMPASSABLE))
-        print(self.Hex:PrintXY().." - EMPTY_TILES "..tostring(i).. " = "..tostring(#self.RingTables[i].EMPTY_TILES))
-        print(self.Hex:PrintXY().." - LOW_YIELD_TILES "..tostring(i).. " = "..tostring(#self.RingTables[i].LOW_YIELD_TILES))
-        print(self.Hex:PrintXY().." - STANDARD_YIELD_TILES "..tostring(i).. " = "..tostring(#self.RingTables[i].STANDARD_YIELD_TILES))
-        print(self.Hex:PrintXY().." - HIGH_YIELD_TILES "..tostring(i).. " = "..tostring(#self.RingTables[i].HIGH_YIELD_TILES))
-    end
     self:RemoveFromDataTables(h, i);
     h:UpdateYields();
-    --_Debug("UpdateTableDataRing "..h:PrintXY()..tostring(h.Food)..tostring(h.Prod).." Terrain = "..tostring(h.TerrainType).." Feature = "..tostring(h.FeatureType).." Resource = "..tostring(h.ResourceType))
     if h:IsWater() then
         table.insert(self.RingTables[i].WATER, h) -- not used ?
         -- Directly separate empty water tiles and with resources for easier management
@@ -3686,7 +3699,13 @@ function SpawnBalancing:UpdateTableDataRing(h, i)
         table.insert(self.RingTables[i].IMPASSABLE, h)
     elseif h:IsDesertLand() then
         table.insert(self.RingTables[i].DESERT, h)
-    elseif h.ResourceType == g_RESOURCE_NONE and h.FeatureType == g_FEATURE_NONE then
+    end
+    -- Special case for tundra civs
+    if self.Civ.IsTundraBias then
+        return self:UpdateTableDataRingTundra(h, i);
+    end
+
+    if h.ResourceType == g_RESOURCE_NONE and h.FeatureType == g_FEATURE_NONE then
         table.insert(self.RingTables[i].EMPTY_TILES, h)
     elseif h.Food + h.Prod < 4 then
         table.insert(self.RingTables[i].LOW_YIELD_TILES, h)
@@ -3702,16 +3721,26 @@ function SpawnBalancing:UpdateTableDataRing(h, i)
     if h.Food + h.Prod >= 3 then
         table.insert(self.RingTables[i].WORKABLE, h)
     end
-    if h.ResourceType == g_RESOURCE_HORSES then
-        print("UpdateTableDataRing Horses after")
-        print(self.Hex:PrintXY().." - IMPASSABLE "..tostring(i).. " = "..tostring(#self.RingTables[i].IMPASSABLE))
-        print(self.Hex:PrintXY().." - EMPTY_TILES "..tostring(i).. " = "..tostring(#self.RingTables[i].EMPTY_TILES))
-        print(self.Hex:PrintXY().." - LOW_YIELD_TILES "..tostring(i).. " = "..tostring(#self.RingTables[i].LOW_YIELD_TILES))
-        print(self.Hex:PrintXY().." - STANDARD_YIELD_TILES "..tostring(i).. " = "..tostring(#self.RingTables[i].STANDARD_YIELD_TILES))
-        print(self.Hex:PrintXY().." - HIGH_YIELD_TILES "..tostring(i).. " = "..tostring(#self.RingTables[i].HIGH_YIELD_TILES))
-    end
-
 end
+
+function SpawnBalancing:UpdateTableDataRingTundra(h, i)
+    if h.ResourceType == g_RESOURCE_NONE and h.FeatureType == g_FEATURE_NONE and h.TerrainType == g_TERRAIN_TYPE_TUNDRA then
+        table.insert(self.RingTables[i].EMPTY_TILES, h)
+    elseif h.Food + h.Prod < 3 then
+        table.insert(self.RingTables[i].LOW_YIELD_TILES, h)
+    elseif h.Food + h.Prod == 3 and h.Prod > 0 then
+        table.insert(self.RingTables[i].STANDARD_YIELD_TILES, h)
+    elseif h.Food + h.Prod > 3 or h.Food == 4 then
+        table.insert(self.RingTables[i].HIGH_YIELD_TILES, h)
+    end
+    if h.Food + h.Prod >= 3 and h.ExtraYield then
+        table.insert(self.RingTables[i].EXTRA_YIELDS, h)
+    end
+    if h.Food + h.Prod >= 2 then
+        table.insert(self.RingTables[i].WORKABLE, h)
+    end
+end
+
 
 function SpawnBalancing:UpdateCoastalScore(score)
     self.CoastalScore = self.CoastalScore + score
