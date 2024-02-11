@@ -1604,9 +1604,6 @@ end
 ---------------------------------------
 function HexMap:TerraformSetTerrain(hex, terrainId) 
     if hex ~= nil and hex.TerrainType ~= g_TERRAIN_TYPE_NONE then
-        if IsTundraLand(hex.TerrainType) then
-            _Debug("Tundra is terraformed")
-        end
         self:RemoveMapTerrains(hex);
         TerrainBuilder.SetTerrainType(hex.Plot, terrainId);
         hex.TerrainType = terrainId
@@ -1858,14 +1855,13 @@ end
 
 function HexMap:TerraformTo4YieldsTundra(hex)
     -- 4yields considered as 1/2 or 1/3
+    local rng = TerrainBuilder.GetRandomNumber(100, "Random deer");
     if hex.TerrainType ~= g_TERRAIN_TYPE_TUNDRA_HILLS then
         self:TerraformSetTerrain(hex, g_TERRAIN_TYPE_TUNDRA_HILLS);
     end
-    if hex.FeatureType ~= g_FEATURE_FOREST then
+    if rng <= 80 and hex.FeatureType ~= g_FEATURE_FOREST then
         self:TerraformSetFeature(hex, g_FEATURE_FOREST);
-    end
-    local rngProd = TerrainBuilder.GetRandomNumber(100, "Random deer");
-    if rngProd <= 25 then
+    else
         self:TerraformSetResource(hex, g_RESOURCE_DEER, false);
     end
     return true;
@@ -1945,18 +1941,14 @@ function HexMap:TerraformAdd1Food(hex, canMinusProd)
             end
         elseif hex.TerrainType == g_TERRAIN_TYPE_PLAINS then
             return self:TerraformSetResource(hex, g_RESOURCE_WHEAT);
-        elseif hex.TerrainType == g_TERRAIN_TYPE_GRASS_HILLS or hex.TerrainType == g_TERRAIN_TYPE_PLAINS_HILLS or hex.TerrainType == g_TERRAIN_TYPE_DESERT_HILLS then
+        elseif hex.TerrainType == g_TERRAIN_TYPE_GRASS_HILLS or hex.TerrainType == g_TERRAIN_TYPE_PLAINS_HILLS
+                or hex.TerrainType == g_TERRAIN_TYPE_DESERT_HILLS or hex.TerrainType == g_TERRAIN_TYPE_TUNDRA_HILLS then
             return self:TerraformSetResource(hex, g_RESOURCE_SHEEP);
         end
        -- Plain forest are common and cannot be directly given +1food (do not erase possible strat resource below)
     elseif hex.Food == 1 and hex.Prod == 2 then 
         _Debug("From 1-2 to 2-2 No resource")
         return self:TerraformTo22YieldsNoResource(hex, false);
-    end
-
-    -- TODO Tundra civ ?
-    if IsTundraLand(hex.TerrainType) and hex.ResourceType == g_RESOURCE_NONE then
-        
     end
 end
 
@@ -1982,7 +1974,7 @@ function HexMap:TerraformAdd1Prod(hex, canMinusFood)
 
     if hex.ResourceType == g_RESOURCE_NONE then
         -- If already have forest, can add deer
-        if hex.FeatureType == g_FEATURE_FOREST and rng <= 10 then
+        if hex.FeatureType == g_FEATURE_FOREST and (rng <= 10 or IsTundraLand(hex.TerrainType) ) then
             return self:TerraformSetResource(hex, g_RESOURCE_DEER);
         end
         -- No feature
@@ -3700,8 +3692,7 @@ function SpawnBalancing:UpdateTableDataRing(h, i)
     elseif h:IsDesertLand() then
         table.insert(self.RingTables[i].DESERT, h)
     end
-    -- Special case for tundra civs
-    if self.Civ.IsTundraBias then
+    if IsTundraLand(h.TerrainType) then
         return self:UpdateTableDataRingTundra(h, i);
     end
 
