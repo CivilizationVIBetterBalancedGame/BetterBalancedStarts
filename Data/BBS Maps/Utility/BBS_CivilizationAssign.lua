@@ -350,7 +350,7 @@ function CivilizationAssignSpawn:GetValidSpawnsInHexList(listHex)
     local validTiles = {}
     for _, hex in pairs(listHex) do
         if hex.IsMajorSpawnable then --pre calculation of technical spawns
-            if self.IsTundraBias == false and self.IsDesertBias == false and (hex.TundraScore < 24) then
+            if self.IsTundraBias == false and self.IsDesertBias == false and self:ValidTundraDensity(hex) then
                 -- If Maya ignore fresh water, it will be placed last because there is too much valid tiles
                 if self.IsCoastalBias and hex.IsCoastal and hex:IsTundraLand() == false then
                     -- Fresh water is favored on score calculations
@@ -361,7 +361,7 @@ function CivilizationAssignSpawn:GetValidSpawnsInHexList(listHex)
             elseif self.IsTundraBias and hex:IsTundraLand() and hex.IsFreshWater then
                 table.insert(validTiles, hex);
             --elseif self.IsDesertBias and hex:IsDesertLand() and hex.IsFreshWater then
-            elseif self.IsDesertBias and self:FindDesertBiasV2(hex) then
+            elseif self.IsDesertBias and self:ValidTundraDensity(hex) and self:FindDesertBiasV2(hex) then
                 table.insert(validTiles, hex); 
             end
         end
@@ -372,22 +372,54 @@ end
 -- Test for Mali : at least 2 desert tiles and 2 non desert
 -- We do not check here fresh water, we will add oasis if needed
 function CivilizationAssignSpawn:FindDesertBiasV2(hex)
-    local countDesert = 0
-    local countLand = 0
+    if hex:IsDesertLand() == false then
+        return false;
+    end
+    local countDesertR1 = 0
+    local countLandR1 = 0
+    local countDesertR2 = 0
+    local countLandR2 = 0
     for _, r in pairs(hex.AllRing6Map[1]) do
         if r:IsImpassable() == false then
             if r:IsDesertLand() then
-                countDesert = countDesert + 1;
+                countDesertR1 = countDesertR1 + 1;
             elseif r:IsGrassLand() or r:IsPlainLand() then
-                countLand = countLand + 1;
+                countLandR1 = countLandR1 + 1;
             end
         end
     end
-    if countDesert >= 2 and countLand >= 2 then
+    for _, r in pairs(hex.AllRing6Map[2]) do
+        if r:IsImpassable() == false then
+            if r:IsDesertLand() then
+                countDesertR2 = countDesertR2 + 1;
+            elseif r:IsGrassLand() or r:IsPlainLand() then
+                countLandR2 = countLandR2 + 1;
+            end
+        end
+    end
+    if countDesertR1 >= 2 and countDesertR2 >= 3 and countLandR1 + countLandR2 >= 4 then
         return true;
     end
     return false;
 end
+
+
+function CivilizationAssignSpawn:ValidTundraDensity(hex)
+    -- Precalculated number of tundra in ring 6 around hex
+    if hex.TundraScore > 16 then
+        return false;
+    end
+    -- No tundra in ring 3, complements the previous condition in case there is patch of tundra in a peninsula too close to the spawn
+    for i, ring in pairs(hex.AllRing6Map) do
+        for _, h in pairs(ring) do
+            if i <= 3 and IsTundraLand(h.TerrainType) then
+                return false;
+            end
+        end
+    end
+    return true;
+end
+
 
 -- Find the best centroid for the civ from data analysis
 function CivilizationAssignSpawn:FindHighestScoreHex()
@@ -502,6 +534,7 @@ function CivilizationAssignSpawn:ComputeHexScoreCiv(hex)
         end
         totalBiasScore = totalBiasScore + thisBiasScore
     end
+    -- TODO : Split the score in differents bias terrain/feature/resource, mean of score on this
     if countBias > 0 then
         totalBiasScore = totalBiasScore / countBias;
     end
@@ -513,6 +546,9 @@ function CivilizationAssignSpawn:ComputeHexScoreCiv(hex)
     local peninsulaScore = math.floor((hex.PeninsulaScore / 10) + 0.5) * 10
     if self.IsNoBias or self.IsKingNorthBias then
         score = score + math.min(70, peninsulaScore)
+        -- Slight adjustment for mountain civ to avoid being stuck inside mountains on standard ridges
+    elseif self.IsMountainBias or self.IsMountainLoverBias then
+        score = score + math.min(60, peninsulaScore)
     else
         -- especially for river and coastal else 5 pt is not much when testing other biases
         score = score + math.min(50, peninsulaScore)
@@ -604,7 +640,6 @@ function ComputeHexScoreByBias(hex, bias)
         end
     -- Custom Biases are usually computed in valid tiles and isBiasRespected method, not in the score
     end
-   
     return math.min(biasScore, scoreThreshold);
 end
 

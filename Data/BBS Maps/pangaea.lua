@@ -240,7 +240,7 @@ function GeneratePlotTypes(world_age)
 			end
 		end
 
-		local maxWaterCenter = 0.45 * g_iH * 0.1 * g_iW;
+		local maxWaterCenter = 0.4 * g_iH * 0.1 * g_iW;
 		local maxWaterNextToCenter = 0.6 * g_iH * 0.1 * g_iW;
 		-- Maximum 5% land on border to avoid long peninsula
 		local maxLandBorder = 0.05 * g_iH * 0.1 * g_iW;
@@ -261,7 +261,7 @@ function GeneratePlotTypes(world_age)
 		local totalTiles =  g_iW * g_iH
 		local landPercent = (g_iNumTotalLandTiles / totalTiles) * 100;
 		-- Now test the biggest landmass to see if it is large enough.
-		if iNumBiggestAreaTiles >= g_iNumTotalLandTiles * 0.94 and isLandmassOnBordersOK and hasEnoughLandMiddle then
+		if iNumBiggestAreaTiles >= g_iNumTotalLandTiles * 0.96 and isLandmassOnBordersOK and hasEnoughLandMiddle then
 			done = true;
 			iBiggestID = biggest_area:GetID();
 		end
