@@ -400,13 +400,17 @@ function IsSnowLand(terrainIndex)
         or terrainIndex == g_TERRAIN_TYPE_SNOW_MOUNTAIN
 end
 
-function Hex:IsFloodplains()
-    return IsFloodplains(self.FeatureType);
+function Hex:IsFloodplains(includeDesert)
+    return IsFloodplains(self.FeatureType, includeDesert);
 end
 
-function IsFloodplains(featureIndex)
-    return featureIndex == g_FEATURE_FLOODPLAINS
-        or featureIndex == g_FEATURE_FLOODPLAINS_GRASSLAND
+function IsFloodplains(featureIndex, includingDesert)
+    if includingDesert then
+        return featureIndex == g_FEATURE_FLOODPLAINS
+                or featureIndex == g_FEATURE_FLOODPLAINS_GRASSLAND
+                or featureIndex == g_FEATURE_FLOODPLAINS_PLAINS;
+    end
+    return featureIndex == g_FEATURE_FLOODPLAINS_GRASSLAND
         or featureIndex == g_FEATURE_FLOODPLAINS_PLAINS;
 end
 
@@ -739,9 +743,9 @@ function HexMap:SetMinimumDistanceMajorToMajorCivs()
         return 15;
     elseif self.mapScript == MapScripts.MAP_INLAND_SEA then
         return 14;
-    elseif self.mapScript == MapScripts.MAP_SEVEN_SEAS or self.mapScript == MapScripts.MAP_PRIMORDIAL then
+    elseif self.mapScript == MapScripts.MAP_SEVEN_SEAS then
         return 13;
-    elseif self.mapScript == MapScripts.MAP_PANGAEA or self.mapScript == MapScripts.MAP_DW_PANGAEA or self.mapScript == MapScripts.MAP_SHUFFLE or self.mapScript == MapScripts.MAP_TILTED_AXIS then
+    elseif self.mapScript == MapScripts.MAP_PANGAEA or self.mapScript == MapScripts.MAP_DW_PANGAEA or self.mapScript == MapScripts.MAP_SHUFFLE or self.mapScript == MapScripts.MAP_TILTED_AXIS or self.mapScript == MapScripts.MAP_PRIMORDIAL then
         return 12;
     elseif self.mapScript == MapScripts.MAP_TERRA then
         return 8;
@@ -1151,7 +1155,7 @@ function Hex:IsHexNextTo5FloodTiles()
     local ring1 = self.AllRing6Map[1];
     local floodplainsR1 = 0
     for _, r1 in pairs(ring1) do
-        if r1:IsFloodplains() or r1:IsWater() then
+        if r1:IsFloodplains(true) or r1:IsWater() then
             floodplainsR1 = floodplainsR1 + 1
         end
         if floodplainsR1 > 4 then
@@ -1701,7 +1705,7 @@ end
 -- Features -- We do not terraform features linked to disaster so volcano and floodplains
 ---------------------------------------
 function HexMap:TerraformSetFeature(hex, featureId, forced)
-    local disasterTile = (IsFloodplains(hex.FeatureType) and IsFloodplains(featureId) == false) or hex.FeatureType == g_FEATURE_VOLCANO;
+    local disasterTile = (IsFloodplains(hex.FeatureType, true) and IsFloodplains(featureId, true) == false) or hex.FeatureType == g_FEATURE_VOLCANO;
     if hex.Plot ~= nil and disasterTile == false and (TerrainBuilder.CanHaveFeature(hex.Plot, featureId) or forced) then
         self:RemoveMapFeatures(hex)
         TerrainBuilder.SetFeatureType(hex.Plot, featureId);
@@ -1867,7 +1871,7 @@ function HexMap:HasTerraformTo4YieldsRequirements(hex)
         or g_RESOURCES_STRATEGICS[hex.ResourceType] 
         or g_RESOURCES_LUX_LIST[hex.ResourceType] 
         or hex:IsWater()
-        or hex:IsFloodplains() 
+        or hex:IsFloodplains(true)
         or hex.FeatureType == g_FEATURE_GEOTHERMAL_FISSURE then
             return false;
     end
@@ -1933,7 +1937,7 @@ function HexMap:TerraformAdd1Food(hex, canMinusProd)
 
     local rng = TerrainBuilder.GetRandomNumber(100, "Random");
     -- Floodplains specific
-    if hex:IsFloodplains() then
+    if hex:IsFloodplains(false) then
         if hex.TerrainType == g_TERRAIN_TYPE_PLAINS then
             return self:TerraformSetResource(hex, g_RESOURCE_WHEAT);
         elseif hex.TerrainType == g_TERRAIN_TYPE_GRASS then
@@ -1991,7 +1995,7 @@ function HexMap:TerraformAdd1Prod(hex, canMinusFood)
     if  g_RESOURCES_STRATEGICS[hex.ResourceType] 
         or g_RESOURCES_LUX_LIST[hex.ResourceType] 
         or hex:IsWater()
-        or hex:IsFloodplains()
+        or hex:IsFloodplains(true)
         or hex.FeatureType == g_FEATURE_GEOTHERMAL_FISSURE then
             print("TerraformAdd1Prod - Can't upgrade naturally (excluded lux, strat, water) - Terrain : "..tostring(hex.TerrainType).." Resource :"..tostring(hex.ResourceType).." - Feature : "..tostring(hex.FeatureType))
             return false;
@@ -2152,7 +2156,7 @@ function HexMap:FixedTerraformTo31(hex)
         or g_RESOURCES_STRATEGICS[hex.ResourceType] 
         or g_RESOURCES_LUX_LIST[hex.ResourceType] 
         or hex:IsWater()
-        or hex:IsFloodplains() 
+        or hex:IsFloodplains(true)
         or hex.FeatureType == g_FEATURE_GEOTHERMAL_FISSURE then
             print("TerraformTo4Yields - Can't upgrade naturally (excluded) - Terrain : "..tostring(hex.TerrainType).." Resource :"..tostring(hex.ResourceType).." - Feature : "..tostring(hex.FeatureType))
             return false;
@@ -3012,7 +3016,7 @@ function SpawnBalancing:TerraformRing6Deserts()
         while (i < 7) do
             for _, h in pairs(self.RingTables[i].HexRings) do
                 if h:IsDesertLand() then
-                    if h:IsFloodplains() or h:IsMountain() then
+                    if h:IsFloodplains(true) or h:IsMountain() then
                         self:TerraformHex(h, i, TerraformType[5], 0, false)
                     else
                         local rng = TerrainBuilder.GetRandomNumber(100, "Desert terraform");
@@ -3072,17 +3076,21 @@ function SpawnBalancing:ApplyMinimalLandTiles(iMin, iMax)
             return;
         end
         if i >= iMin then 
-            print("MinimalTileV2 Ring "..tostring(i));
+
             -- Apply relocated resources from previous ring
             self:PlaceRelocatedHexOnRing(i);
             -- Formula used to count the number of standard yields tiles needed in a given ring around the spawning hex
             local tileToUp = (i + 1) - #self.RingTables[i].STANDARD_YIELD_TILES - #self.RingTables[i].HIGH_YIELD_TILES;
+            _Debug("MinimalTileV2 Ring ", i, " : tileToUp = ", tileToUp);
+            _Debug("MinimalTileV2 Ring ", i, " : Empty = ", #self.RingTables[i].EMPTY_TILES);
+            _Debug("MinimalTileV2 Ring ", i, " : Low = ",#self.RingTables[i].LOW_YIELD_TILES);
             -- Try to apply randomly desired number of standard yield tiles in ring i
             while (tileToUp > 0 and self:TerraformRandomInRing(i, TerraformType[4], 0, false, false)) do
                 tileToUp = tileToUp - 1;
             end
             -- If left to update, it means there were obstacle to the terraformation (existing resources or features) if possible, relocate them in next ring
             while tileToUp > 0 and i < self.MaxRing do
+                _Debug("MinimalTileV2 Ring ", i, " : leftToUp = ", tileToUp);
                 local nextIndex= i + 1;
                 local relocatedHex = self:RelocateRandomHexToNextRing(self.RingTables[i].LOW_YIELD_TILES, i, nextIndex)
                 if relocatedHex ~= nil and self:TerraformHex(relocatedHex, i, TerraformType[4]) then
@@ -3337,6 +3345,8 @@ function SpawnBalancing:CheckMinimumWorkable()
     end
 end
 
+
+
 function SpawnBalancing:GetCoastalScoreHex()
     local coastalScore = 0;
     for i, _ in pairs(self.RingTables) do
@@ -3409,7 +3419,7 @@ function SpawnBalancing:RelocateRandomHexToNextRing(tableToRelocateFrom, ringTab
     for _, hex in pairs(tableToRelocateFrom) do
         -- Do not relocate floodplains, desert and tundra
         print("Try relocate : ", hex:PrintXY(), hex.TerrainType, hex.FeatureType, hex.ResourceType, " from low yields tiles")
-        if hex:IsFloodplains() == false and hex:IsDesertLand() == false and hex:IsTundraLand() == false and hex:IsSnowLand() == false
+        if hex:IsFloodplains(true) == false and hex:IsDesertLand() == false and hex:IsTundraLand() == false and hex:IsSnowLand() == false
             and self:RelocateHex(ringTableIndex, destinationRingIndex, hex) then
             return hex;
         end
@@ -3432,9 +3442,9 @@ end
 
 -- To call after using a method that can fill the relocating table, will try to add it to the ring in index
 function SpawnBalancing:PlaceRelocatedHexOnRing(i) 
-    print("PlaceRelocatedHexOnRing entry")
     local totalRelocating = #self.RingTables[i].RELOCATING_TILES
     if totalRelocating > 0 then
+        _Debug("PlaceRelocatedHexOnRing entry = ", totalRelocating)
         for _, hexData in pairs(self.RingTables[i].RELOCATING_TILES) do
             local isRelocated = false;
             if #self.RingTables[i].WATER_EMPTY > 0 and hexData.TerrainId == g_TERRAIN_TYPE_COAST then
@@ -3608,7 +3618,7 @@ function SpawnBalancing:TerraformRandomInRing(i, terraformType, id, needToBeWalk
             -- Try to add on Feature, exclude flood and geo
             for _, hex in pairs(listLowYieldsTiles) do
                 if needToBeWalkableTo == false or (needToBeWalkableTo and self.Hex:IsWalkableInRange(hex, i)) then
-                    if hex.ResourceType == g_RESOURCE_NONE and hex:IsFloodplains() == false
+                    if hex.ResourceType == g_RESOURCE_NONE and hex:IsFloodplains(true) == false
                             and hex.FeatureType ~= g_FEATURE_GEOTHERMAL_FISSURE then
                         if self:TerraformHex(hex, i, terraformType, id, true) then
                             print("Terraformed a "..tostring(hex.FeatureType).." feature "..hex:PrintXY());
