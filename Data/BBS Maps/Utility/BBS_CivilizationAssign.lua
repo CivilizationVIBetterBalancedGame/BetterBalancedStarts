@@ -575,9 +575,6 @@ function CivilizationAssignSpawn:ComputeHexScoreBiasCiv(hex)
     local categotyTier = {}
     for _, bias in pairs(self.CivilizationBiases) do
         local thisBiasScore = ComputeHexScoreByBias(hex, bias);
-       --[[ if bias.Value ~= g_TERRAIN_TYPE_COAST then
-            countBias = countBias + 1;
-        end]]
         local category = self:GetBiasCategory(bias);
         biasScoreCategory[category] = biasScoreCategory[category] or {}
         table.insert(biasScoreCategory[category], thisBiasScore)
@@ -585,10 +582,10 @@ function CivilizationAssignSpawn:ComputeHexScoreBiasCiv(hex)
     end
     -- Do the mean score for each category
     for categoryKey, scoreTable in pairs(biasScoreCategory) do
-        _Debug("ComputeHexScoreBiasCiv ", self.CivilizationLeader, " ", categoryKey);
+        --_Debug("ComputeHexScoreBiasCiv ", self.CivilizationLeader, " ", categoryKey);
         local meanScore = 0
         for _, score in pairs(scoreTable) do
-            _Debug("ComputeHexScoreBiasCiv ", self.CivilizationLeader, " Score = ", score);
+            --_Debug("ComputeHexScoreBiasCiv ", self.CivilizationLeader, " Score = ", score);
             meanScore = meanScore + score;
         end
         meanScore = meanScore / #scoreTable;
@@ -600,15 +597,6 @@ function CivilizationAssignSpawn:ComputeHexScoreBiasCiv(hex)
         _Debug("ComputeHexScoreBiasCiv ", self.CivilizationLeader, " Category = ", categoryKey, " Mean score = ", meanScore);
     end
     return totalBiasScore;
-    -- TODO : Split the score in differents bias terrain/feature/resource, mean of score on this
-    --if countBias > 0 then
-    --    totalBiasScore = totalBiasScore / countBias;
-    --end
-
-
-    --bias.Tier = row.Tier;
-    --bias.Type = "TERRAINS";
-    --bias.Value = GetTerrainIndex(row.TerrainType);
 end
 
 
@@ -624,13 +612,15 @@ function CivilizationAssignSpawn:GetBiasCategory(bias)
             elseif g_RESOURCES_PLANTATION_LIST[bias.Value] then
                 return "PLANTATIONS";
             elseif g_RESOURCES_FARM_LIST[bias.Value] then
-                return "FARMS"
+                return "FARMS";
             end
         elseif bias.Type == "FEATURES" then
             -- Group forest/jungle
             return "FEATURES";
         elseif bias.Type == "TERRAINS" then
-            if IsPlainLand(bias.Value) then
+            if bias.Value == g_TERRAIN_TYPE_COAST then
+                return "COAST";
+            elseif IsPlainLand(bias.Value) then
                 return "PLAIN";
             elseif IsGrassLand(bias.Value) then
                 return "GRASS";
@@ -640,9 +630,9 @@ function CivilizationAssignSpawn:GetBiasCategory(bias)
                 return "DESERT";
             end
         elseif bias.Type == "RIVERS" then
-            return "RIVERS"
+            return "RIVERS";
         else
-            return "CUSTOM"
+            return "CUSTOM";
         end
     end
     return "NEGATIVES";
