@@ -32,6 +32,7 @@ function CivilizationAssignSpawn.new(player, leader, name, team)
     instance.CentroidsScore = {}
     instance.AttributedCentroid = nil;
     instance.StartingHex = nil;
+    _Debug("Init CivilizationAssignSpawn ", player, leader, name, team);
     return instance;
 end
 
@@ -599,43 +600,45 @@ function CivilizationAssignSpawn:ComputeHexScoreBiasCiv(hex)
     return totalBiasScore;
 end
 
-
+-- Dividing bias by category (type of terrain or resources) and by tier
 function CivilizationAssignSpawn:GetBiasCategory(bias)
-    if bias.IsNegative == false then
-        if bias.Type == "RESOURCES" then
-            if g_RESOURCES_MINE_LIST[bias.Value] then
-                return "MINES";
-            elseif g_RESOURCES_QUARRY_LIST[bias.Value] then
-                return "QUARRIES";
-            elseif g_RESOURCES_PASTURE_LIST[bias.Value] then
-                return "PASTURES";
-            elseif g_RESOURCES_PLANTATION_LIST[bias.Value] then
-                return "PLANTATIONS";
-            elseif g_RESOURCES_FARM_LIST[bias.Value] then
-                return "FARMS";
-            end
-        elseif bias.Type == "FEATURES" then
-            -- Group forest/jungle
-            return "FEATURES";
-        elseif bias.Type == "TERRAINS" then
-            if bias.Value == g_TERRAIN_TYPE_COAST then
-                return "COAST";
-            elseif IsPlainLand(bias.Value) then
-                return "PLAIN";
-            elseif IsGrassLand(bias.Value) then
-                return "GRASS";
-            elseif IsTundraLand(bias.Value) then
-                return "TUNDRA";
-            elseif IsDesertLand(bias.Value) then
-                return "DESERT";
-            end
-        elseif bias.Type == "RIVERS" then
-            return "RIVERS";
-        else
-            return "CUSTOM";
-        end
+    if bias.IsNegative then
+        return "NEGATIVES_T"..tostring(bias.Tier);
     end
-    return "NEGATIVES";
+    if bias.Type == "RESOURCES" then
+        if g_RESOURCES_MINE_LIST[bias.Value] then
+            return "MINES_T"..tostring(bias.Tier);
+        elseif g_RESOURCES_QUARRY_LIST[bias.Value] then
+            return "QUARRIES_T"..tostring(bias.Tier);
+        elseif g_RESOURCES_PASTURE_LIST[bias.Value] then
+            return "PASTURES_T"..tostring(bias.Tier);
+        elseif g_RESOURCES_CAMP_LIST[bias.Value] then
+            return "CAMPS_T"..tostring(bias.Tier);
+        elseif g_RESOURCES_PLANTATION_LIST[bias.Value] then
+            return "PLANTATIONS_T"..tostring(bias.Tier);
+        elseif g_RESOURCES_FARM_LIST[bias.Value] then
+            return "FARMS_T"..tostring(bias.Tier);
+        end
+    elseif bias.Type == "FEATURES" then
+        -- Group forest/jungle
+        return "FEATURES_T"..tostring(bias.Tier);
+    elseif bias.Type == "TERRAINS" then
+        if bias.Value == g_TERRAIN_TYPE_COAST then
+            return "COAST_T"..tostring(bias.Tier);
+        elseif IsPlainLand(bias.Value) then
+            return "PLAIN_T"..tostring(bias.Tier);
+        elseif IsGrassLand(bias.Value) then
+            return "GRASS_T"..tostring(bias.Tier);
+        elseif IsTundraLand(bias.Value) then
+            return "TUNDRA_T"..tostring(bias.Tier);
+        elseif IsDesertLand(bias.Value) then
+            return "DESERT_T"..tostring(bias.Tier);
+        end
+    elseif bias.Type == "RIVERS" then
+        return "RIVERS_T"..tostring(bias.Tier);
+    else
+        return "CUSTOM_T"..tostring(bias.Tier);
+    end
 end
 
 
@@ -856,6 +859,9 @@ function CivilizationAssignSpawn:IsBiasRespected(hex, hexMap)
     if #self.CivilizationBiases == 0 then
         return true;
     end
+    if self.CivilizationLeader == "LEADER_MENELIK" and hex:IsFloodplains(true) then
+        return false;
+    end
     if self.IsFloodplainsBias and hex:IsFloodplains(false) == false then
         return false;
     end
@@ -886,7 +892,6 @@ function CivilizationAssignSpawn:IsBiasRespected(hex, hexMap)
                 return false;
             end  
         elseif bias.Type == "CUSTOM_KING_OF_THE_NORTH" then
-            --hex.y < hexMap.height * 0.3 or hex.y > hexMap.height * 0.7
             if hex.TundraScore > 0 then
                 isOneOfBiasRespected = true;
             end 

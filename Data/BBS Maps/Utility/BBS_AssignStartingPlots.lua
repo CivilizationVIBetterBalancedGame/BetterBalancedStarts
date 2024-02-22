@@ -20,42 +20,16 @@ local BBS_VERSION = "2.2.0"
 --------------------------------------------------------------------------------
 -- constant definition  --------------------------------------------------------
 --------------------------------------------------------------------------------
--- Min distance definition
-local BBS_MAP_MAP_SCRIPT_TO_MIN_DISTANCE = {};
-BBS_MAP_MAP_SCRIPT_TO_MIN_DISTANCE["Highlands_XP2.lua"] = 15
-BBS_MAP_MAP_SCRIPT_TO_MIN_DISTANCE["Lakes.lua"] = 15
-BBS_MAP_MAP_SCRIPT_TO_MIN_DISTANCE["InlandSea.lua"] = 14
-BBS_MAP_MAP_SCRIPT_TO_MIN_DISTANCE["Seven_Seas.lua"] = 13
-BBS_MAP_MAP_SCRIPT_TO_MIN_DISTANCE["Primordial.lua"] = 13
-BBS_MAP_MAP_SCRIPT_TO_MIN_DISTANCE["Pangaea.lua"] = 12
-BBS_MAP_MAP_SCRIPT_TO_MIN_DISTANCE["DWPangaea.lua"] = 12
-BBS_MAP_MAP_SCRIPT_TO_MIN_DISTANCE["Shuffle.lua"] = 12
-BBS_MAP_MAP_SCRIPT_TO_MIN_DISTANCE["Tilted_Axis.lua"] = 12
-BBS_MAP_MAP_SCRIPT_TO_MIN_DISTANCE["Fractal.lua"] = 10
-BBS_MAP_MAP_SCRIPT_TO_MIN_DISTANCE["Island_Plates.lua"] = 10
-BBS_MAP_MAP_SCRIPT_TO_MIN_DISTANCE["Small_Continents.lua"] = 10
-BBS_MAP_MAP_SCRIPT_TO_MIN_DISTANCE["Archipelago_XP2.lua"] = 10
-BBS_MAP_MAP_SCRIPT_TO_MIN_DISTANCE["Continents.lua"] = 10
-BBS_MAP_MAP_SCRIPT_TO_MIN_DISTANCE["Wetlands_XP2.lua"] = 10
-BBS_MAP_MAP_SCRIPT_TO_MIN_DISTANCE["Continents_Islands.lua"] = 10
-BBS_MAP_MAP_SCRIPT_TO_MIN_DISTANCE["Splintered_Fractal.lua"] = 10
-BBS_MAP_MAP_SCRIPT_TO_MIN_DISTANCE["DWArchipelago.lua"] = 10
-BBS_MAP_MAP_SCRIPT_TO_MIN_DISTANCE["DWFractal.lua"] = 10
-BBS_MAP_MAP_SCRIPT_TO_MIN_DISTANCE["DWMixedLand.lua"] = 10
-BBS_MAP_MAP_SCRIPT_TO_MIN_DISTANCE["DWSmallContinents.lua"] = 10
-BBS_MAP_MAP_SCRIPT_TO_MIN_DISTANCE["DWMixedIslands.lua"] = 10
-BBS_MAP_MAP_SCRIPT_TO_MIN_DISTANCE["Terra.lua"] = 8
-
 -- Special civilisations types
 BBS_LEADER_TYPE_SPECTATOR = "LEADER_SPECTATOR"
 
 --------------------------------------------------------------------------------
 --  Init metatable -------------------------------------------------------------
 --------------------------------------------------------------------------------
-
 BBS_AssignStartingPlots = {};
 BBS_HexMap = {};
-
+BBS_Civilisations = {};
+BBS_Teams = {}
 ------------------------------------------------------------------------------
 function ___Debug(...)
     print(...);
@@ -92,13 +66,10 @@ function BBS_AssignStartingPlots.Create(args)
         __PlaceMajorCivs        = BBS_AssignStartingPlots.__PlaceMajorCivs,
         __ResetMajorsSpawns     = BBS_AssignStartingPlots.__ResetMajorsSpawns,
     }
-
+    _Debug("START BBS WORK",  os.date("%c"))
     -- Get Bias all
     bbs_negative_bias = {}
     bbs_custom_bias = {}
-    -- BBCC_SETTING
-    local bcySetting = GameConfiguration.GetValue("BBCC_SETTING");
-    local bcySettingYield = GameConfiguration.GetValue("BBCC_SETTING_YIELD");
     -- Custom negative bias located in StartBiasNegatives table
     local ret = DB.Query("SELECT * from StartBiasNegatives");
     for key, value in pairs(ret) do
@@ -125,35 +96,25 @@ function BBS_AssignStartingPlots.Create(args)
             });
         end
     end
-    -- Get min distance
-    local bbs_min_distance = bbs_game_config.BBS_MIN_DISTANCE
-    print("bbs_min_distance", bbs_min_distance)
-    -- Set min distance if minDistance is nil or 0 via map settings
-    if ((bbs_min_distance == nil or bbs_min_distance == 0) and 
-        bbs_game_config.BBS_MAP_SCRIPT ~= nil) 
-    then
-        bbs_min_distance = BBS_MAP_MAP_SCRIPT_TO_MIN_DISTANCE[bbs_game_config.BBS_MAP_SCRIPT]
-    end
-    
-    -- Get Players data
-    local bbs_civilisations = {};
-    local civilisationsIDs = PlayerManager.GetAliveMajorIDs();
 
+    -- Get Players data
+    local civilisationsIDs = PlayerManager.GetAliveMajorIDs();
     for i = 1, PlayerManager.GetAliveMajorsCount() do
         local player = Players[civilisationsIDs[i]];
         local leader = PlayerConfigurations[civilisationsIDs[i]]:GetLeaderTypeName();
         local name = PlayerConfigurations[civilisationsIDs[i]]:GetCivilizationTypeName();
         local team = Players[civilisationsIDs[i]]:GetTeam();
         local newCivilization = CivilizationAssignSpawn.new(player, leader, name, team)
-
-        table.insert(bbs_civilisations, newCivilization);
-
-        --instance.iNumMajorCivs = instance.iNumMajorCivs + 1
-        --table.insert(instance.majorList, civilisationsIDs[i])
+        if leader ~= BBS_LEADER_TYPE_SPECTATOR then
+            BBS_Teams[team] = BBS_Teams[team] or 0
+            _Debug("IsTeamerConfig - Added in team ", team)
+            BBS_Teams[team] = BBS_Teams[team] + 1;
+        end
+        table.insert(BBS_Civilisations, newCivilization);
     end
 
     -- Get City States data
-    local bbs_citystates = {}
+    local BBS_Citystates = {}
     local citystatesIDs = PlayerManager.GetAliveMinorIDs();
 
     for i = 1, PlayerManager.GetAliveMinorsCount() do
@@ -161,11 +122,11 @@ function BBS_AssignStartingPlots.Create(args)
         local leader = PlayerConfigurations[citystatesIDs[i]]:GetLeaderTypeName();
         local name = PlayerConfigurations[citystatesIDs[i]]:GetCivilizationTypeName();
         local newCS = CivilizationAssignSpawn.new(player, leader, name, nil)
-        
-        table.insert(bbs_citystates, newCS);
+
+        table.insert(BBS_Citystates, newCS);
     end
 
-     -- Adjust min distance in function of player number
+    -- Adjust min distance in function of player number
     -- Count number of real players in the game
     total_players = 0
     for i = 1, PlayerManager.GetAliveMajorsCount() do
@@ -174,61 +135,55 @@ function BBS_AssignStartingPlots.Create(args)
             total_players = total_players + 1
         end
     end
-    local number_player_settings = (bbs_game_config.BBS_MAP_SIZE + 1) * 2
-    -- If has more players than base setting reduce distance by 2
-    -- If has less players then base setting increase distance by 2
-    if total_players > number_player_settings then
-        bbs_min_distance = bbs_min_distance - 2;
-    elseif total_players < number_player_settings then
-        bbs_min_distance = bbs_min_distance + 2;
-    end
 
     GlobalNumberOfRegions = total_players + PlayerManager.GetAliveMinorsCount();
 
-    -- Set game properties
-    Game:SetProperty("BBS_MAJOR_DISTANCE", bbs_min_distance)
-
     if MapConfiguration.GetValue("BBS_Team_Spawn") ~= nil then
-		Teamers_Config = MapConfiguration.GetValue("BBS_Team_Spawn")
-	end
+        Teamers_Config = MapConfiguration.GetValue("BBS_Team_Spawn")
+    end
 
     instance:__InitStartingData()
 
+    -- Set game properties
+    Game:SetProperty("BBS_MAJOR_DISTANCE", BBS_HexMap.minimumDistanceMajorToMajorCivs);
+
     print("Start Assign Score Centroid",  os.date("%c"))
 
+    local isTeamer = IsTeamerConfig();
+
     -- Define scores for centroids
-    for _, civ in pairs(bbs_civilisations) do
+    for _, civ in pairs(BBS_Civilisations) do
         civ:CalculateTotalScores(BBS_HexMap);
     end
-    
+
     print("End Assign Score Centroid",  os.date("%c"))
 
     print("Start Assign spawn order",  os.date("%c"))
     -- Define spawn order 
     -- Comparing first the number of valid tiles, placing first 
-    table.sort(bbs_civilisations, 
-    function(a, b) 
-        -- Avoid bug where a or b is nil for unknown reasons
-        if a == nil then
-            return false
-        elseif b == nil then
-            return true
-        elseif a.TotalValidTiles == b.TotalValidTiles then
-            if a.TotalMapScore == b.TotalMapScore then
-                -- Random order when same number of valid tiles and scores (comparing 2 no bias or 2 purely coastal)
-                local rng1 = TerrainBuilder.GetRandomNumber(100, "Spawn A");
-                local rng2 = TerrainBuilder.GetRandomNumber(100, "Spawn B");
-                return rng1 >= rng2;
-            else
-                return a.TotalMapScore < b.TotalMapScore
-            end
-        else
-            -- less score = more constraints for bias respect
-            return a.TotalValidTiles < b.TotalValidTiles
-        end
-    end)
+    table.sort(BBS_Civilisations,
+            function(a, b)
+                -- Avoid bug where a or b is nil for unknown reasons
+                if a == nil then
+                    return false
+                elseif b == nil then
+                    return true
+                elseif a.TotalValidTiles == b.TotalValidTiles then
+                    if a.TotalMapScore == b.TotalMapScore then
+                        -- Random order when same number of valid tiles and scores (comparing 2 no bias or 2 purely coastal)
+                        local rng1 = TerrainBuilder.GetRandomNumber(100, "Spawn A");
+                        local rng2 = TerrainBuilder.GetRandomNumber(100, "Spawn B");
+                        return rng1 >= rng2;
+                    else
+                        return a.TotalMapScore < b.TotalMapScore
+                    end
+                else
+                    -- less score = more constraints for bias respect
+                    return a.TotalValidTiles < b.TotalValidTiles
+                end
+            end)
 
-    for _, civ in pairs(bbs_civilisations) do
+    for _, civ in pairs(BBS_Civilisations) do
         print(tostring(civ.CivilizationLeader).." - ScoreTotal = "..tostring(civ.TotalMapScore).." -  Valid tiles = "..tostring(civ.TotalValidTiles))
     end
 
@@ -237,20 +192,21 @@ function BBS_AssignStartingPlots.Create(args)
     local BBS_Success = false;
     while BBS_Success == false and BBS_AssignTries <= 5 do
         -- Place all civs and fill BBS_HexMap.tempMajorSpawns
-        local placementOK = instance:__PlaceMajorCivs(bbs_civilisations, BBS_HexMap, BBS_AssignTries);
-        instance:__ResetMajorsSpawns(bbs_civilisations, BBS_HexMap);
+        local placementOK = instance:__PlaceMajorCivs(BBS_Civilisations, BBS_HexMap, BBS_AssignTries);
+        instance:__ResetMajorsSpawns(BBS_Civilisations, BBS_HexMap);
         if placementOK == false then
-            --instance:__ResetMajorsSpawns(bbs_civilisations, BBS_HexMap);
+            --instance:__ResetMajorsSpawns(BBS_Civilisations, BBS_HexMap);
             BBS_HexMap.tempMajorSpawns[BBS_AssignTries] = {};
             print("Failed try number "..tostring(BBS_AssignTries))
-        else 
+        else
             print("BBS_Success on try "..tostring(BBS_AssignTries),  os.date("%c"))
         end
         BBS_AssignTries = BBS_AssignTries + 1
     end
-    local maxMeanScore = 0
-    local globalMinDiffScore = 9999;
+    local maxMeanScore = 0;
+    local globalMinScore = 0;
     local maxMeanScoreIndex = 0
+
     for index, c in pairs(BBS_HexMap.tempMajorSpawns) do
         local list = BBS_HexMap.tempMajorSpawns[index]
         local minLocalScore = 9999;
@@ -268,12 +224,19 @@ function BBS_AssignStartingPlots.Create(args)
                     maxLocalScore = civscore.Score;
                 end
             end
+
             meanScore = totalScore / #list
+            if isTeamer and BBS_HexMap:IsTeamerValidContinentPlacement(index) == false then
+                _Debug("Malus try score because all team spawns in a single continent")
+                meanScore = meanScore - 20;
+            end
             minDiffScore = maxLocalScore - minLocalScore
-            if minDiffScore < globalMinDiffScore or (minDiffScore == globalMinDiffScore and maxMeanScore < meanScore) then
+            -- Take the highest minimum score, if equals, highest mean
+            if (minLocalScore > globalMinScore) or (meanScore > maxMeanScore and minLocalScore >= globalMinScore) then
                 BBS_Success = true;
-                globalMinDiffScore = minDiffScore;
+                --globalMinDiffScore = minDiffScore;
                 maxMeanScore = meanScore;
+                globalMinScore = minLocalScore;
                 maxMeanScoreIndex = index;
             end
         end
@@ -289,7 +252,7 @@ function BBS_AssignStartingPlots.Create(args)
             c.Civ:AssignMajorCivSpawn(BBS_HexMap, c.Spawn);
         end
          -- Firaxis methods for attribution of spawns 
-        for j, civ in pairs(bbs_civilisations) do
+        for j, civ in pairs(BBS_Civilisations) do
             if civ.CivilizationLeader ~= BBS_LEADER_TYPE_SPECTATOR then
                 civ.Player:SetStartingPlot(civ.StartingHex.Plot)
                 table.insert(BBS_HexMap.majorSpawns, civ.StartingHex);
@@ -306,7 +269,7 @@ function BBS_AssignStartingPlots.Create(args)
 
         print("Start InitSpawnBalancing",  os.date("%c"))
         local allSpawnBalancing = {}
-        for _, civ in pairs(bbs_civilisations) do
+        for _, civ in pairs(BBS_Civilisations) do
             if civ.CivilizationLeader ~= BBS_LEADER_TYPE_SPECTATOR then
                 local spawn = InitSpawnBalancing(BBS_HexMap, civ);
                 table.insert(allSpawnBalancing, spawn);
@@ -318,7 +281,7 @@ function BBS_AssignStartingPlots.Create(args)
         BalanceAllCivYields(allSpawnBalancing)
         print("End InitSpawnBalancing",  os.date("%c"))
         -- randomly place cs in free space
-        for i, cs in pairs(bbs_citystates) do
+        for i, cs in pairs(BBS_Citystates) do
             local foundSpawn = false
             local validspawnsleft = BBS_HexMap:GetAnyMinorSpawnablesTiles()
             while foundSpawn == false do
@@ -393,13 +356,13 @@ function BBS_AssignStartingPlots:__InitStartingData()
     print("Hill% = "..tostring(hillpercent).." %")
      --------------------
     print("Done parsing map",  os.date("%c"))
-
+    _Debug("END BBS WORK",  os.date("%c"))
 end
 
 function BBS_AssignStartingPlots:__PlaceMajorCivs(civs, BBS_HexMap, index) 
 -- TODO : manage cases when unable to place a civ => rollback and try again
     BBS_HexMap.tempMajorSpawns[index] = {};
-    for _, civ in pairs(civs) do
+    for ind, civ in pairs(civs) do
         if civ.CivilizationLeader ~= BBS_LEADER_TYPE_SPECTATOR then
             local placed, spawnHex, score = civ:AssignSpawnByCentroid(BBS_HexMap);
             if placed == false then
@@ -407,6 +370,7 @@ function BBS_AssignStartingPlots:__PlaceMajorCivs(civs, BBS_HexMap, index)
                 return false;
             end
             table.insert(BBS_HexMap.tempMajorSpawns[index], {Civ = civ, Spawn = spawnHex, Score = score});
+            _Debug("Civ ", ind, " in team ", civ.CivilizationTeam, " - Continent ID = ", spawnHex.IdContinent)
         end
     end
     return true;
@@ -422,4 +386,23 @@ function BBS_AssignStartingPlots:__ResetMajorsSpawns(civs, BBS_HexMap)
         civ.AttributedCentroid = nil;
         civ.StartingHex = {};
     end
+end
+
+-- At least 4v4 and 2 teams
+function IsTeamerConfig()
+    local teamCount = 0
+    local team1Size = 0
+    local team2Size = 0
+    local fixedIndex = 1
+    for team, _ in pairs(BBS_Teams) do
+        teamCount = teamCount + 1;
+        if fixedIndex == 1 then
+            team1Size = BBS_Teams[team]
+        elseif fixedIndex == 2 then
+            team2Size = BBS_Teams[team]
+        end
+        fixedIndex = fixedIndex + 1;
+    end
+    _Debug("IsTeamerConfig : ", teamCount, team1Size, team2Size)
+    return teamCount == 2 and team1Size >= 4 and team2Size >= 4;
 end
