@@ -261,7 +261,7 @@ end
 
 -- Fill the data for selected hex through firaxis datas
 function Hex:FillHexDatas()
-    local plot = Map.GetPlot(self:GetX(), self:GetY()); 
+    local plot = Map.GetPlot(self:GetX(), self:GetY());
     if plot ~= nil then
         self.Plot = plot;
         self.ResourceType = plot:GetResourceType() or g_RESOURCE_NONE;
@@ -471,20 +471,39 @@ end
 
 function Hex:DistanceTo(other)
     return Map.GetPlotDistance(self.x, self.y, other.x, other.y);
-    --local q = self.y - self.x - even(self.x) / 2
-    --local r = self.x;
-    --local otherQ = other.y - (other.x - even(other.x)) / 2;
-    --local otherR = other.x;
-    --local result = (math.abs(q - otherQ) + math.abs(q - otherQ + r - otherR) + math.abs(r - otherR)) / 2;
-    --return result;
+    --[[local q = self.y - self.x - even(self.x) / 2
+    local r = self.x;
+    local otherQ = other.y - (other.x - even(other.x)) / 2;
+    local otherR = other.x;
+    local result = (math.abs(q - otherQ) + math.abs(q - otherQ + r - otherR) + math.abs(r - otherR)) / 2;
+    return result;]]
 end
      
 
 -- return the closest point to this hex among the list of points in param
 function Hex:Closest(hexMap, points)
-	local min = math.huge
+	local min = 999;
 	local min_i
-	for i, point in ipairs(points) do
+    local point
+    local dist
+    local shiftedPoint
+    local shiftedDist
+    for k = 1, #points do
+        point = points[k]
+        dist = self:DistanceTo(point)
+        if hexMap.canCircumnavigate then
+            shiftedPoint = Hex.new(point.x + hexMap.width, point.y)
+            shiftedDist = self:DistanceTo(shiftedPoint)
+            if shiftedDist < dist then
+                dist = shiftedDist
+            end
+        end
+        if dist < min then
+            min = dist
+            min_i = k
+        end
+    end
+	--[[for i, point in ipairs(points) do
 		local dist = self:DistanceTo(point)
         if hexMap.canCircumnavigate then
             local shiftedPoint = Hex.new(point.x + hexMap.width, point.y)
@@ -497,7 +516,7 @@ function Hex:Closest(hexMap, points)
 			min = dist
 			min_i = i
 		end
-	end
+	end]]
 	return points[min_i]
 end
 
@@ -724,15 +743,6 @@ function HexMap.new(_width, _height, mapScript)
     instance.map22 = {}
     instance.centroidsArray = {};
     instance.LuxTable = {};
-    --instance.mapResourcesLux = instance:GetMapResourcesLux();
-    --instance.mapResourcesBonus = instance:GetMapResourcesBonus();
-    --instance.mapResourcesStrategics = instance:GetMapResourcesStrategics();
-    --instance.mapResourcesFarms =instance:GetMapResourcesFarms();
-    --instance.mapResourcesPastures = instance:GetMapResourcesPastures();
-    --instance.mapResourcesPlantations = instance:GetMapResourcesPlantations();
-    --instance.mapResourcesMines = instance:GetMapResourcesMines();
-    --instance.mapResourcesQuarries = instance:GetMapResourcesQuarries();
-    --instance.mapResourcesFishings = instance:GetMapResourcesFishings();
     instance.PeninsulaScoreThreshold = 35;
     instance:FillHexMapDatas();
     instance:StoreHexRings();
@@ -769,6 +779,7 @@ end
 
 -- Put datas of every hex in map
 function HexMap:FillHexMapDatas()
+    _Debug("Start FillHexMapDatas",  os.date("%c"))
     local luxTable = {}
     for y = 0, self.height - 1 do
         self.map[y] = {};
@@ -817,14 +828,14 @@ function HexMap:FillHexMapDatas()
             end
         end
     end
-    self:UpdateYieldMap();
     self.LuxTable = luxTable;
-    
+    _Debug("End FillHexMapDatas",  os.date("%c"))
 
 end
 
 -- Pre store rings data for each hex for later uses and improve performances
 function HexMap:StoreHexRings()
+    print("Start StoreHexRings",  os.date("%c"))
     for y = 0, self.height - 1 do
         for x = 0, self.width - 1 do
             local hex = self:GetHexInMap(x, y);
@@ -832,13 +843,12 @@ function HexMap:StoreHexRings()
             -- Fill as needed 
         end
     end
+    print("End StoreHexRings",  os.date("%c"))
     print("Start SetAllWalkableHexInRange",  os.date("%c"))
     for y = 0, self.height - 1 do
         for x = 0, self.width - 1 do
             local hex = self:GetHexInMap(x, y);
-            
             hex:SetAllWalkableHexInRange(6);
-            
         end
     end
     print("End SetAllWalkableHexInRange",  os.date("%c"))
@@ -956,16 +966,29 @@ end
 --TODO - refacto
 function HexMap:ComputeResourcesScore(hex)
     hex.ResourcesScore = {}
-    for i, ring in pairs(hex.AllRing6Map) do
-        for _, h in pairs(ring) do
-            local ressource = h.ResourceType
-            if h:IsImpassable() == false and ressource ~= g_RESOURCE_NONE then
-                local score = hex.ResourcesScore[ressource] or 0 --init
+    local mapRing6 = hex.AllRing6Map
+    for i = 1, #mapRing6 do
+        local ring = mapRing6[i]
+        for j = 1, #ring do
+            local h = ring[j]
+            if h:IsImpassable() == false and h.ResourceType ~= g_RESOURCE_NONE then
+                local score = hex.ResourcesScore[h.ResourceType] or 0 --init
                 score = score + 1 * ScoreDistanceFactor(i)
-                hex.ResourcesScore[ressource] = score
+                hex.ResourcesScore[h.ResourceType] = score
             end
         end
+
     end
+
+    --[[for i, ring in pairs(hex.AllRing6Map) do
+        for _, h in pairs(ring) do
+            if h:IsImpassable() == false and h.ResourceType ~= g_RESOURCE_NONE then
+                local score = hex.ResourcesScore[h.ResourceType] or 0 --init
+                score = score + 1 * ScoreDistanceFactor(i)
+                hex.ResourcesScore[h.ResourceType] = score
+            end
+        end
+    end]]
     -- Include the tile itself
     if hex.ResourceType ~= g_RESOURCE_NONE then
         local hexScore = hex.ResourcesScore[hex.ResourceType] or 0
@@ -981,38 +1004,36 @@ end
 
 function HexMap:ComputeFeaturesScore(hex)
     hex.FeaturesScore = {}
-    for i, ring in pairs(hex.AllRing6Map) do
-        for _, h in pairs(ring) do
-            local feature = h.FeatureType
-            if feature ~= g_FEATURE_NONE then
-                local score = hex.FeaturesScore[feature] or 0 --init
+    local mapRing6 = hex.AllRing6Map
+    for i = 1, #mapRing6 do
+        local ring = mapRing6[i]
+        for j = 1, #ring do
+            local h = ring[j]
+            if h.FeatureType ~= g_FEATURE_NONE then
+                local score = hex.FeaturesScore[h.FeatureType] or 0 --init
                 score = score + 1
-                hex.FeaturesScore[feature] = score
+                hex.FeaturesScore[h.FeatureType] = score
             end
         end
     end
-    -- Include the tile itself
     if hex.FeatureType ~= g_FEATURE_NONE then
         local hexScore = hex.FeaturesScore[hex.FeatureType] or 0
         hexScore = hexScore + 1
         hex.FeaturesScore[hex.FeatureType] = hexScore
     end
-
-    --for feat, _ in pairs(hex.FeaturesScore) do
-    --   hex.FeaturesScore[feat] = hex.FeaturesScore[feat] / #hex.AllRing6  * 100;
-    --end
-
 end
 
 function HexMap:ComputeTerrainsScore(hex)
     hex.TerrainsScore = {}
-    for i, ring in pairs(hex.AllRing6Map) do
-        for _, h in pairs(ring) do
-            local terrain = h.TerrainType
+    local mapRing6 = hex.AllRing6Map
+    for i = 1, #mapRing6 do
+        local ring = mapRing6[i]
+        for j = 1, #ring do
+            local h = ring[j]
             if terrain ~= g_TERRAIN_TYPE_NONE then
-                local score = hex.TerrainsScore[terrain] or 0 --init
+                local score = hex.TerrainsScore[h.TerrainType] or 0 --init
                 score = score + 1
-                hex.TerrainsScore[terrain] = score
+                hex.TerrainsScore[h.TerrainType] = score
             end
             -- Compute coastal tiles score
             local isCoastal = h.IsCoastal
@@ -1027,6 +1048,7 @@ function HexMap:ComputeTerrainsScore(hex)
                 hex.IsCloseToDesert = true
             end
         end
+
     end
     -- Include the tile itself
     if hex.TerrainType ~= g_TERRAIN_TYPE_NONE then
@@ -1053,7 +1075,7 @@ end
 
 function HexMap:ComputeWaterScore(hex)
     hex.WaterScore = 0
-    for _, h in pairs(hex.AllRing6) do
+    for _, h in ipairs(hex.AllRing6) do
         if h:IsImpassable() == false and h.IsFreshWater then
             local score = hex.WaterScore or 0 --init
             score = score + 1
@@ -1073,7 +1095,7 @@ end
 
 function HexMap:ComputeRiverScore(hex)
     hex.RiverScore = 0
-    for _, h in pairs(hex.AllRing6) do
+    for _, h in ipairs(hex.AllRing6) do
         if h:IsImpassable() == false and h.IsOnRiver then
             local score = hex.RiverScore or 0 --init
             score = score + 1
@@ -1098,8 +1120,8 @@ function HexMap:ComputeMajorSpawnableTiles(hex)
     local isCloseToTooManyFlood = hex:IsHexNextTo5FloodTiles();
     local isNextToVolcano = hex:IsNextToVolcano();
     local coastalNextToRiver = hex.IsCoastal and hex.IsFreshWater == false and hex:IsNextToCoastalFreshWater();
-    for i, r in pairs(hex.AllRing6Map) do
-        for _, h in pairs(r) do
+    for i, r in ipairs(hex.AllRing6Map) do
+        for _, h in ipairs(r) do
             -- Limit to 5 tiles like now
             if hex.IsNaturalWonder or (h.IsNaturalWonder and i < 5) then
                 isTooCloseToNaturalWonder = true;
@@ -1188,21 +1210,7 @@ function Hex:IsNextToOasis()
     return false;
 end
 
-function HexMap:UpdateYieldMap()
-    -- Temp - 2f 2p tiles are mapped 
-    self.map22 = {}
-    for y = 0, self.height - 1 do
-        for x = 0, self.width - 1 do
-            local h = self.map[y][x]
-            h:UpdateYields();
-            if h.Is22 == true then
-                table.insert(self.map22, h);
-            end
-        end
-    end
-end
-
-function HexMap:InsertMapResources(hex)   
+function HexMap:InsertMapResources(hex)
     if hex ~= nil and hex.ResourceType ~= g_RESOURCE_NONE then
         self.mapResources[hex.ResourceType] = self.mapResources[hex.ResourceType] or {}
         table.insert(self.mapResources[hex.ResourceType], hex);
@@ -1453,16 +1461,18 @@ function HexMap:GetHexInRing(hexCenter, ringRadius)
     -- Starting from the hex to the left
     local hexWest = self:GetHexSum(hexCenter, self:GetHexScale(hexCenter:GetAdjDirection(DirectionTypes.DIRECTION_WEST), ringRadius));
     local testHex = hexWest;
+    local hexToAdd
+    local hexDir
     for i=0, DirectionTypes.NUM_DIRECTION_TYPES - 1 do
         for r = 0, ringRadius - 1 do
             -- Check if the tested hex is in map coord range
-            local hexToAdd = self:GetHexInMap(testHex.x, testHex.y)
+            hexToAdd = self:GetHexInMap(testHex.x, testHex.y)
             -- if yes we add it to the table
             if hexToAdd ~= nil then
                 table.insert(hexList, hexToAdd);
             end
             -- in every cases we move to the next tile 
-            local hexDir = testHex:GetAdjDirection(i);
+            hexDir = testHex:GetAdjDirection(i);
             testHex = self:GetHexSum(testHex, hexDir)
         end
     end
@@ -1472,13 +1482,14 @@ end
 -- Loop through all rings up to ring radius in parameter
 function HexMap:GetAllHexInRing(hexCenter, ringRadius)
     local hexList = {};
-    local hexTable = {}
+    local hexTable = {};
+    local hexInRingX = {};
     for i=0, ringRadius do
         hexTable[i] = {}
-        local hexInRingX = self:GetHexInRing(hexCenter, i);
-        for _, hex in ipairs(hexInRingX) do
-            table.insert(hexList, hex);
-            table.insert(hexTable[i], hex)
+        hexInRingX = self:GetHexInRing(hexCenter, i);
+        for k=1, #hexInRingX do
+            table.insert(hexList, hexInRingX[k]);
+            table.insert(hexTable[i], hexInRingX[k])
         end
     end
     return hexList, hexTable;
@@ -1584,17 +1595,26 @@ function Hex:SetAllWalkableHexInRange(range)
     local visitedHex = {};
     visitedRing[0] = {};
     table.insert(visitedRing[0], self);
+    local n1 -- index previous ring
+    local h --hex analysed during loops
+    local visitedRingN1 -- list of visited hex in previous ring
+    local hRing1 -- ring1 of h
+    local neighbor --current analysed neighbor r1 of h
     for n = 1, range do
         visitedRing[n] = {};
-        local n1 = n - 1;
-        for i, h in pairs(visitedRing[n1]) do
-            for _, neighbor in pairs(h.AllRing6Map[1]) do
+        n1 = n - 1;
+        visitedRingN1 = visitedRing[n1]
+        for i = 1, #visitedRingN1 do
+            h = visitedRingN1[i]
+            hRing1 = h.AllRing6Map[1]
+            for j = 1, #hRing1 do
+                neighbor = hRing1[j]
                 if neighbor:IsImpassable() == false and visitedHex[neighbor] == nil then
                     visitedHex[neighbor] = true;
                     table.insert(visitedRing[n], neighbor);
                 end
-            end 
-        end 
+            end
+        end
     end
     self.WalkableHexInRing = visitedRing;
 end
@@ -1717,7 +1737,7 @@ function HexMap:TerraformSetResource(hex, resourceId, forced)
     return false;
 end
 
-function HexMap:TerraformSetResourceRequirements(hex, resourceId, forced)
+function HexMap:TerraformSetResourceRequirements(hex, resourceId)
     return resourceId == g_RESOURCE_NONE or ResourceBuilder.CanHaveResource(hex.Plot, resourceId);
 end
 
@@ -1762,7 +1782,7 @@ end
 
 
 function HexMap:TerraformEmptyTileRequirements(hex)
-    if (self:TerraformSetFeatureRequirements(hex, g_FEATURE_NONE, true or IsFloodplains(hex.FeatureType, true)) and self:TerraformSetResourceRequirements(hex, g_RESOURCE_NONE, true)) then
+    if (self:TerraformSetFeatureRequirements(hex, g_FEATURE_NONE, true or IsFloodplains(hex.FeatureType, true)) and self:TerraformSetResourceRequirements(hex, g_RESOURCE_NONE)) then
         return true;
     else
         return false;
@@ -2973,6 +2993,7 @@ function InitSpawnBalancing(hexMap, civ)
     local balancing = SpawnBalancing.new(civ.StartingHex, hexMap, civ);
     balancing:RemoveRing1MountainsOnRiver();
     balancing:TerraformRing6Deserts();
+
     balancing:ApplyGaranteedStrategics();
     balancing:ApplyMinimalLandTiles(1, 6);
     balancing:CheckMinimumWorkable();
@@ -3067,6 +3088,17 @@ function SpawnBalancing:FillTablesRings()
     end
 end
 
+function SpawnBalancing:CleanSpawnTile()
+    -- If spawn on a resource, try relocate it on ring 1
+    if self.Hex.ResourceType ~= g_RESOURCE_NONE then
+        self:RelocateHex()
+        local hexData = { TerrainId = self.Hex.TerrainType,  FeatureId = self.Hex.FeatureType, ResourceId = self.Hex.ResourceType, Relocated = false}
+        print("Spawned on a resource, relocating "..tostring(self.Hex.ResourceType))
+        table.insert(self.RingTables[1].RELOCATING_TILES, hexData);
+        self:TerraformHex(self.Hex, 0, TerraformType[3], g_RESOURCE_NONE, false, false)
+    end
+    self:PlaceRelocatedHexOnRing(1);
+end
 
 function SpawnBalancing:RemoveRing1MountainsOnRiver()
     for _, h in pairs(self.RingTables[1].HexRings) do
@@ -3139,14 +3171,7 @@ function SpawnBalancing:ApplyMinimalLandTiles(iMin, iMax)
     if self.Civ.CivilizationLeader == "LEADER_MENELIK" then
         self.HexMap:TerraformToHill(self.Hex, true);
     end
-    -- At least 2 4yields tiles workables ring1
-    if self.Hex.ResourceType ~= g_RESOURCE_NONE then
-        local hexData = { TerrainId = self.Hex.TerrainType,  FeatureId = self.Hex.FeatureType, ResourceId = self.Hex.ResourceType, Relocated = false}
-        print("Spawned on a resource, relocating "..tostring(self.Hex.ResourceType))
-        table.insert(self.RingTables[1].RELOCATING_TILES, hexData);
-        self.HexMap:TerraformSetResource(self.Hex, g_RESOURCE_NONE)
-    end
-    -- Try to nerf high yields especially 4+ food in ring 1 and 2 to ring 3 at least - will be placed in PlaceRelocatedHexOnRing is called in ring 3+ 
+    -- Try to nerf high yields especially 4+ food in ring 1 and 2 to ring 3 at least - will be placed in PlaceRelocatedHexOnRing is called in ring 3+
     for _, h in pairs(self.RingTables[1].HIGH_YIELD_TILES) do
         if h.Food >= 4 then
             _Debug("ApplyMinimalLandTiles - Found a 4+ food tile ring 1 "..h:PrintXY())
@@ -3641,13 +3666,15 @@ function SpawnBalancing:RelocateRandomHexToNextRing(tableToRelocateFrom, ringTab
 end
 
 function SpawnBalancing:RelocateHex(ringTableIndex, destinationRingIndex, hex)
-    _Debug(hex:PrintXY(), hex.TerrainType, hex.FeatureType, hex.ResourceType)
     local hexData = { TerrainId = hex.TerrainType,  FeatureId = hex.FeatureType, ResourceId = hex.ResourceType, Relocated = false }
     print("Relocating "..hex:PrintXY().." : "..tostring(hex.TerrainType).." "..tostring(hex.FeatureType).." "..tostring(hex.ResourceType))
     if hex.FeatureType ~= g_FEATURE_NONE or hex.ResourceType ~= g_RESOURCE_NONE then
         table.insert(self.RingTables[destinationRingIndex].RELOCATING_TILES, hexData);
     end
-    if self:TerraformHex(hex, ringTableIndex, TerraformType[99], 0, false, false) then
+    -- if/else not grouped in same condition because TerraformHex actually clean the tile, do not clean feature if not possible
+    if self.HexMap:TerraformSetFeatureRequirements(hex, g_FEATURE_NONE, false) and self:TerraformHex(hex, ringTableIndex, TerraformType[3], g_RESOURCE_NONE, false, false) then
+        return true;
+    elseif self:TerraformHex(hex, ringTableIndex, TerraformType[99], 0, false, false) then
         return true;
     end
     return false;
@@ -3685,8 +3712,9 @@ function SpawnBalancing:PlaceRelocatedHexOnRing(i)
                 local randomEmptyYields = GetShuffledCopyOfTable(self.RingTables[i].EMPTY_TILES);
                 for _, hex in pairs(randomEmptyYields) do
                     if isRelocated then break end
-                    local canFeat = hexData.FeatureId == g_FEATURE_NONE or (hexData.FeatureId ~= g_FEATURE_NONE and TerrainBuilder.CanHaveFeature(hex.Plot, hexData.FeatureId))
-                    local canRes = hexData.ResourceId == g_RESOURCE_NONE or (hexData.ResourceId ~= g_FEATURE_NONE and ResourceBuilder.CanHaveResource(hex.Plot, hexData.ResourceId))
+                    local canFeat = self.HexMap:TerraformSetFeatureRequirements(hex, hexData.FeatureId, false);
+                    local canRes = self.HexMap:TerraformSetResourceRequirements(hex, hexData.ResourceId);
+                    _Debug("Try relocating on ", hex:PrintXY(), " canFeat ", canFeat, " canRes ", canRes)
                     if canFeat and canRes then
                         self:TerraformHex(hex, i, TerraformType[1], hexData.TerrainId, false);
                         self:TerraformHex(hex, i, TerraformType[2], hexData.FeatureId, false);
@@ -3733,7 +3761,7 @@ function SpawnBalancing:PlaceRelocatedHexOnRing(i)
         end
     end
     if totalRelocating > 0 then
-        print("PlaceRelocatedHexOnRing WARNING - Could not relocate all hex")
+        print("PlaceRelocatedHexOnRingERROR - Could not relocate all hex")
     end
     -- TODO Relocating fail behaviour => to something else like try next ring or not needed ?
     self.RingTables[i].RELOCATING_TILES = {}
@@ -3983,6 +4011,9 @@ end
 
 -- Data for each ring around the designed spawn
 function SpawnBalancing:UpdateTableDataRing(h, i)
+    if i == 0 then
+        return
+    end
     self:RemoveFromDataTables(h, i);
     h:UpdateYields();
     if h:IsWater() then

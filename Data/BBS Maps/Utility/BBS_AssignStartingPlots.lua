@@ -26,10 +26,10 @@ BBS_LEADER_TYPE_SPECTATOR = "LEADER_SPECTATOR"
 --------------------------------------------------------------------------------
 --  Init metatable -------------------------------------------------------------
 --------------------------------------------------------------------------------
-BBS_AssignStartingPlots = {};
-BBS_HexMap = {};
-BBS_Civilisations = {};
-BBS_Teams = {}
+local BBS_AssignStartingPlots = {};
+local BBS_HexMap = {};
+local BBS_Civilisations = {};
+local BBS_Teams = {}
 ------------------------------------------------------------------------------
 function ___Debug(...)
     print(...);

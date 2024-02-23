@@ -46,7 +46,7 @@ function CivilizationAssignSpawn:GetBiases()
         bias.Tier = 1;
         bias.Type = "TERRAINS";
         bias.Value = g_TERRAIN_TYPE_COAST;
-        ___Debug("BBS_AssignStartingPlots: Add Bias : Civilization",self.CivilizationName,"Bias Type:", bias.Type, "Tier :", bias.Tier, "Type :", row.TerrainType);
+        _Debug("BBS_AssignStartingPlots: Add Bias : Civilization",self.CivilizationName,"Bias Type:", bias.Type, "Tier :", bias.Tier, "Type :", row.TerrainType);
         table.insert(biases, bias);
         self.IsCoastalBias = true;
     end
@@ -57,7 +57,7 @@ function CivilizationAssignSpawn:GetBiases()
             bias.Tier = row.Tier;
             bias.Type = "RESOURCES";
             bias.Value = GetResourceIndex(row.ResourceType);
-            ___Debug("BBS_AssignStartingPlots: Add Bias : Civilization",self.CivilizationName,"Bias Type:", bias.Type, "Tier :", bias.Tier, "Type :", row.ResourceType);
+            _Debug("BBS_AssignStartingPlots: Add Bias : Civilization",self.CivilizationName,"Bias Type:", bias.Type, "Tier :", bias.Tier, "Type :", row.ResourceType);
             table.insert(biases, bias);
         end
     end
@@ -68,7 +68,7 @@ function CivilizationAssignSpawn:GetBiases()
             bias.Tier = row.Tier;
             bias.Type = "FEATURES";
             bias.Value = GetFeatureIndex(row.FeatureType);
-            ___Debug("BBS_AssignStartingPlots: Add Bias : Civilization",self.CivilizationName,"Bias Type:", bias.Type, "Tier :", bias.Tier, "Type :", row.FeatureType);
+            _Debug("BBS_AssignStartingPlots: Add Bias : Civilization",self.CivilizationName,"Bias Type:", bias.Type, "Tier :", bias.Tier, "Type :", row.FeatureType);
             table.insert(biases, bias);
             if bias.Value == g_FEATURE_FLOODPLAINS or bias.Value == g_FEATURE_FLOODPLAINS_GRASSLAND or bias.Value == g_FEATURE_FLOODPLAINS_PLAINS then
                 self.IsFloodplainsBias = true;
@@ -85,7 +85,7 @@ function CivilizationAssignSpawn:GetBiases()
             bias.Tier = row.Tier;
             bias.Type = "TERRAINS";
             bias.Value = GetTerrainIndex(row.TerrainType);
-            ___Debug("BBS_AssignStartingPlots: Add Bias : Civilization",self.CivilizationName,"Bias Type:", bias.Type, "Tier :", bias.Tier, "Type :", row.TerrainType);
+            _Debug("BBS_AssignStartingPlots: Add Bias : Civilization",self.CivilizationName,"Bias Type:", bias.Type, "Tier :", bias.Tier, "Type :", row.TerrainType);
             table.insert(biases, bias);
             if bias.Value == g_TERRAIN_TYPE_COAST then --only wilhemine has non T1 coast bias -what to do with her)
                 self.IsCoastalBias = true
@@ -105,7 +105,7 @@ function CivilizationAssignSpawn:GetBiases()
             bias.Tier = row.Tier;
             bias.Type = "RIVERS";
             bias.Value = nil;
-            ___Debug("BBS_AssignStartingPlots: Add Bias : Civilization",self.CivilizationName,"Bias Type:", bias.Type, "Tier :", bias.Tier, "Type :", bias.Value);
+            _Debug("BBS_AssignStartingPlots: Add Bias : Civilization",self.CivilizationName,"Bias Type:", bias.Type, "Tier :", bias.Tier, "Type :", bias.Value);
             table.insert(biases, bias);
             print("BBS_AssignStartingPlots - Civilization ",self.CivilizationName)
             self.IsRiverBias = true;
@@ -119,19 +119,19 @@ function CivilizationAssignSpawn:GetBiases()
 				bias.Value = GetTerrainIndex(row.TerrainType);
 				bias.Type = "NEGATIVE_TERRAINS";
 				bias.Tier = row.Tier;
-				___Debug("BBS_AssignStartingPlots: Add Bias : Civilization",self.CivilizationName,"Bias Type:", bias.Type, "Tier :", bias.Tier, "Type :", row.TerrainType);
+				_Debug("BBS_AssignStartingPlots: Add Bias : Civilization",self.CivilizationName,"Bias Type:", bias.Type, "Tier :", bias.Tier, "Type :", row.TerrainType);
 				table.insert(biases, bias);
 				elseif row.FeatureType ~= nil then
 				bias.Value = GetFeatureIndex(row.FeatureType);
 				bias.Type = "NEGATIVE_FEATURES";
 				bias.Tier = row.Tier;
-				___Debug("BBS_AssignStartingPlots: Add Bias : Civilization",self.CivilizationName,"Bias Type:", bias.Type, "Tier :", bias.Tier, "Type :", row.FeatureType);
+				_Debug("BBS_AssignStartingPlots: Add Bias : Civilization",self.CivilizationName,"Bias Type:", bias.Type, "Tier :", bias.Tier, "Type :", row.FeatureType);
 				table.insert(biases, bias);
 				elseif row.ResourceType ~= nil then
 				bias.Value = GetResourceIndex(row.ResourceType);
 				bias.Type = "NEGATIVE_RESOURCES";
 				bias.Tier = row.Tier;
-				___Debug("BBS_AssignStartingPlots: Add Bias : Civilization",self.CivilizationName,"Bias Type:", bias.Type, "Tier :", bias.Tier, "Type :", row.ResourceType);
+				_Debug("BBS_AssignStartingPlots: Add Bias : Civilization",self.CivilizationName,"Bias Type:", bias.Type, "Tier :", bias.Tier, "Type :", row.ResourceType);
 				table.insert(biases, bias);
 			end	
         end
@@ -144,8 +144,8 @@ function CivilizationAssignSpawn:GetBiases()
 				bias.Type = row.CustomPlacement;
 				bias.Tier = 1;
 				bias.Value = -1;
-				___Debug("BBS_AssignStartingPlots: Add Bias : Civilization",self.CivilizationName,"Bias Type:", bias.Type, "Tier :", bias.Tier, "Type :", bias.Value);
-				___Debug("BBS_AssignStartingPlots: Add Bias : Civilization",self.CivilizationName,"Bias Type:", bias.Type, "Tier :", bias.Tier, "Type :", bias.Value);
+				_Debug("BBS_AssignStartingPlots: Add Bias : Civilization",self.CivilizationName,"Bias Type:", bias.Type, "Tier :", bias.Tier, "Type :", bias.Value);
+				_Debug("BBS_AssignStartingPlots: Add Bias : Civilization",self.CivilizationName,"Bias Type:", bias.Type, "Tier :", bias.Tier, "Type :", bias.Value);
 				table.insert(biases, bias);
                 -- Custom Biases 
                 if (bias.Type == "CUSTOM_NO_FRESH_WATER") then
@@ -859,6 +859,7 @@ function CivilizationAssignSpawn:IsBiasRespected(hex, hexMap)
     if #self.CivilizationBiases == 0 then
         return true;
     end
+    -- Need to terraform to hills so avoid floodplains
     if self.CivilizationLeader == "LEADER_MENELIK" and hex:IsFloodplains(true) then
         return false;
     end
