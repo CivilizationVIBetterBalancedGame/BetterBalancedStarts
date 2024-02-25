@@ -1716,12 +1716,15 @@ function HexMap:TerraformSetResource(hex, resourceId, forced)
                     self:TerraformToFlat(hex, true);
                     self:TerraformSetTerrain(hex, g_TERRAIN_TYPE_PLAINS);
                 end
+            elseif resourceId == g_RESOURCE_OIL and hex:IsWater() == false then
+                self:TerraformSetFeature(hex, g_FEATURE_NONE);
+                self:TerraformToFlat(hex, true);
             end
         end
         -- Forcing to do try on desert, tundra if it can not have the resource
         if ResourceBuilder.CanHaveResource(hex.Plot, resourceId) 
             or (forced and hex:IsTundraLand() == false and hex:IsWater() == false and hex:IsDesertLand() == false and hex:IsSnowLand() == false) then
-            --self:RemoveMapResources(hex);
+            _Debug("From TerraformSetResource ", hex:PrintXY(), hex.TerrainType, hex.FeatureType, hex.ResourceType);
             ResourceBuilder.SetResourceType(hex.Plot, g_RESOURCE_NONE);
             ResourceBuilder.SetResourceType(hex.Plot, resourceId, 1);
             hex.ResourceType = resourceId;
@@ -1759,12 +1762,13 @@ end
 ---------------------------------------
 function HexMap:TerraformSetFeature(hex, featureId, forced)
     if self:TerraformSetFeatureRequirements(hex, featureId, forced) then
+        _Debug("From TerraformSetFeature ", hex:PrintXY(), hex.TerrainType, hex.FeatureType, hex.ResourceType);
         self:RemoveMapFeatures(hex)
         TerrainBuilder.SetFeatureType(hex.Plot, featureId);
         hex.FeatureType = featureId;
         hex:UpdateYields()
         self:InsertMapFeatures(hex);
-        _Debug("Terraform feature "..tostring(featureId).." on "..hex:PrintXY())
+        _Debug("Terraform feature ", featureId, " on ", hex:PrintXY())
         return true;
     else
         _Debug("Can't terraform feature "..tostring(featureId).." on "..hex:PrintXY())
@@ -1899,7 +1903,7 @@ function HexMap:TerraformDesert(hex)
             self:TerraformSetFeature(hex, g_FEATURE_FLOODPLAINS_PLAINS, true);
         end
     end
-    if rng <= 10 and hex.FeatureType == g_FEATURE_NONE then
+    if rng <= 10 and hex.FeatureType == g_FEATURE_NONE and hex.ResourceType == g_RESOURCE_NONE then
         self:TerraformSetFeature(hex, g_FEATURE_FOREST, false);
     end
     return true;
@@ -2021,7 +2025,7 @@ function HexMap:TerraformAdd1Food(hex, canMinusProd)
 
     local rng = TerrainBuilder.GetRandomNumber(100, "Random");
     -- Floodplains specific
-    if hex:IsFloodplains(false) then
+    if hex:IsFloodplains(false) and hex.ResourceType == g_RESOURCE_NONE then
         if hex.TerrainType == g_TERRAIN_TYPE_PLAINS then
             return self:TerraformSetResource(hex, g_RESOURCE_WHEAT);
         elseif hex.TerrainType == g_TERRAIN_TYPE_GRASS then
@@ -2993,7 +2997,7 @@ function InitSpawnBalancing(hexMap, civ)
     local balancing = SpawnBalancing.new(civ.StartingHex, hexMap, civ);
     balancing:RemoveRing1MountainsOnRiver();
     balancing:TerraformRing6Deserts();
-
+    balancing:CleanSpawnTile();
     balancing:ApplyGaranteedStrategics();
     balancing:ApplyMinimalLandTiles(1, 6);
     balancing:CheckMinimumWorkable();
@@ -3091,7 +3095,6 @@ end
 function SpawnBalancing:CleanSpawnTile()
     -- If spawn on a resource, try relocate it on ring 1
     if self.Hex.ResourceType ~= g_RESOURCE_NONE then
-        self:RelocateHex()
         local hexData = { TerrainId = self.Hex.TerrainType,  FeatureId = self.Hex.FeatureType, ResourceId = self.Hex.ResourceType, Relocated = false}
         print("Spawned on a resource, relocating "..tostring(self.Hex.ResourceType))
         table.insert(self.RingTables[1].RELOCATING_TILES, hexData);
@@ -3684,9 +3687,10 @@ end
 -- To call after using a method that can fill the relocating table, will try to add it to the ring in index
 function SpawnBalancing:PlaceRelocatedHexOnRing(i)
     local totalRelocating = #self.RingTables[i].RELOCATING_TILES
+    _Debug("PlaceRelocatedHexOnRing entry = ", totalRelocating)
     if totalRelocating > 0 then
-        _Debug("PlaceRelocatedHexOnRing entry = ", totalRelocating)
-        for _, hexData in pairs(self.RingTables[i].RELOCATING_TILES) do
+        for _, hexData in ipairs(self.RingTables[i].RELOCATING_TILES) do
+            _Debug("PlaceRelocatedHexOnRing Try = ", hexData.TerrainId, hexData.FeatureId, hexData.ResourceId)
             local isRelocated = false;
             if #self.RingTables[i].WATER_EMPTY > 0 and hexData.TerrainId == g_TERRAIN_TYPE_COAST then
                 local listWater = self.RingTables[i].WATER_EMPTY;
@@ -3710,15 +3714,15 @@ function SpawnBalancing:PlaceRelocatedHexOnRing(i)
             end
             if #self.RingTables[i].EMPTY_TILES > 0 then
                 local randomEmptyYields = GetShuffledCopyOfTable(self.RingTables[i].EMPTY_TILES);
-                for _, hex in pairs(randomEmptyYields) do
+                for _, hex in ipairs(randomEmptyYields) do
                     if isRelocated then break end
                     local canFeat = self.HexMap:TerraformSetFeatureRequirements(hex, hexData.FeatureId, false);
                     local canRes = self.HexMap:TerraformSetResourceRequirements(hex, hexData.ResourceId);
                     _Debug("Try relocating on ", hex:PrintXY(), " canFeat ", canFeat, " canRes ", canRes)
                     if canFeat and canRes then
-                        self:TerraformHex(hex, i, TerraformType[1], hexData.TerrainId, false);
-                        self:TerraformHex(hex, i, TerraformType[2], hexData.FeatureId, false);
-                        if self:TerraformHex(hex, i, TerraformType[3], hexData.ResourceId, false) then
+                        self:TerraformHex(hex, i, TerraformType[1], hexData.TerrainId, false, false);
+                        self:TerraformHex(hex, i, TerraformType[2], hexData.FeatureId, false, false);
+                        if self:TerraformHex(hex, i, TerraformType[3], hexData.ResourceId, false, false) then
                             _Debug("Relocated feat = "..tostring(hexData.FeatureId).." res = "..tostring(hexData.ResourceId).." on "..hex:PrintXY())
                             isRelocated = true;
                         end
