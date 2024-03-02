@@ -226,8 +226,8 @@ g_RESOURCES_STRATEGICS[g_RESOURCE_ALUMINUM]= true;
 g_RESOURCES_STRATEGICS[g_RESOURCE_URANIUM]= true;
 
 g_RESOURCES_STRATEGICS_EARLY = {}
-g_RESOURCES_STRATEGICS[g_RESOURCE_HORSES]= true;
-g_RESOURCES_STRATEGICS[g_RESOURCE_IRON]= true;
+g_RESOURCES_STRATEGICS_EARLY[g_RESOURCE_HORSES]= true;
+g_RESOURCES_STRATEGICS_EARLY[g_RESOURCE_IRON]= true;
 
 function _Debug(...)
     print(...);
@@ -306,7 +306,7 @@ function Hex:UpdateYields()
     elseif self.ResourceType == g_RESOURCE_IRON or self.ResourceType == g_RESOURCE_ALUMINUM then
         self.Science = self.Science - 1;
     end
-    self.ExtraYield = self.Science > 0 or self.Culture > 0 or self.Faith > 0;
+    self.ExtraYield = self.Science >= 1 or self.Culture >= 1 or self.Faith >= 1 or self.Gold >= 3;
     self.Is22 = self.Food == 2 and self.Prod == 2
     self.Is31 = self.Food == 3 and self.Prod == 1
 end
@@ -1142,10 +1142,8 @@ function HexMap:ComputeMajorSpawnableTiles(hex)
             end
         end
     end
-    local nextTo3LakesInARow = hex:IsHexNextTo3LakesTilesInARow();
+    local nextTo3LakesInARow = hex:IsHexNextTo3ILakeMountainTilesInARow();
     local isNotInPeninsula = hex.PeninsulaScore >= self.PeninsulaScoreThreshold
-    --_Debug("IsMajorSpawnable ", hex:PrintXY(), hex:IsImpassable(), hex:IsSnowLand(), isCloseToMapBorderX, isCloseToMapBorderY, isNotInPeninsula, isCloseToTooManyFlood, isNextToVolcano, isTooCloseToNaturalWonder, coastalNextToRiver);
-    _Debug("IsMajorSpawnable ", hex:PrintXY(), nextTo3LakesInARow);
     hex.IsMajorSpawnable = hex:IsImpassable() == false
         and hex:IsSnowLand() == false 
         and isCloseToMapBorderX == false 
@@ -1192,24 +1190,25 @@ function Hex:IsHexNextTo4ImpassableTiles()
     return false;
 end
 
-function Hex:IsHexNextTo3LakesTilesInARow()
+function Hex:IsHexNextTo3ILakeMountainTilesInARow()
     if self:IsWater() then
         return false
     end
     local ring1 = self.AllRing6Map[1];
-    local lakes = 0
+    local lakesOrMountains = 0
     local lastHexRing = ring1[6];
+    -- Not used in true coastal
     for i, r1 in ipairs(ring1) do
-        if r1.Plot:IsLake() then
-            lakes = lakes + 1;
+        if r1.Plot:IsLake() or r1:IsMountain() then
+            lakesOrMountains = lakesOrMountains + 1;
             -- Starting from west tile from Hex, so we need to add the last tile analysed in ring to check
-            if i ==1 and lastHexRing ~= nil and lastHexRing.Plot:IsLake() then
-                lakes = lakes + 1;
+            if i ==1 and lastHexRing ~= nil and (lastHexRing.Plot:IsLake() or lastHexRing:IsMountain()) then
+                lakesOrMountains = lakesOrMountains + 1;
             end
         else
-            lakes = 0;
+            lakesOrMountains = 0;
         end
-        if lakes >= 3 then
+        if lakesOrMountains >= 3 then
             return true;
         end
     end
@@ -1702,7 +1701,7 @@ end
 -- Should never be none
 ---------------------------------------
 function HexMap:TerraformSetTerrain(hex, terrainId) 
-    if hex ~= nil and hex.TerrainType ~= g_TERRAIN_TYPE_NONE then
+    if hex ~= nil and hex.TerrainType ~= g_TERRAIN_TYPE_NONE and hex.IsTaggedAsMinimum == false then
         --self:RemoveMapTerrains(hex);
         TerrainBuilder.SetTerrainType(hex.Plot, terrainId);
         hex.TerrainType = terrainId
@@ -1727,7 +1726,7 @@ function HexMap:TerraformSetResource(hex, resourceId, forced)
             return true;
         end
         -- For specifics resources, we can force a good tile to meet the right conditions
-        if forced and (hex:IsTundraLand() == false and hex:IsSnowLand() == false and hex:IsDesertLand() == false) then
+        if forced and (hex:IsSnowLand() == false and hex:IsDesertLand() == false) then
             ResourceBuilder.SetResourceType(hex.Plot, g_RESOURCE_NONE);
             if resourceId == g_RESOURCE_HORSES then
                 if IsPlainLand(hex.TerrainType) == false and IsGrassLand(hex.TerrainType) == false then
@@ -1764,7 +1763,7 @@ function HexMap:TerraformSetResource(hex, resourceId, forced)
         end
         -- Forcing to do try on desert, tundra if it can not have the resource
         if ResourceBuilder.CanHaveResource(hex.Plot, resourceId) 
-            or (forced and hex:IsTundraLand() == false and hex:IsWater() == false and hex:IsDesertLand() == false and hex:IsSnowLand() == false) then
+            or (forced and hex:IsWater() == false and hex:IsDesertLand() == false and hex:IsSnowLand() == false) then
             _Debug("From TerraformSetResource ", hex:PrintXY(), hex.TerrainType, hex.FeatureType, hex.ResourceType);
             ResourceBuilder.SetResourceType(hex.Plot, g_RESOURCE_NONE);
             ResourceBuilder.SetResourceType(hex.Plot, resourceId, 1);
@@ -1772,7 +1771,7 @@ function HexMap:TerraformSetResource(hex, resourceId, forced)
             hex.HexResource = HexResource.new(self.ResourceType);
             --self:InsertMapResources(hex);
             hex:UpdateYields()
-            _Debug("Terraform resource "..tostring(resourceId).." on "..hex:PrintXY())
+            _Debug("Terraform resource on ", hex:PrintXY(), hex.TerrainType, hex.FeatureType, hex.ResourceType);
             return true;
         else
             _Debug("TerraformSetResource - Can't terraform "..tostring(resourceId).." on "..hex:PrintXY())
@@ -1782,16 +1781,16 @@ function HexMap:TerraformSetResource(hex, resourceId, forced)
 end
 
 function HexMap:TerraformSetResourceRequirements(hex, resourceId)
-    return resourceId == g_RESOURCE_NONE or ResourceBuilder.CanHaveResource(hex.Plot, resourceId);
+    return (resourceId == g_RESOURCE_NONE or ResourceBuilder.CanHaveResource(hex.Plot, resourceId)) and hex.IsTaggedAsMinimum == false;
 end
 
 function HexMap:TerraformAddRandomLux(hex)
     local continentId = hex.IdContinent;
     local possiblesLux = self.LuxTable[continentId];
     possiblesLux = GetShuffledCopyOfTable(possiblesLux);
-    for _, idLux in pairs(possiblesLux) do
+    for _, idLux in ipairs(possiblesLux) do
         if self:TerraformSetResource(hex, idLux, false) then
-            _Debug("TerraformAddRandomLux - A lux has been added (id = ", idLux)
+            _Debug("TerraformAddRandomLux - A lux has been added (id = ", idLux, ")")
             return true;
         end
     end
@@ -1819,7 +1818,7 @@ end
 
 function HexMap:TerraformSetFeatureRequirements(hex, featureId, forced)
     local disasterTile = (IsFloodplains(hex.FeatureType, true) and IsFloodplains(featureId, true) == false) or hex.FeatureType == g_FEATURE_VOLCANO;
-    if hex.Plot ~= nil and disasterTile == false and (TerrainBuilder.CanHaveFeature(hex.Plot, featureId) or forced) then
+    if hex.Plot ~= nil and disasterTile == false and (TerrainBuilder.CanHaveFeature(hex.Plot, featureId) or forced) and hex.IsTaggedAsMinimum == false then
         return true
     end
     return false;
@@ -1914,28 +1913,15 @@ function HexMap:TerraformDesert(hex)
         self:TerraformSetFeature(hex, g_FEATURE_NONE, true);
     end
     local rng = TerrainBuilder.GetRandomNumber(100, "Desert terraform");
-    if rng <= 50 then
-        if hex.TerrainType == g_TERRAIN_TYPE_DESERT then
-            self:TerraformSetTerrain(hex, g_TERRAIN_TYPE_GRASS)
-        elseif hex.TerrainType == g_TERRAIN_TYPE_DESERT_HILLS then
-            self:TerraformSetTerrain(hex, g_TERRAIN_TYPE_GRASS_HILLS)
-        elseif hex.TerrainType == g_TERRAIN_TYPE_DESERT_MOUNTAIN then
-            self:TerraformSetTerrain(hex, g_TERRAIN_TYPE_GRASS_HILLS)
-        end
-        if hex.FeatureType == g_FEATURE_FLOODPLAINS then
-            self:TerraformSetFeature(hex, g_FEATURE_FLOODPLAINS_GRASSLAND, true);
-        end
-    else
-        if hex.TerrainType == g_TERRAIN_TYPE_DESERT then
-            self:TerraformSetTerrain(hex, g_TERRAIN_TYPE_PLAINS)
-        elseif hex.TerrainType == g_TERRAIN_TYPE_DESERT_HILLS then
-            self:TerraformSetTerrain(hex, g_TERRAIN_TYPE_PLAINS_HILLS)
-        elseif hex.TerrainType == g_TERRAIN_TYPE_DESERT_MOUNTAIN then
-            self:TerraformSetTerrain(hex, g_TERRAIN_TYPE_PLAINS_HILLS)
-        end
-        if hex.FeatureType == g_FEATURE_FLOODPLAINS then
-            self:TerraformSetFeature(hex, g_FEATURE_FLOODPLAINS_PLAINS, true);
-        end
+    if hex.TerrainType == g_TERRAIN_TYPE_DESERT then
+        self:TerraformSetTerrain(hex, g_TERRAIN_TYPE_PLAINS)
+    elseif hex.TerrainType == g_TERRAIN_TYPE_DESERT_HILLS then
+        self:TerraformSetTerrain(hex, g_TERRAIN_TYPE_PLAINS_HILLS)
+    elseif hex.TerrainType == g_TERRAIN_TYPE_DESERT_MOUNTAIN then
+        self:TerraformSetTerrain(hex, g_TERRAIN_TYPE_PLAINS_HILLS)
+    end
+    if hex.FeatureType == g_FEATURE_FLOODPLAINS then
+        self:TerraformSetFeature(hex, g_FEATURE_FLOODPLAINS_PLAINS, true);
     end
     if rng <= 10 and hex.FeatureType == g_FEATURE_NONE and hex.ResourceType == g_RESOURCE_NONE then
         self:TerraformSetFeature(hex, g_FEATURE_FOREST, false);
@@ -1947,7 +1933,7 @@ end
 -- Possible 2/2 tiles without lux :
 -- Grass+Hill+Forest, Plain+Junle+Hills, Stone+Hills, Deer+Forest, Grass+Sheeps
 -- Extra yield (gold faith culture science) not taken in account here
-function HexMap:TerraformTo4Yields(hex, mandatory22)
+function HexMap:TerraformTo4Yields(hex, garanteed22)
     -- Low yield strategics and lux are not changed here, floodplains untouched because placement is making sure we are not around 5 or 6 flood in ring 1
     if self:HasTerraformTo4YieldsRequirements(hex) == false then
         return false;
@@ -1955,9 +1941,8 @@ function HexMap:TerraformTo4Yields(hex, mandatory22)
     if hex:IsTundraLand() then
         return self:TerraformTo4YieldsTundra(hex)
     end
-    -- If true, we should terraform this tile to be
-    if mandatory22 then
-        _Debug("TerraformTo4Yields - 2/2 created on ", hex:PrintXY())
+    -- If true, we should terraform this tile to be 2/2
+    if garanteed22 then
         return self:TerraformTo22Yields(hex, true);
     end
     -- Low yields upgrades
@@ -2022,6 +2007,10 @@ function HexMap:TerraformTo4YieldsTundra(hex)
 end
 
 function HexMap:TerraformTo22Yields(hex, emptyTileBeforeTerraform)
+    if IsFloodplains(hex.FeatureType,true) then
+        _Debug("TerraformTo4Yields - no 2/2 in floodplains ", hex:PrintXY())
+        return false;
+    end
     if emptyTileBeforeTerraform then
         self:TerraformSetFeature(hex, g_FEATURE_NONE, true);
         self:TerraformSetResource(hex, g_RESOURCE_NONE, true);
@@ -2056,8 +2045,13 @@ function HexMap:TerraformAdd1Food(hex, canMinusProd, canExtraYield)
     end
     -- Security check to not terraform an existing resource on tested tile
     if hex.ResourceType ~= g_RESOURCE_NONE then
-        return false;
-    elseif hex.FeatureType ~= g_FEATURE_NONE then
+        if hex.ResourceType == g_RESOURCE_MAIZE or hex.ResourceType == g_RESOURCE_COPPER then
+            self:TerraformSetResource(hex, g_RESOURCE_NONE, false);
+        else
+            return false;
+        end
+    end
+    if hex.FeatureType ~= g_FEATURE_NONE then
         return self:TerraformAdd1FoodOnFeatureHex(hex, canMinusProd, canExtraYield)
     else
         return self:TerraformAdd1FoodEmptyHex(hex);
@@ -2123,7 +2117,7 @@ function HexMap:TerraformAdd1FoodOnFeatureHex(hex, canMinusProd, canExtraYield)
         else
             -- 1/2 plain forest to grass hill forest
             if hex.TerrainType == g_TERRAIN_TYPE_PLAINS then
-                return self:TerraformTo22YieldsNoResource()
+                return self:TerraformTo22YieldsNoResource(hex)
             -- 1/3 to 2/3 if allowed
             elseif hex.TerrainType == g_TERRAIN_TYPE_PLAINS_HILLS and canExtraYield then
                 self:TerraformSetTerrain(hex, g_TERRAIN_TYPE_GRASS_HILLS);
@@ -2138,8 +2132,8 @@ function HexMap:TerraformAdd1FoodOnFeatureHex(hex, canMinusProd, canExtraYield)
             end
 
         end
-    -- MARCH -- 4food tiles considered highyields
-    elseif hex.FeatureType == g_FEATURE_MARSH and canExtraYield then
+    -- MARCH -- 4food tiles
+    elseif hex.FeatureType == g_FEATURE_MARSH then
         return self:TerraformSetResource(hex, g_RESOURCE_RICE, true);
     else
         -- Other features
@@ -2153,8 +2147,9 @@ end
 
 
 -- Possibles 4yields : without resource, stone, sheep, deer, lux
-function HexMap:Terraform4YieldsToHighYields(hex, canAddLux, canChangeResource)
-    if hex.Food + hex.Prod ~= 4 or g_RESOURCES_LUX_LIST[hex.ResourceType] or g_RESOURCES_STRATEGICS[hex.ResourceType] then
+function HexMap:Terraform4YieldsToHighYields(hex, canChangeResource, canAddLux)
+    if (hex.Food + hex.Prod ~= 4) or (IsTundraLand(hex.TerrainType) and hex.Food + hex.Prod ~= 3)
+            or g_RESOURCES_LUX_LIST[hex.ResourceType] or g_RESOURCES_STRATEGICS[hex.ResourceType] or IsDesertLand(hex.TerrainType) then
         return
     end
     -- If is a water tile, turn into fish reef
@@ -2169,18 +2164,18 @@ function HexMap:Terraform4YieldsToHighYields(hex, canAddLux, canChangeResource)
         end
         if canChangeResource and (hex.ResourceType ~= g_RESOURCE_NONE and g_RESOURCES_LUX_LIST[hex.ResourceType] == false and g_RESOURCES_STRATEGICS[hex.ResourceType] == false) then
             -- Stone, Sheep
-            if hex.ResourceType == g_RESOURCE_SHEEP or hex.ResourceType == g_RESOURCE_STONE then
+            if hex.ResourceType ~= g_RESOURCE_BANANAS and hex.ResourceType ~= g_RESOURCE_DEER then
+                _Debug("Terraform4YieldsToHighYields Resource cleared", hex.ResourceType);
                 self:TerraformSetResource(hex, g_RESOURCE_NONE, true);
                 self:TerraformTo22YieldsNoResource(hex)
-                _Debug("Terraform4YieldsToHighYields Stone or Sheep to 2/2 before Deer 2/3")
             end
         end
         if hex.FeatureType == g_FEATURE_JUNGLE then
             if hex.ResourceType ~= g_RESOURCE_BANANAS then
-                _Debug("Terraform4YieldsToHighYields To Bananas 3/2");
+                _Debug("Terraform4YieldsToHighYields Jungle 2/2 to Bananas 3/2");
                 return self:TerraformSetResource(hex, g_RESOURCE_BANANAS, true);
             else
-                _Debug("Terraform4YieldsToHighYields To Bananas 3/2");
+                _Debug("Terraform4YieldsToHighYields 3/1 Bananas to Bananas 3/2");
                 return self:TerraformSetTerrain(hex, g_TERRAIN_TYPE_PLAINS_HILLS);
             end
         elseif hex.FeatureType == g_FEATURE_FOREST then
@@ -2189,7 +2184,7 @@ function HexMap:Terraform4YieldsToHighYields(hex, canAddLux, canChangeResource)
                 _Debug("Terraform4YieldsToHighYields To Deer 2/3");
                 return self:TerraformSetResource(hex, g_RESOURCE_DEER, true);
                 -- Is a 1/3 deer on plainhills
-            elseif  hex.ResourceType == g_RESOURCE_DEER then
+            elseif hex.ResourceType == g_RESOURCE_DEER then
                 _Debug("Terraform4YieldsToHighYields To Deer 2/3");
                 return self:TerraformSetTerrain(hex, g_TERRAIN_TYPE_GRASS_HILLS);
             end
@@ -2209,8 +2204,13 @@ function HexMap:TerraformAdd1Prod(hex, canMinusFood, canExtraYield)
     end
     _Debug("Try TerraformAdd1Prod on ", hex:PrintXY(), " ", hex.TerrainType, " ", hex.FeatureType, " ", hex.ResourceType)
     if hex.ResourceType ~= g_RESOURCE_NONE then
-        return false;
-    elseif hex.FeatureType ~= g_FEATURE_NONE then
+        if hex.ResourceType == g_RESOURCE_MAIZE or hex.ResourceType == g_RESOURCE_COPPER then
+            self:TerraformSetResource(hex, g_RESOURCE_NONE, false);
+        else
+            return false;
+        end
+    end
+    if hex.FeatureType ~= g_FEATURE_NONE then
         return self:TerraformAdd1ProdOnFeatureHex(hex, canMinusFood, canExtraYield)
     else
         return self:TerraformAdd1ProdEmptyHex(hex);
@@ -2357,6 +2357,69 @@ function HexMap:TerraformTo22YieldsNoResource(hex)
     _Debug("Terraformed to 2/2 "..hex:PrintXY())
     return true;
 end
+
+function HexMap:TerraformToStandardHighFoodYields(hex, cleanTile)
+    if (cleanTile) then
+        self:TerraformSetFeature(hex, g_FEATURE_NONE, true);
+        self:TerraformSetResource(hex, g_RESOURCE_NONE, true);
+    end
+   if IsPlainLand(hex.TerrainType) and (hex.FeatureType == g_FEATURE_NONE or hex.FeatureType == g_FEATURE_JUNGLE) then
+        if hex.ResourceType == g_RESOURCE_NONE and hex.FeatureType == g_FEATURE_NONE and self:CanHaveJungle(hex) then
+            _Debug("TerraformToStandardHighFoodYields - empty plain to 3/1 Banana")
+            self:TerraformSetTerrain(hex, g_TERRAIN_TYPE_PLAINS);
+            self:TerraformSetFeature(hex, g_FEATURE_JUNGLE, true);
+            self:TerraformSetResource(hex, g_RESOURCE_BANANAS, true);
+            return true;
+        elseif hex.FeatureType == g_FEATURE_JUNGLE and hex.ResourceType == g_RESOURCE_NONE then
+            _Debug("TerraformToStandardHighFoodYields - Add Banana to jungle")
+            self:TerraformSetResource(hex, g_RESOURCE_BANANAS, true);
+            return true;
+        elseif hex.FeatureType == g_FEATURE_NONE then
+            if IsHill(hex.TerrainType) then
+                _Debug("TerraformToStandardHighFoodYields - Default grass to 3/1 Sheep");
+                self:TerraformSetTerrain(hex, g_TERRAIN_TYPE_GRASS_HILLS)
+                self:TerraformSetResource(hex, g_RESOURCE_SHEEP, true);
+            else
+                _Debug("TerraformToStandardHighFoodYields - Default grass to 4/0 Rice");
+                self:TerraformSetTerrain(hex, g_TERRAIN_TYPE_GRASS)
+                self:TerraformSetFeature(hex, g_FEATURE_MARSH, true);
+                self:TerraformSetResource(hex, g_RESOURCE_RICE, true);
+            end
+            return true;
+        end
+    elseif IsGrassLand(hex.TerrainType) and (hex.FeatureType == g_FEATURE_NONE or hex.FeatureType == g_FEATURE_MARSH) then
+       if hex.ResourceType == g_RESOURCE_RICE and hex.FeatureType == g_FEATURE_NONE then
+           _Debug("TerraformToStandardHighFoodYields - 3/0 Rice to 4/0 Rice Marsh")
+           self:TerraformSetFeature(hex, g_FEATURE_MARSH, true);
+           return true;
+       elseif hex.FeatureType == g_FEATURE_MARSH and hex.ResourceType == g_RESOURCE_NONE then
+           _Debug("TerraformToStandardHighFoodYields - 3/0 Marsh to 4/0 Rice Marsh");
+           self:TerraformSetResource(hex, g_RESOURCE_RICE, true);
+           return true;
+       elseif hex.FeatureType == g_FEATURE_NONE then
+           if IsHill(hex.TerrainType) then
+               _Debug("TerraformToStandardHighFoodYields - Default grass to 3/1 Sheep");
+               self:TerraformSetResource(hex, g_RESOURCE_SHEEP, true);
+           else
+               _Debug("TerraformToStandardHighFoodYields - Default grass to 4/0 Rice");
+               self:TerraformSetFeature(hex, g_FEATURE_MARSH, true);
+               self:TerraformSetResource(hex, g_RESOURCE_RICE, true);
+           end
+           return true;
+       end
+    elseif IsTundraLand(hex.TerrainType) then
+       if hex.FeatureType == g_FEATURE_NONE then
+           _Debug("TerraformToStandardHighFoodYields - Tundra added Sheep");
+           self:TerraformSetTerrain(hex, g_TERRAIN_TYPE_TUNDRA_HILLS);
+           self:TerraformSetResource(hex, g_RESOURCE_SHEEP, true);
+           return true;
+       end
+    end
+    hex:UpdateYields();
+    _Debug("TerraformToStandardHighFoodYields "..hex:PrintXY());
+    return false;
+end
+
 
 function HexMap:AddRandomLux(hex)
     local listPossibleLux = self.LuxTable[hex.IdContinent];
@@ -2544,6 +2607,8 @@ TerraformType[8] = "Add1Prod";
 TerraformType[9] = "Remove1Prod";
 TerraformType[10] = "MountainToHills";
 TerraformType[11] = "AddLux";
+TerraformType[12] = "ToStdHighFoodYield";
+TerraformType[13] = "StdTohighYield";
 -- Call basic terraforming method depending on type
 function HexMap:TerraformHex(hex, type, id, forced, boolParam)
     if type == TerraformType[1] then
@@ -2561,7 +2626,6 @@ function HexMap:TerraformHex(hex, type, id, forced, boolParam)
     elseif type == TerraformType[7] then
         return self:TerraformRemove1Food(hex, boolParam);
     elseif type == TerraformType[8] then
-        _Debug("TerraformAdd1Prod from TerraformType8")
         return self:TerraformAdd1Prod(hex, forced, boolParam);
     elseif type == TerraformType[9] then
         return self:TerraformRemove1Prod(hex, boolParam);
@@ -2569,6 +2633,10 @@ function HexMap:TerraformHex(hex, type, id, forced, boolParam)
         return self:TerraformMountainToHill(hex);
     elseif type == TerraformType[11] then
         return self:TerraformAddRandomLux(hex);
+    elseif type == TerraformType[12] then
+        return self:TerraformToStandardHighFoodYields(hex, boolParam);
+    elseif type == TerraformType[13] then
+        return self:Terraform4YieldsToHighYields(hex, forced, boolParam);
     elseif type == TerraformType[99] then
        return self:TerraformEmptyTile(hex);
     else
@@ -3095,12 +3163,14 @@ function InitSpawnBalancing(hexMap, civ)
     balancing:RemoveRing1MountainsOnRiver();
     balancing:TerraformRing6Deserts();
     balancing:CleanSpawnTile();
-    balancing:Garanteed22InRing1();
+    balancing:CheckLuxThreshold();
+    balancing:ApplyMinimalCoastalTiles();
+    balancing:GaranteedStandardHighFoodInnerRing();
+    balancing:CheckInnerRingHighYieldsThreshold();
     balancing:ApplyGaranteedStrategics();
     balancing:ApplyMinimalLandTiles(1, 6);
+    --balancing:GaranteedHighYield();
     balancing:CheckMinimumWorkable();
-    balancing:ApplyMinimalCoastalTiles();
-    balancing:CheckLuxThreshold()
     return balancing;
 end
 
@@ -3143,10 +3213,14 @@ function SpawnBalancing.new(hex, hexMap, civ)
     instance.AimedCoastalScore = 0;
     instance:FillTablesRings();
     instance.TerraformedTiles = {};
+    instance.InnerRingLuxCount = 0;
+    instance.OuterRingLuxCount = 0;
     instance.MinLuxInnerRingThreshold = 2;
-    instance.MaxLuxInnerRingThreshold = 4;
+    instance.MaxLuxInnerRingThreshold = 3;
     instance.MinLuxOuterRingThreshold = 0;--undefined/not needed
-    instance.MaxLuxOuterRingThreshold = 99;
+    instance.MaxLuxOuterRingThreshold = 7;
+    instance.MinHighYieldInnerRingThreshold = 0;
+    instance.MaxHighYieldInnerRingThreshold = 2;
     instance.IsBCYActivated = isBCYActivated()
     print("Init SpawnBalancing")
     return instance;
@@ -3193,6 +3267,10 @@ function SpawnBalancing:FillTablesRings()
 end
 
 function SpawnBalancing:CleanSpawnTile()
+    -- Hills start for Menelik
+    if self.Civ.CivilizationLeader == "LEADER_MENELIK" then
+        self.HexMap:TerraformToHill(self.Hex, true);
+    end
     -- If spawn on a resource, try relocate it on ring 1
     if self.Hex.ResourceType ~= g_RESOURCE_NONE then
         local hexData = { TerrainId = self.Hex.TerrainType,  FeatureId = self.Hex.FeatureType, ResourceId = self.Hex.ResourceType, Relocated = false}
@@ -3201,6 +3279,18 @@ function SpawnBalancing:CleanSpawnTile()
         self:TerraformHex(self.Hex, 0, TerraformType[3], g_RESOURCE_NONE, false, false, false)
     end
     self:PlaceRelocatedHexOnRing(1);
+
+    -- 4 food settle (ring 1) on fresh is forbidden
+    for _, h in pairs(self.RingTables[1].HexRings) do
+        if h.Food >= 4 and h.IsFreshWater then
+            _Debug("CleanSpawnTile - Found a 4+ food tile on fresh ring 1 "..h:PrintXY())
+            self:RelocateHex(1, 3, h);
+        end
+        if g_RESOURCES_STRATEGICS[h.ResourceType] and h.ResourceType ~= g_RESOURCE_HORSES and h.ResourceType ~= g_RESOURCE_IRON then
+            _Debug("CleanSpawnTile - deleted a late strat resource in ring 1, will be replaced ring 4 or 5 ", h.ResourceType)
+            self:TerraformHex(h, 0, TerraformType[3], g_RESOURCE_NONE, false, false, false);
+        end
+    end
 end
 
 function SpawnBalancing:RemoveRing1MountainsOnRiver()
@@ -3270,23 +3360,6 @@ end
 -- If a resource or feature prevents terraforming, it is removed and relocated to the next ring if possible
 -- Standard yields balance (avoiding only 1/3 spawns for example) is in BalanceAllCivYields
 function SpawnBalancing:ApplyMinimalLandTiles(iMin, iMax)
-    -- Hills start for Menelik
-    if self.Civ.CivilizationLeader == "LEADER_MENELIK" then
-        self.HexMap:TerraformToHill(self.Hex, true);
-    end
-    -- Try to nerf high yields especially 4+ food in ring 1 and 2 to ring 3 at least - will be placed in PlaceRelocatedHexOnRing is called in ring 3+
-    for _, h in pairs(self.RingTables[1].HIGH_YIELD_TILES) do
-        if h.Food >= 4 then
-            _Debug("ApplyMinimalLandTiles - Found a 4+ food tile ring 1 "..h:PrintXY())
-            self:RelocateHex(1, 3, h);
-        end
-    end
-    for _, h in pairs(self.RingTables[2].HIGH_YIELD_TILES) do
-        if h.Food >= 4 then
-            _Debug("ApplyMinimalLandTiles - Found a 4+ food tile ring 2 "..h:PrintXY())
-            self:RelocateHex(2, 3, h);
-        end
-    end
     -- Apply minimum yields tiles
     for i, _ in pairs(self.RingTables) do
         if i == iMax + 1 then
@@ -3297,19 +3370,25 @@ function SpawnBalancing:ApplyMinimalLandTiles(iMin, iMax)
             self:PlaceRelocatedHexOnRing(i);
             -- Formula used to count the number of standard yields tiles needed in a given ring around the spawning hex
             local minimumStandardTiles = i;
+            if i > 3 then
+                minimumStandardTiles = i + 1;
+            end
+            local garanteed22 = i <= 2;
             local tileToUp = minimumStandardTiles - #self.RingTables[i].STANDARD_YIELD_TILES - #self.RingTables[i].HIGH_YIELD_TILES;
+            if garanteed22 then
+                tileToUp = minimumStandardTiles - self:Find22TilesInRing(i);
+            end
             _Debug("MinimalTileV2 Ring ", i, " : tileToUp = ", tileToUp);
             _Debug("MinimalTileV2 Ring ", i, " : Empty = ", #self.RingTables[i].EMPTY_TILES);
             _Debug("MinimalTileV2 Ring ", i, " : Low = ",#self.RingTables[i].LOW_YIELD_TILES);
             -- Try to apply randomly desired number of standard yield tiles in ring i
-            while (tileToUp > 0 and self:TerraformRandomInRing(i, TerraformType[4], 0, false, false, false)) do
+            while (tileToUp > 0 and self:TerraformRandomInRing(i, TerraformType[4], 0, false, false, garanteed22)) do
                 tileToUp = tileToUp - 1;
             end
             -- If left to update, it means there were obstacle to the terraformation (existing resources or features) if possible, relocate them in next ring
             while tileToUp > 0 and i < self.MaxRing do
                 _Debug("MinimalTileV2 Ring ", i, " : leftToUp = ", tileToUp);
                 local nextIndex = i + 1;
-
                 local relocatedHex = self:RelocateRandomHexToNextRing(self.RingTables[i].LOW_YIELD_TILES, i, nextIndex)
                 if relocatedHex ~= nil and self:TerraformHex(relocatedHex, i, TerraformType[4], 0, false, false, false) then
                     tileToUp = tileToUp - 1;
@@ -3346,44 +3425,88 @@ function SpawnBalancing:ApplyMinimalLandTiles(iMin, iMax)
     _Debug("ApplyMinimalLandTiles DONE")
 end
 
-function SpawnBalancing:Garanteed22InRing1()
-    _Debug("Garanteed22InRing1");
-    if #self.RingTables[1].STANDARD_YIELD_TILES > 1 then
-        for _, h in ipairs(self.RingTables[1].STANDARD_YIELD_TILES) do
-            if h.Food == 2 and h.Prod == 2 then
-                return true;
-            end
+function SpawnBalancing:Find22TilesInRing(i)
+    local count22 = 0;
+    for _, h in ipairs(self.RingTables[i].STANDARD_YIELD_TILES) do
+        if self:GetHexBaseFood(h) >= 2 and self:GetHexBaseProd(h) >= 2 then
+            count22 = count22 + 1;
         end
     end
-    -- No 22 found, create one
-    if self:TerraformRandomInRing(1, TerraformType[4], 0, false, true, true) then
-        return true;
-    end
-    _Debug("Garanteed22InRing1ERROR - Could not add 22 ring 1");
-    return false;
+    return count22;
 end
 
 
-function SpawnBalancing:Garanteed31InnerRing()
-    _Debug("Garanteed31InnerRing");
+function SpawnBalancing:GaranteedHighYield()
+    _Debug("GaranteedHighYield enter");
+    local innerRing = {}
+    AddToTable(innerRing, self.RingTables[1].HIGH_YIELD_TILES);
+    AddToTable(innerRing, self.RingTables[2].HIGH_YIELD_TILES);
+    AddToTable(innerRing, self.RingTables[1].HIGH_EXTRA_YIELDS);
+    AddToTable(innerRing, self.RingTables[2].HIGH_EXTRA_YIELDS);
+    for _, h in ipairs(innerRing) do
+        _Debug("GaranteedHighYield : ", h:PrintXY());
+    end
+    if #innerRing > 0 then
+        _Debug("GaranteedHighYield found ", #innerRing);
+        return true;
+    end
+    local innerRingStandard = {}
+    AddToTable(innerRingStandard, self.RingTables[2].STANDARD_YIELD_TILES);
+    innerRingStandard = GetShuffledCopyOfTable(innerRingStandard);
+    for _, hex in ipairs(innerRingStandard) do
+        local canAddLux = false
+        if self.InnerRingLuxCount < self.MaxLuxInnerRingThreshold then
+            canAddLux = true;
+        end
+        if self:TerraformHex(hex, 2, TerraformType[13], true, true, canAddLux) then
+            _Debug("GaranteedHighYield added high yield on ", hex:PrintXY());
+            return true;
+        end
+    end
+    return false;
+end
+
+function SpawnBalancing:GaranteedStandardHighFoodInnerRing()
+    _Debug("GaranteedStandardHighFoodInnerRing");
     local innerRing = {}
     AddToTable(innerRing, self.RingTables[1].STANDARD_YIELD_TILES);
     AddToTable(innerRing, self.RingTables[2].STANDARD_YIELD_TILES);
     if #innerRing > 1 then
         for _, h in ipairs(innerRing) do
-            if h.Food == 3 and h.Prod == 1 then
+            -- Always use GetHexBaseFood to consider tundra tiles correctly
+            if (self:GetHexBaseFood(h) == 3 and self:GetHexBaseProd(h) >= 1) or (self:GetHexBaseFood(h) == 4) then
+                _Debug("GaranteedStandardHighFoodInnerRing Already found");
+                h.IsTaggedAsMinimum = true;
                 return true;
             end
         end
     end
-    -- No 22 found, create one
-    if self:TerraformRandomInRing(1, TerraformType[4], 0, false, true, true) then
-        return true;
+    -- Not found - try create one on ring 2 on low tile
+    local ring2 = {}
+    AddToTable(ring2, self.RingTables[2].EMPTY_TILES);
+    AddToTable(ring2, self.RingTables[2].LOW_YIELD_TILES);
+    ring2 = GetShuffledCopyOfTable(ring2);
+    for _, h in ipairs(ring2) do
+        if self:TerraformHex(h, 2, TerraformType[12], 0, false, false, false) then
+            _Debug("GaranteedStandardHighFoodInnerRing Added in ring 2");
+            h.IsTaggedAsMinimum = true;
+            return true;
+        end
     end
-    _Debug("Garanteed22InRing1ERROR - Could not add 22 ring 1");
+    local ring1 = {}
+    AddToTable(ring1, self.RingTables[1].EMPTY_TILES);
+    AddToTable(ring1, self.RingTables[1].LOW_YIELD_TILES);
+    ring1 = GetShuffledCopyOfTable(ring1);
+    for _, h in ipairs(innerRing) do
+        if self:TerraformHex(h, 1, TerraformType[12], 0, false, false, false) then
+            _Debug("GaranteedStandardHighFoodInnerRing Added in ring 1");
+            h.IsTaggedAsMinimum = true;
+            return true;
+        end
+    end
+    _Debug("GaranteedStandardHighFoodInnerRingERROR - Could not add 31 or 4f tile  ring 1");
     return false;
 end
-
 
 -- Rules : Check if harbor tile, add a fish ring 2 if none
 function SpawnBalancing:ApplyMinimalCoastalTiles()
@@ -3441,8 +3564,8 @@ function SpawnBalancing:ApplyMinimalCoastalTiles()
             -- replace a random ring, do we need to relocate or adjust later anyway ?
             hex = self:RelocateRandomHexToNextRing(self.RingTables[2].WATER_RF, 2, 3)
             if hex ~= nil then
-                _Debug("Need to add a fish in "..relocatedHex:PrintXY().." in ring 2 for "..self.Civ.CivilizationLeader)
-                self:TerraformHex(relocatedHex, 2, TerraformType[3], g_RESOURCE_FISH, false)
+                _Debug("Need to add a fish in "..hex:PrintXY().." in ring 2 for "..self.Civ.CivilizationLeader)
+                self:TerraformHex(hex, 2, TerraformType[3], g_RESOURCE_FISH, false, false, false);
             end
         end
         if #listWater > 1 then
@@ -3542,9 +3665,9 @@ function SpawnBalancing:CheckMinimumWorkable()
     _Debug("Enter CheckMinimumWorkable")
     local combinaisonList = {}
     for _, mainHex in pairs(self.RingTables[1].WORKABLE) do
-        -- Tae standard and high yields
+        -- Take standard and high yields
         if self:GetHexBaseFood(mainHex) + self:GetHexBaseProd(mainHex) >= 4 then
-            for _, secondHex in pairs(self.RingTables[1].WORKABLE) do
+            for _, secondHex in pairs(self.RingTables[1].HexRings) do
                 if mainHex ~= secondHex and secondHex:IsImpassable() == false and secondHex.Food > 0 then
                     local combinaisonTable = {};
                     combinaisonTable.FoodDiff = self:GetFoodDiff(mainHex, secondHex);
@@ -3604,8 +3727,16 @@ function SpawnBalancing:CheckMinimumWorkable()
                 _Debug("After 22 test ",comb.FoodDiff, " ", comb.ProdDiff, " CanRemoveProd = ", canRemoveProd, comb.Hex1:PrintXY(), comb.Hex2:PrintXY())
             end
         end
-        local maxLoopTest = 2;
+        local maxLoopTest = 10;
         local loop = 0
+        if math.abs(comb.FoodDiff + comb.ProdDiff) >= 2 then
+            if g_RESOURCES_BONUS_LIST[comb.Hex2.ResourceType] then
+                self:TerraformHex(comb.Hex2, 1, TerraformType[99], 0, false, false, false);
+                self:TerraformHex(comb.Hex2, 1, TerraformType[4], 0, false, false, false);
+            else
+                _Debug("Combinaison ERROR Failed to add 22 on empty tile")
+            end
+        end
         while comb.FoodDiff < 0 and loop <= maxLoopTest do
             local canRemoveProd = comb.ProdDiff >= 1
             _Debug("Combinaison test ",comb.FoodDiff, " ", comb.ProdDiff, " CanRemoveProd = ", canRemoveProd, comb.Hex1:PrintXY(), comb.Hex2:PrintXY())
@@ -3638,27 +3769,27 @@ function SpawnBalancing:CheckMinimumWorkable()
             minimumFoodCheckOK = true;
         end
         loop = 0;
-        while comb.ProdDiff < 0 and loop <= 5 do
+        while comb.ProdDiff < 0 and loop <= maxLoopTest do
             local canRemoveFood = comb.FoodDiff >= 1
             _Debug("Combinaison test ",comb.FoodDiff, " ", comb.ProdDiff, " canRemoveFood = ", canRemoveFood, comb.Hex1:PrintXY(), comb.Hex2:PrintXY())
             local rng = TerrainBuilder.GetRandomNumber(100, "Random");
             -- Little rng to check the highest tile first
             if rng <= 20 then
-                if self:TerraformHex(comb.Hex1, 1, TerraformType[8], 0, canRemoveFood) then
+                if self:TerraformHex(comb.Hex1, 1, TerraformType[8], 0, canRemoveFood, false) then
                     comb.FoodDiff = self:GetFoodDiff(comb.Hex1, comb.Hex2);
                     comb.ProdDiff = self:GetProdDiff(comb.Hex1, comb.Hex2);
                     _Debug("Added 1 prod in Hex1 "..tostring(comb.FoodDiff).." "..tostring(comb.ProdDiff))
-                elseif self:TerraformHex(comb.Hex2, 1, TerraformType[8], 0, canRemoveFood) then
+                elseif self:TerraformHex(comb.Hex2, 1, TerraformType[8], 0, canRemoveFood, false) then
                     comb.FoodDiff = self:GetFoodDiff(comb.Hex1, comb.Hex2);
                     comb.ProdDiff = self:GetProdDiff(comb.Hex1, comb.Hex2);
                     _Debug("Added 1 prod in Hex2 "..tostring(comb.FoodDiff).." "..tostring(comb.ProdDiff))
                 end
             else
-                if self:TerraformHex(comb.Hex2, 1, TerraformType[8], 0, canRemoveFood) then
+                if self:TerraformHex(comb.Hex2, 1, TerraformType[8], 0, canRemoveFood, false) then
                     comb.FoodDiff = self:GetFoodDiff(comb.Hex1, comb.Hex2);
                     comb.ProdDiff = self:GetProdDiff(comb.Hex1, comb.Hex2);
                     _Debug("Added 1 prod in Hex2 "..tostring(comb.FoodDiff).." "..tostring(comb.ProdDiff))
-                elseif self:TerraformHex(comb.Hex1, 1, TerraformType[8], 0, canRemoveFood) then
+                elseif self:TerraformHex(comb.Hex1, 1, TerraformType[8], 0, canRemoveFood, false) then
                     comb.FoodDiff = self:GetFoodDiff(comb.Hex1, comb.Hex2);
                     comb.ProdDiff = self:GetProdDiff(comb.Hex1, comb.Hex2);
                     _Debug("Added 1 prod in Hex1 "..tostring(comb.FoodDiff).." "..tostring(comb.ProdDiff))
@@ -3672,44 +3803,33 @@ function SpawnBalancing:CheckMinimumWorkable()
         if minimumFoodCheckOK and minimumProdCheckOK then
             _Debug("CheckMinimumWorkable DONE")
             return true;
-        else
-           --[[ _Debug("CheckMinimumWorkable - Try relocate ")
-            if self:RelocateHex(1, 3, comb.Hex2) and self:TerraformHex(comb.Hex2, 1, TerraformType[4], 0, false, false) then
-                self:PlaceRelocatedHexOnRing(3);
-                comb.FoodDiff = self:GetFoodDiff(comb.Hex1, comb.Hex2);
-                comb.ProdDiff = self:GetProdDiff(comb.Hex1, comb.Hex2);
-                if minimumFoodCheckOK and minimumProdCheckOK then
-                    return true;
-                end
-            end]]
-            -- Try to add a last forced terraform on a bonus tile
-            --if self:TerraformRandomInRing(1, TerraformType[4], 0, false, true) then
-            --    _Debug("last forced terraform on a tile to 22")
-             --   return
-            --end
         end
     end
     _Debug("CheckMinimumWorkableERROR - Unable to make terraform, check tiles in ring 1")
+    return false;
 end
 
 
 function SpawnBalancing:CheckLuxThreshold()
-    local innerRingLuxCount = 0;
-    local outerRingLuxCount = 0;
+    self.InnerRingLuxCount = 0;
+    self.OuterRingLuxCount = 0;
     local i = 1;
     while i <= 6 do
         for _,h in pairs(self.RingTables[i].HexRings) do
             if h:HasLux()  then
+                _Debug("CheckLuxThreshold found a lux on ", h:PrintXY(), i);
                 if i <= 3 then
-                    innerRingLuxCount = innerRingLuxCount + 1;
-                    if (innerRingLuxCount > self.MaxLuxInnerRingThreshold) and h.IsTaggedAsMinimum == false then
-                        self:TerraformHex(h, i, TerraformType[3], g_RESOURCE_NONE, false);
+                    self.InnerRingLuxCount = self.InnerRingLuxCount + 1;
+                    if (self.InnerRingLuxCount > self.MaxLuxInnerRingThreshold) and h.IsTaggedAsMinimum == false then
+                        self:TerraformHex(h, i, TerraformType[3], g_RESOURCE_NONE, false, false, false);
                         _Debug("CheckLuxThreshold deleted a lux on ", h:PrintXY(), " Ring = ", i)
+                    else
+                        h.IsTaggedAsMinimum = true;
                     end
                 else
-                    outerRingLuxCount = outerRingLuxCount + 1;
-                    if outerRingLuxCount > self.MaxLuxOuterRingThreshold then
-                        self:TerraformHex(h, i, TerraformType[3], g_RESOURCE_NONE, false);
+                    self.OuterRingLuxCount = self.OuterRingLuxCount + 1;
+                    if self.OuterRingLuxCount > self.MaxLuxOuterRingThreshold then
+                        self:TerraformHex(h, i, TerraformType[3], g_RESOURCE_NONE, false, false, false);
                         _Debug("CheckLuxThreshold deleted a lux on ", h:PrintXY(), " Ring = ", i)
                     end
                 end
@@ -3717,20 +3837,70 @@ function SpawnBalancing:CheckLuxThreshold()
         end
         i = i + 1;
     end
-    _Debug("CheckLuxThreshold innerRing = ", innerRingLuxCount, " outerRing = ", outerRingLuxCount, " Threshold = ", innerRingLuxCount < self.MaxLuxInnerRingThreshold)
-    while innerRingLuxCount < self.MinLuxInnerRingThreshold do
-        if self:TerraformInRingsRandomOrder(1, 3, TerraformType[11], 0, false, false) then
-            innerRingLuxCount = innerRingLuxCount + 1;
+    _Debug("CheckLuxThreshold innerRing = ", self.InnerRingLuxCount, " outerRing = ", self.OuterRingLuxCount, " Threshold = ", self.InnerRingLuxCount < self.MaxLuxInnerRingThreshold)
+    while self.InnerRingLuxCount < self.MinLuxInnerRingThreshold do
+        if self:TerraformInRingsRandomOrder(1, 3, TerraformType[11], 0, false, false, false) then
+            _Debug("CheckLuxThreshold - Added lux ");
+            self.InnerRingLuxCount = self.InnerRingLuxCount + 1;
+        else
+            _Debug("CheckLuxThresholdERROR - Could not add lux in ring 1-3 for ", self.Civ.CivilizationLeader)
+            self.InnerRingLuxCount = self.MinLuxInnerRingThreshold;
         end
-
     end
-    while outerRingLuxCount < self.MinLuxOuterRingThreshold do
-        if self:TerraformInRingsRandomOrder(4, 6, TerraformType[11], 0, false, false) then
-            outerRingLuxCount = outerRingLuxCount + 1;
+    while self.OuterRingLuxCount < self.MinLuxOuterRingThreshold do
+        if self:TerraformInRingsRandomOrder(4, 6, TerraformType[11], 0, false, false, false) then
+            _Debug("CheckLuxThreshold - Added lux ");
+            self.OuterRingLuxCount = self.OuterRingLuxCount + 1;
+        else
+            _Debug("CheckLuxThresholdERROR - Could not add lux in ring 1-3 for ", self.Civ.CivilizationLeader)
+            self.OuterRingLuxCount = self.MinLuxOuterRingThreshold;
         end
     end
     _Debug("CheckLuxThreshold DONE")
 end
+
+
+function SpawnBalancing:CheckInnerRingHighYieldsThreshold()
+    _Debug("CheckInnerRingHighYieldsThreshold enter");
+    local ring1HighYields = {};
+    local ring2HighYields = {};
+    AddToTable(ring1HighYields, self.RingTables[1].HIGH_YIELD_TILES);
+    AddToTable(ring1HighYields, self.RingTables[1].HIGH_EXTRA_YIELDS);
+    AddToTable(ring2HighYields, self.RingTables[2].HIGH_YIELD_TILES);
+    AddToTable(ring2HighYields, self.RingTables[2].HIGH_EXTRA_YIELDS);
+    local highYieldsCount = #ring1HighYields + #ring2HighYields;
+    if highYieldsCount >= self.MinHighYieldInnerRingThreshold and highYieldsCount <= self.MaxHighYieldInnerRingThreshold then
+        _Debug("CheckInnerRingHighYieldsThreshold OK : highYieldsCount = ", highYieldsCount, self.MaxHighYieldInnerRingThreshold);
+        return true;
+    end
+    ring1HighYields = GetShuffledCopyOfTable(ring1HighYields);
+    for _, h in ipairs(ring1HighYields) do
+        if highYieldsCount > self.MaxHighYieldInnerRingThreshold and h.IsTaggedAsMinimum == false then
+            self:TerraformHex(h, 1, TerraformType[3], g_RESOURCE_NONE, false);
+            highYieldsCount = highYieldsCount - 1;
+            _Debug("CheckHighYieldsThreshold deleted a high yields on ", h:PrintXY(), " Ring 1")
+        end
+    end
+    ring2HighYields = GetShuffledCopyOfTable(ring2HighYields);
+    for _, h in ipairs(ring2HighYields) do
+        if highYieldsCount > self.MaxHighYieldInnerRingThreshold and h.IsTaggedAsMinimum == false then
+            self:TerraformHex(h, 2, TerraformType[3], g_RESOURCE_NONE, false);
+            highYieldsCount = highYieldsCount - 1;
+            _Debug("CheckHighYieldsThreshold deleted a high yields on ", h:PrintXY(), " Ring 2")
+        end
+    end
+    while highYieldsCount < self.MinHighYieldInnerRingThreshold do
+        if self:TerraformInRingsRandomOrder(1, 3, TerraformType[13], 0, false, false, false) then
+            highYieldsCount = highYieldsCount + 1;
+            _Debug("CheckHighYieldsThreshold added a high yields on ", h:PrintXY())
+        else
+            _Debug("CheckHighYieldsThreshold - Could not add lux in ring 1-3 for ", self.Civ.CivilizationLeader)
+            self.InnerRingLuxCount = self.MinLuxInnerRingThreshold;
+        end
+    end
+end
+
+
 
 function SpawnBalancing:GetCoastalScoreHex()
     local coastalScore = 0;
@@ -3864,7 +4034,7 @@ function SpawnBalancing:PlaceRelocatedHexOnRing(i)
             if #self.RingTables[i].EMPTY_TILES > 0 then
                 local randomEmptyYields = GetShuffledCopyOfTable(self.RingTables[i].EMPTY_TILES);
                 for _, hex in ipairs(randomEmptyYields) do
-                    if isRelocated then break end
+                    if isRelocated or hex.IsTaggedAsMinimum then break end
                     local canFeat = self.HexMap:TerraformSetFeatureRequirements(hex, hexData.FeatureId, false);
                     local canRes = self.HexMap:TerraformSetResourceRequirements(hex, hexData.ResourceId);
                     _Debug("Try relocating on ", hex:PrintXY(), " canFeat ", canFeat, " canRes ", canRes)
@@ -3887,7 +4057,7 @@ function SpawnBalancing:PlaceRelocatedHexOnRing(i)
             if isRelocated == false and #self.RingTables[i].LOW_YIELD_TILES > 0 then
                 local randomLowYields = GetShuffledCopyOfTable(self.RingTables[i].LOW_YIELD_TILES);
                 for _, hex in pairs(randomLowYields) do
-                    if isRelocated then break end;
+                    if isRelocated or hex.IsTaggedAsMinimum then break end;
                     local canFeat = hexData.FeatureId == g_FEATURE_NONE or (hexData.FeatureId ~= g_FEATURE_NONE and TerrainBuilder.CanHaveFeature(hex.Plot, hexData.FeatureId))
                     local canRes = hexData.ResourceId == g_RESOURCE_NONE or (hexData.ResourceId ~= g_FEATURE_NONE and ResourceBuilder.CanHaveResource(hex.Plot, hexData.ResourceId))
                     if canFeat and canRes then
@@ -4020,7 +4190,7 @@ function SpawnBalancing:TerraformRandomInRing(i, terraformType, id, needToBeWalk
             print("Try to force on ring "..tostring(i));
             -- Try to add on Feature, exclude flood and geo
             for _, hex in pairs(listLowYieldsTiles) do
-                if needToBeWalkableTo == false or (needToBeWalkableTo and self.Hex:IsWalkableInRange(hex, i)) and hex:IsFloodplains(true) == false then
+                if hex.IsTaggedAsMinimum == false and needToBeWalkableTo == false or (needToBeWalkableTo and self.Hex:IsWalkableInRange(hex, i)) and hex:IsFloodplains(true) == false then
                     if hex.ResourceType == g_RESOURCE_NONE and hex.FeatureType ~= g_FEATURE_GEOTHERMAL_FISSURE then
                         if self:TerraformHex(hex, i, terraformType, id, true, false, boolParam) then
                             print("Terraformed a "..tostring(hex.FeatureType).." feature "..hex:PrintXY());
@@ -4054,9 +4224,6 @@ function SpawnBalancing:CanRelocateStrategics(resId, i)
 end
 
 function SpawnBalancing:ApplyGaranteedStrategics()
-    if MapConfiguration.GetValue("BBSStratRes") ~= 3 then
-        return
-    end
     -- Horse and iron in ring 1-3, other strats in ring 1-5
     local ring1To2 = {};
     AddToTable(ring1To2, self.Hex.AllRing6Map[1]);
@@ -4138,9 +4305,9 @@ end
 -- @param terraformType is the "enum" type for the terraform to apply
 -- @param id is the corresponding resource/feature/terrain to apply (some terraformType do not use this)
 -- @param forced is a boolean to change the tile even if it do not meet all conditions (some terraformType do not use this)
-function SpawnBalancing:TerraformHex(hex, ring, terraformType, id, forced, blockTerraform, boolParam)
+function SpawnBalancing: TerraformHex(hex, ring, terraformType, id, forced, blockTerraform, boolParam)
     local blockedTerraform = forced == false and blockTerraform and Contains(self.TerraformedTiles, hex);
-    if blockedTerraform == false and self.HexMap:TerraformHex(hex, terraformType, id, forced, boolParam) then
+    if hex.IsTaggedAsMinimum == false and blockedTerraform == false and self.HexMap:TerraformHex(hex, terraformType, id, forced, boolParam) then
         self:UpdateTableDataRing(hex, ring);
         table.insert(self.TerraformedTiles, hex);
         return true;
@@ -4198,13 +4365,14 @@ function SpawnBalancing:UpdateTableDataRing(h, i)
 
     if  h.ResourceType == g_RESOURCE_NONE and h.FeatureType == g_FEATURE_NONE then
         table.insert(self.RingTables[i].EMPTY_TILES, h)
-    elseif h.Food + h.Prod < 4 then
+        -- 1/3 considered low yield in ring 1-2 because lack of food
+    elseif h.Food + h.Prod < 4 or (i <= 2 and h.Food == 1 and h.Prod == 3) then
         table.insert(self.RingTables[i].LOW_YIELD_TILES, h)
     elseif h.Food + h.Prod >= 4 and h.ExtraYield then
         table.insert(self.RingTables[i].HIGH_EXTRA_YIELDS, h)
-    elseif h.Food + h.Prod == 4 and h.Prod > 0 then
+    elseif h.Food + h.Prod == 4 then
         table.insert(self.RingTables[i].STANDARD_YIELD_TILES, h)
-    elseif h.Food + h.Prod > 4 or h.Food == 4 then
+    elseif h.Food + h.Prod > 4 then
         table.insert(self.RingTables[i].HIGH_YIELD_TILES, h)
     end
     -- Workable are minimum 3 yields tiles
@@ -4240,6 +4408,16 @@ function SpawnBalancing:UpdateCoastalScore(score)
     _Debug("New Coastal Score for "..self.Civ.CivilizationLeader.." = "..tostring(self.CoastalScore))
 end
 
+local MeansBalancing = {}
+MeansBalancing.MeanInnerRingFood = 0;
+MeansBalancing.MeanInnerRingProd = 0;
+MeansBalancing.MeanInnerRingUnworkable = 0;
+MeansBalancing.MeanInnerRingWorkable = 0;
+MeansBalancing.MeanInnerStandardYields = 0;
+MeansBalancing.MeanInnerRingHighYields = 0;
+MeansBalancing.MeanInnerRingUnworkable = 0;
+
+
 -- List of "SpawnBalancing" object for each major civ
 function BalanceAllCivYields(spawns)
     local aimedCoastalScore = CoastalScoring.BASE_COASTAL_SCORE;
@@ -4250,14 +4428,17 @@ function BalanceAllCivYields(spawns)
     local meanInnerRingProd = 0;
     local meanOuterRingFood = 0;
     local meanOuterRingProd = 0;
+    local meanInnerStandardYields = 0;
+    local meanOuterStandardYields = 0;
     local meanInnerRingHighYields = 0;
     local meanOuterRingHighYields = 0;
     local meanInnerRingWorkable = 0;
     local meanOuterRingWorkable = 0;
+    local meanInnerRingUnworkable = 0;
+    local meanOuterRingUnworkable = 0;
     local nbCivExtraYieldRing3 = 0;
 
     for _, spawn in pairs(spawns) do
-        local includingExtraYields = 0;
         if spawn.CoastalScore > 0 then
             meanCoastalScore = meanCoastalScore + spawn.CoastalScore
             nbCoastal = nbCoastal + 1
@@ -4282,20 +4463,24 @@ function BalanceAllCivYields(spawns)
     -- APPLY BALANCING AND CALCS AFTER COASTAL WORK
     for _, spawn in pairs(spawns) do
         local includingExtraYields = 0;
-        local innerRingWorkable, innerRingHighYields, innerRingFood, innerRingProd = spawn:GetInnerRingWorkable();
+        local innerRingUnworkable, innerRingWorkable, innerRingStd, innerRingHighYields, innerRingFood, innerRingProd = spawn:GetInnerRingWorkable();
+        meanInnerRingUnworkable = meanInnerRingUnworkable + #innerRingUnworkable;
         meanInnerRingWorkable = meanInnerRingWorkable + #innerRingWorkable;
+        meanInnerStandardYields = meanInnerStandardYields + #innerRingStd;
         meanInnerRingHighYields = meanInnerRingHighYields + #innerRingHighYields;
         meanInnerRingFood = meanInnerRingFood + innerRingFood;
-        meanInnerRingProd = meanInnerRingProd + innerRingProd
-        local outerRingWorkable, outerRingHighYields, outerRingFood, outerRingProd = spawn:GetOuterRingWorkable();
+        meanInnerRingProd = meanInnerRingProd + innerRingProd;
+        local outerRingUnworkable, outerRingWorkable, outerRingStd, outerRingHighYields, outerRingFood, outerRingProd = spawn:GetOuterRingWorkable();
+        meanOuterRingUnworkable = meanOuterRingUnworkable + #outerRingUnworkable;
         meanOuterRingWorkable = meanOuterRingWorkable + #outerRingWorkable;
+        meanOuterStandardYields = meanOuterStandardYields + #outerRingStd;
         meanOuterRingHighYields = meanOuterRingHighYields + #outerRingHighYields;
         meanOuterRingFood = meanOuterRingFood + outerRingFood;
         meanOuterRingProd = meanOuterRingProd + outerRingProd;
         for i, _ in pairs(spawn.RingTables) do
             if i < 4 then
                 includingExtraYields = includingExtraYields + #spawn.RingTables[i].HIGH_EXTRA_YIELDS
-                print("Found extra yield in ring "..tostring(i).." = "..tostring(#spawn.RingTables[i].HIGH_EXTRA_YIELDS))
+                --print("Found extra yield in ring "..tostring(i).." = "..tostring(#spawn.RingTables[i].HIGH_EXTRA_YIELDS))
             end
 
         end
@@ -4306,27 +4491,383 @@ function BalanceAllCivYields(spawns)
         print(spawn.Civ.CivilizationLeader.." innerRingProd = "..tostring(innerRingProd).." - outerRingProd = "..tostring(outerRingProd));
         print(spawn.Civ.CivilizationLeader.." includingExtraYields = "..tostring(includingExtraYields));
     end
-    meanInnerRingFood = math.floor((meanInnerRingFood / #spawns) + 0.5);
-    meanInnerRingProd = math.floor((meanInnerRingProd / #spawns) + 0.5);
-    meanOuterRingFood = math.floor((meanOuterRingFood / #spawns) + 0.5);
-    meanOuterRingProd = math.floor((meanOuterRingProd / #spawns) + 0.5);
-    meanInnerRingHighYields = math.floor((meanInnerRingHighYields / #spawns) + 0.5);
-    meanOuterRingHighYields = math.floor((meanOuterRingHighYields / #spawns) + 0.5);
-    meanInnerRingWorkable = math.floor((meanInnerRingWorkable / #spawns) + 0.5);
-    meanOuterRingWorkable = math.floor((meanOuterRingWorkable / #spawns) + 0.5);
-    _Debug("meanInnerRingFood = "..tostring(meanInnerRingFood));
-    _Debug("meanInnerRingProd = "..tostring(meanInnerRingProd));
-    _Debug("meanInnerRingWorkable = "..tostring(meanInnerRingWorkable));
-    _Debug("meanInnerRingStandard = "..tostring(meanInnerRingWorkable));
-    _Debug("meanInnerRingHighYields = "..tostring(meanInnerRingHighYields));
-    _Debug("meanOuterRingFood = "..tostring(meanOuterRingFood));
-    _Debug("meanOuterRingProd = "..tostring(meanOuterRingProd));
-    _Debug("meanOuterRingWorkable = "..tostring(meanOuterRingWorkable));
-    _Debug("meanOuterRingHighYields = "..tostring(meanOuterRingHighYields));
+    MeansBalancing.MeanInnerRingFood = math.floor((meanInnerRingFood / #spawns) + 0.5);
+    MeansBalancing.MeanInnerRingProd = math.floor((meanInnerRingProd / #spawns) + 0.5);
+    MeansBalancing.MeanInnerRingUnworkable = math.floor((meanInnerRingUnworkable / #spawns) + 0.5);
+    MeansBalancing.MeanInnerRingWorkable =math.floor((meanInnerRingWorkable / #spawns) + 0.5);
+    MeansBalancing.MeanInnerStandardYields = math.floor((meanInnerStandardYields / #spawns) + 0.5);
+    MeansBalancing.MeanInnerRingHighYields =  math.floor((meanInnerRingHighYields / #spawns) + 0.5);
+    MeansBalancing.MeanOuterRingFood = math.floor((meanOuterRingFood / #spawns) + 0.5);
+    MeansBalancing.MeanOuterRingProd = math.floor((meanOuterRingProd / #spawns) + 0.5);
+    MeansBalancing.MeanOuterRingUnworkable = math.floor((meanOuterRingUnworkable / #spawns) + 0.5);
+    MeansBalancing.MeanOuterRingWorkable = math.floor((meanOuterRingWorkable / #spawns) + 0.5);
+    MeansBalancing.MeanOuterStandardYields = math.floor((meanOuterStandardYields / #spawns) + 0.5);
+    MeansBalancing.MeanOuterRingHighYields = math.floor((meanOuterRingHighYields / #spawns) + 0.5);
+    _Debug("meanInnerRingFood = "..tostring( MeansBalancing.MeanInnerRingFood));
+    _Debug("meanInnerRingProd = "..tostring(MeansBalancing.MeanInnerRingProd));
+    _Debug("meanInnerRingUnworkable = "..tostring(MeansBalancing.MeanInnerRingUnworkable));
+    _Debug("meanInnerRingWorkable = "..tostring(MeansBalancing.MeanInnerRingWorkable));
+    _Debug("meanInnerRingStandard = "..tostring( MeansBalancing.MeanInnerStandardYields));
+    _Debug("meanInnerRingHighYields = "..tostring(MeansBalancing.MeanInnerRingHighYields));
+    _Debug("meanOuterRingFood = "..tostring(MeansBalancing.MeanOuterRingFood));
+    _Debug("meanOuterRingProd = "..tostring(MeansBalancing.MeanOuterRingProd));
+    _Debug("meanOuterRingUnworkable = "..tostring(MeansBalancing.MeanOuterRingUnworkable));
+    _Debug("meanOuterRingWorkable = "..tostring(MeansBalancing.MeanOuterRingWorkable));
+    _Debug("meanOuterStandardYields = "..tostring(MeansBalancing.MeanOuterStandardYields));
+    _Debug("meanOuterRingHighYields = "..tostring(MeansBalancing.MeanOuterRingHighYields));
     _Debug("nbCivExtraYieldRing3 = "..tostring(nbCivExtraYieldRing3));
 
+    for _, spawn in pairs(spawns) do
+        _Debug("Start SpawnBalancing - BalanceToMean ", spawn.Civ.CivilizationLeader)
+        local yieldMargin = 2;
+        local standardMargin = 2;
+        local unworkableYieldMargin = 2;
+        local allowedChanges = 0;
+        local tries = 0;
+        while allowedChanges <= 4 and tries < 10 do
+            if spawn:BalanceToMean(yieldMargin, standardMargin, unworkableYieldMargin) then
+                allowedChanges = allowedChanges + 1;
+                _Debug("BalanceToMean - Changes made : ", allowedChanges)
+            else
+                _Debug("BalanceToMean - Fail on this try, go to next")
+                tries = tries + 1;
+            end
+        end
+        _Debug("BalanceToMean - Done ", allowedChanges, " changes for : ", spawn.Civ.CivilizationLeader)
+    end
 end
 
+-- TODO Please refacto after finish
+function SpawnBalancing:BalanceToMean(yieldMargin, standardMargin, unworkableYieldMargin)
+    local innerRingUnworkable, innerRingWorkable, innerRingStd, innerRingHighYields, innerRingFood, innerRingProd = self:GetInnerRingWorkable();
+    local diffStandard = #innerRingStd + #innerRingHighYields - MeansBalancing.MeanInnerStandardYields;
+    -- Only affected if we have more unworkable tiles than others
+    local innerUnworkableDiff = math.max(0, #innerRingUnworkable - MeansBalancing.MeanInnerRingUnworkable);
+    local unworkableDiff = innerUnworkableDiff * unworkableYieldMargin;
+    local innerFoodDiff = innerRingFood - MeansBalancing.MeanInnerRingFood + unworkableDiff;
+    local innerProdDiff = innerRingProd - MeansBalancing.MeanInnerRingProd + unworkableDiff;
+    local canAddFood = innerFoodDiff + yieldMargin < 0;
+    local canRemoveFood = innerFoodDiff - yieldMargin > 0;
+    local canAddProd = innerProdDiff + yieldMargin < 0;
+    local canRemoveProd = innerProdDiff - yieldMargin > 0;
+    local canAddStandard = diffStandard - standardMargin + 1 <= 0;
+    local canRemoveStandard = diffStandard + standardMargin - 1 >= 0;
+    -- Need to add standard tiles - deficit of either food or prod
+    _Debug("BalanceToMean status : DiffStandard = ", diffStandard, " InnerFoodDiff = ", innerFoodDiff, " InnerProdDiff = ", innerProdDiff);
+    if diffStandard + standardMargin < 0 then
+        _Debug("BalanceToMean - Lack of standard tiles")
+        -- check priority stat
+        if canAddFood == false and canAddProd == false then
+            _Debug("BalanceToMean - But can not add food or prod when needing standard");
+            return nil;
+        end
+        local listLowR1 = self:GetAllOtherWorkableTiles(self.RingTables[1].HexRings);
+        local listLowR2 = self:GetAllOtherWorkableTiles(self.RingTables[2].HexRings);
+        if innerFoodDiff > innerProdDiff and canAddProd then
+            listLowR2 = GetShuffledCopyOfTable(listLowR2);
+            for _, h in ipairs(listLowR2) do
+                if self:TerraformHex(h, 2, TerraformType[8], 0, canRemoveFood, false, false) then
+                    _Debug("BalanceToMean - Changed standard tile ring 2 to add prod with remove food = ", canRemoveFood);
+                    return true;
+                end
+            end
+            for _, h in ipairs(listLowR1) do
+                if self:TerraformHex(h, 1, TerraformType[8], 0, canRemoveFood, false, false) then
+                    _Debug("BalanceToMean - Changed standard tile ring 1 to add prod with remove food = ", canRemoveFood);
+                    return true;
+                end
+            end
+        elseif innerProdDiff >= innerFoodDiff and canAddFood then
+            listLowR2 = GetShuffledCopyOfTable(listLowR2);
+            for _, h in ipairs(listLowR2) do
+                if self:TerraformHex(h, 2, TerraformType[6], 0, canRemoveProd, false, false) then
+                    _Debug("BalanceToMean - Changed standard tile ring 1 to add food with remove prod = ", canRemoveProd);
+                    return true;
+                end
+            end
+            for _, h in ipairs(listLowR1) do
+                if self:TerraformHex(h, 1, TerraformType[6], 0, canRemoveProd, false, false) then
+                    _Debug("BalanceToMean - Changed standard tile ring 1 to add food with remove prod = ", canRemoveProd);
+                    return true;
+                end
+            end
+        else
+            _Debug("BalanceToMean - No changes - Food : ", canAddFood, innerFoodDiff, " Prod : ", canAddProd, innerProdDiff)
+            return false;
+        end
+    -- TOO MANY STANDARDS (more than standardMargin)
+    elseif diffStandard - standardMargin > 0 then
+        if canRemoveFood == false and canRemoveProd == false then
+            _Debug("BalanceToMean - Too many standard But can not remove food or prod");
+            return false;
+        end
+        -- FOOD CAN BE REMOVED
+        local listStdR1 = self:GetAllStandardTiles(self.RingTables[1].HexRings);
+        local listStdR2 = self:GetAllStandardTiles(self.RingTables[2].HexRings);
+        if innerFoodDiff > innerProdDiff and canRemoveFood then
+            listStdR2 = GetShuffledCopyOfTable(listStdR2)
+            for _, h in ipairs(listStdR2) do
+                if self:TerraformHex(h, 2, TerraformType[7], 0, false, false, canAddProd) then
+                    _Debug("BalanceToMean - Nerfed standard tile ring 2 to remove food with add prod = ", canAddProd);
+                    return true;
+                end
+            end
+            listStdR1 = GetShuffledCopyOfTable(listStdR1)
+            for _, h in ipairs(listStdR1) do
+                if self:TerraformHex(h, 1, TerraformType[7], 0, false, false, canAddProd) then
+                    _Debug("BalanceToMean - Nerfed standard tile ring 1 to remove food with add prod = ", canAddProd);
+                    return true;
+                end
+            end
+        -- PROD CAN BE REMOVED
+        elseif innerProdDiff > innerFoodDiff and canRemoveProd then
+            listStdR2 = GetShuffledCopyOfTable(listStdR2)
+            for _, h in ipairs(listStdR2) do
+                if self:TerraformHex(h, 2, TerraformType[9], 0, false, false, canAddFood) then
+                    _Debug("BalanceToMean - Nerfed standard tile ring 2 to remove prod with add food = ", canAddFood);
+                    return true;
+                end
+            end
+            listStdR1 = GetShuffledCopyOfTable(listStdR1)
+            for _, h in ipairs(listStdR1) do
+                if self:TerraformHex(h, 1, TerraformType[9], 0, false, false, canAddFood) then
+                    _Debug("BalanceToMean - Nerfed standard tile ring 1 to remove prod with add food = ", canAddFood);
+                    return true;
+                end
+            end
+        end
+    -- STANDARD TILE CLOSE TO MEAN + FOOD DIFFERENCE DETECTED
+    elseif math.abs(innerFoodDiff) > yieldMargin and math.abs(innerFoodDiff) > math.abs(innerProdDiff) then
+        local rng = TerrainBuilder.GetRandomNumber(100, "Category");
+        local listWorkR1 = self:GetAllOtherWorkableTiles(self.RingTables[1].HexRings);
+        local listWorkR2 = self:GetAllOtherWorkableTiles(self.RingTables[2].HexRings);
+        -- ADD FOOD
+        if innerFoodDiff < -yieldMargin then
+            -- RNG 1 : Try to add food on a flot tile
+            if rng <= 33 or (rng <= 50 and canAddStandard == false) then
+                listWorkR2 = GetShuffledCopyOfTable(listWorkR2);
+                for _, h in ipairs(listWorkR2) do
+                    if IsHill(h.TerrainType) == false and self:TerraformHex(h, 2, TerraformType[6], 0, canRemoveProd, false, false) then
+                        _Debug("BalanceToMean - Added food on flat tile with removeprod ", canRemoveProd);
+                        return true;
+                    end
+                end
+                listWorkR1 = GetShuffledCopyOfTable(listWorkR1);
+                for _, h in ipairs(listWorkR1) do
+                    if IsHill(h.TerrainType) == false and self:TerraformHex(h, 2, TerraformType[6], 0, canRemoveProd, false, false) then
+                        _Debug("BalanceToMean - Added food on flat tile with removeprod ", canRemoveProd);
+                        return true;
+                    end
+                end
+                -- RNG 2 : Try to add food on a hill tile
+            elseif rng <= 66 or (rng > 50 and canAddStandard == false) then
+                listWorkR2 = GetShuffledCopyOfTable(listWorkR2);
+                for _, h in ipairs(listWorkR2) do
+                    if IsHill(h.TerrainType) and self:TerraformHex(h, 2, TerraformType[6], 0, canRemoveProd, false, false) then
+                        _Debug("BalanceToMean - Added food on hill tile with removeprod ", canRemoveProd);
+                        return true;
+                    end
+                end
+                listWorkR1 = GetShuffledCopyOfTable(listWorkR1);
+                for _, h in ipairs(listWorkR1) do
+                    if IsHill(h.TerrainType) and self:TerraformHex(h, 2, TerraformType[6], 0, canRemoveProd, false, false) then
+                        _Debug("BalanceToMean - Added food on empty hill with removeprod ", canRemoveProd);
+                        return true;
+                    end
+                end
+            else
+                -- RNG 3 : Change standard tiles
+                local listStdR1 = self:GetAllStandardTiles(self.RingTables[1].HexRings);
+                local listStdR2 = self:GetAllStandardTiles(self.RingTables[2].HexRings);
+                listStdR2 = GetShuffledCopyOfTable(listStdR2);
+                for _, h in ipairs(listStdR2) do
+                    if self:TerraformHex(h, 2, TerraformType[6], 0, canRemoveProd, false, false) then
+                        _Debug("BalanceToMean - Changed standard ring 2 added food with removeprod ", canRemoveProd);
+                        return true;
+                    end
+                end
+                listStdR1 = GetShuffledCopyOfTable(listStdR1);
+                for _, h in ipairs(listStdR1) do
+                    if self:TerraformHex(h, 1, TerraformType[6], 0, canRemoveProd, false, false) then
+                        _Debug("BalanceToMean - Changed standard ring 1 added food with removeprod ", canRemoveProd);
+                        return true;
+                    end
+                end
+            end
+        -- REMOVE FOOD
+        elseif innerFoodDiff > yieldMargin then
+            -- RNG 1 : Try to remove food on a flat tile
+            _Debug("BalanceToMean Std ok - Try to remove food, canAddProd ", canAddProd);
+            if rng <= 33 or (rng <= 50 and canAddStandard == false) then
+                listWorkR2 = GetShuffledCopyOfTable(listWorkR2);
+                for _, h in ipairs(listWorkR2) do
+                    if IsHill(h.TerrainType) == false and self:TerraformHex(h, 2, TerraformType[7], 0, false, false, canAddProd) then
+                        _Debug("BalanceToMean - Removed food on flat tile with canAddProd ", canAddProd);
+                        return true;
+                    end
+                end
+                listWorkR1 = GetShuffledCopyOfTable(listWorkR1);
+                for _, h in ipairs(listWorkR1) do
+                    if IsHill(h.TerrainType) == false and self:TerraformHex(h, 2, TerraformType[7], 0, false, false, canAddProd) then
+                        _Debug("BalanceToMean - Removed food on flat tile with canAddProd ", canAddProd);
+                        return true;
+                    end
+                end
+                -- RNG 2 : Try to add food on a hill tile
+            elseif rng <= 66 or (rng > 50 and canAddStandard == false)then
+                listWorkR2 = GetShuffledCopyOfTable(listWorkR2);
+                for _, h in ipairs(listWorkR2) do
+                    if IsHill(h.TerrainType) and self:TerraformHex(h, 2, TerraformType[7], 0, false, false, canAddProd) then
+                        _Debug("BalanceToMean - Removed food on hill tile with canAddProd ", canAddProd);
+                        return true;
+                    end
+                end
+                listWorkR1 = GetShuffledCopyOfTable(listWorkR1);
+                for _, h in ipairs(listWorkR1) do
+                    if IsHill(h.TerrainType) and self:TerraformHex(h, 2, TerraformType[7], 0, false, false, canAddProd) then
+                        _Debug("BalanceToMean - Removed food on empty hill with canAddProd ", canAddProd);
+                        return true;
+                    end
+                end
+            -- RNG 3 CAN NERF A STANDARD
+            elseif diffStandard + standardMargin - 1 > 0 then
+                local listStdR1 = self:GetAllStandardTiles(self.RingTables[1].HexRings);
+                local listStdR2 = self:GetAllStandardTiles(self.RingTables[2].HexRings);
+                listStdR2 = GetShuffledCopyOfTable(listStdR2);
+                for _, h in ipairs(listStdR2) do
+                    if self:TerraformHex(h, 2, TerraformType[7], 0, false, false, canAddProd) then
+                        _Debug("BalanceToMean - Changed standard ring 2 removed food with addProd ", canAddProd);
+                        return true;
+                    end
+                end
+                listStdR1 = GetShuffledCopyOfTable(listStdR1);
+                for _, h in ipairs(listStdR1) do
+                    if self:TerraformHex(h, 1, TerraformType[7], 0, false, false, canAddProd) then
+                        _Debug("BalanceToMean - Changed standard ring 1 removed food with addProd ", canAddProd);
+                        return true;
+                    end
+                end
+            end
+        end
+        -- Change yields in existing standards or add in empty
+    elseif math.abs(innerProdDiff) > yieldMargin and math.abs(innerProdDiff) > math.abs(innerFoodDiff) then
+        -- ADD PROD
+        local rng = TerrainBuilder.GetRandomNumber(100, "Category");
+        local listWorkR1 = self:GetAllOtherWorkableTiles(self.RingTables[1].HexRings);
+        local listWorkR2 = self:GetAllOtherWorkableTiles(self.RingTables[2].HexRings);
+        if innerProdDiff < -yieldMargin then
+            -- RNG 1 : Try to add prod on a flot tile
+            if rng <= 33 or (rng <= 50 and canAddStandard == false) then
+                listWorkR2 = GetShuffledCopyOfTable(listWorkR2);
+                for _, h in ipairs(listWorkR2) do
+                    if IsHill(h.TerrainType) == false and self:TerraformHex(h, 2, TerraformType[8], 0, canRemoveFood, false, false) then
+                        _Debug("BalanceToMean - Added prod on flat tile with canRemoveFood ", canRemoveFood);
+                        return true;
+                    end
+                end
+                listWorkR1 = GetShuffledCopyOfTable(listWorkR1);
+                for _, h in ipairs(listWorkR1) do
+                    if IsHill(h.TerrainType) == false and self:TerraformHex(h, 2, TerraformType[8], 0, canRemoveFood, false, false) then
+                        _Debug("BalanceToMean - Added prod on flat tile with canRemoveFood ", canRemoveFood);
+                        return true;
+                    end
+                end
+                -- RNG 2 : Try to add food on a hill tile
+            elseif rng <= 66 or (rng > 50 and canAddStandard == false) then
+                listWorkR2 = GetShuffledCopyOfTable(listWorkR2);
+                for _, h in ipairs(listWorkR2) do
+                    if IsHill(h.TerrainType) and self:TerraformHex(h, 2, TerraformType[8], 0, canRemoveFood, false, false) then
+                        _Debug("BalanceToMean - Added prod on hill tile with canRemoveFood ", canRemoveFood);
+                        return true;
+                    end
+                end
+                listWorkR1 = GetShuffledCopyOfTable(listWorkR1);
+                for _, h in ipairs(listWorkR1) do
+                    if IsHill(h.TerrainType) and self:TerraformHex(h, 2, TerraformType[8], 0, canRemoveFood, false, false) then
+                        _Debug("BalanceToMean - Added prod on empty hill with canRemoveFood ", canRemoveFood);
+                        return true;
+                    end
+                end
+            else
+                -- RNG 3 : Change standard tiles
+                local listStdR1 = self:GetAllStandardTiles(self.RingTables[1].HexRings);
+                local listStdR2 = self:GetAllStandardTiles(self.RingTables[2].HexRings);
+                listStdR2 = GetShuffledCopyOfTable(listStdR2);
+                for _, h in ipairs(listStdR2) do
+                    if self:TerraformHex(h, 2, TerraformType[8], 0, canRemoveFood, false, false) then
+                        _Debug("BalanceToMean - Changed standard ring 2 added prod with canRemoveFood ", canRemoveFood);
+                        return true;
+                    end
+                end
+                listStdR1 = GetShuffledCopyOfTable(listStdR1);
+                for _, h in ipairs(listStdR1) do
+                    if self:TerraformHex(h, 1, TerraformType[8], 0, canRemoveFood, false, false) then
+                        _Debug("BalanceToMean - Changed standard ring 1 added prod with canRemoveFood ", canRemoveFood);
+                        return true;
+                    end
+                end
+            end
+        elseif innerProdDiff > yieldMargin then
+            -- REMOVE PROD
+            -- RNG 1 : Try to remove prod on a flat tile
+            _Debug("BalanceToMean Std ok - Try to remove prod, canAddFood ", canAddFood);
+            if rng <= 33 or (rng <= 50 and canRemoveStandard == false) then
+                listWorkR2 = GetShuffledCopyOfTable(listWorkR2);
+                for _, h in ipairs(listWorkR2) do
+                    if IsHill(h.TerrainType) == false and self:TerraformHex(h, 2, TerraformType[9], 0, false, false, canAddFood) then
+                        _Debug("BalanceToMean - Removed prod on flat tile with canAddFood ", canAddFood);
+                        return true;
+                    end
+                end
+                listWorkR1 = GetShuffledCopyOfTable(listWorkR1);
+                for _, h in ipairs(listWorkR1) do
+                    if IsHill(h.TerrainType) == false and self:TerraformHex(h, 2, TerraformType[9], 0, false, false, canAddFood) then
+                        _Debug("BalanceToMean - Removed prod on flat tile with canAddFood ", canAddFood);
+                        return true;
+                    end
+                end
+                -- RNG 2 : Try to add food on a hill tile
+            elseif rng <= 66 or (rng > 50 and canRemoveStandard == false)then
+                listWorkR2 = GetShuffledCopyOfTable(listWorkR2);
+                for _, h in ipairs(listWorkR2) do
+                    if IsHill(h.TerrainType) and self:TerraformHex(h, 2, TerraformType[9], 0, false, false, canAddFood) then
+                        _Debug("BalanceToMean - Removed food on hill tile with canAddFood ", canAddFood);
+                        return true;
+                    end
+                end
+                listWorkR1 = GetShuffledCopyOfTable(listWorkR1);
+                for _, h in ipairs(listWorkR1) do
+                    if IsHill(h.TerrainType) and self:TerraformHex(h, 2, TerraformType[9], 0, false, false, canAddFood) then
+                        _Debug("BalanceToMean - Removed food on empty hill with canAddFood ", canAddFood);
+                        return true;
+                    end
+                end
+            -- RNG 3 CAN NERF A STANDARD
+            elseif diffStandard + standardMargin - 1 > 0 then
+                local listStdR1 = self:GetAllStandardTiles(self.RingTables[1].HexRings);
+                local listStdR2 = self:GetAllStandardTiles(self.RingTables[2].HexRings);
+                listStdR2 = GetShuffledCopyOfTable(listStdR2);
+                for _, h in ipairs(listStdR2) do
+                    if self:TerraformHex(h, 2, TerraformType[9], 0, false, false, canAddProd) then
+                        _Debug("BalanceToMean - Changed standard ring 2 removed food with canAddFood ", canAddFood);
+                        return true;
+                    end
+                end
+                listStdR1 = GetShuffledCopyOfTable(listStdR1);
+                for _, h in ipairs(listStdR1) do
+                    if self:TerraformHex(h, 1, TerraformType[9], 0, false, false, canAddProd) then
+                        _Debug("BalanceToMean - Changed standard ring 1 removed food with canAddFood ", canAddFood);
+                        return true;
+                    end
+                end
+            end
+        end
+        -- Change yields in existing standards or add in empty
+
+    end
+    _Debug("BalanceToMean - Updated nothing");
+    return false;
+end
 
 function SpawnBalancing:GetInnerRingWorkable()
     _Debug("GetInnerRingWorkable ", self.Civ.CivilizationLeader, self.Hex:PrintXY())
@@ -4343,13 +4884,13 @@ function SpawnBalancing:GetInnerRingWorkable()
     AddToTable(innerRingUnworkable, self:GetAllUnworkableTiles(self.RingTables[1].HexRings));
     AddToTable(innerRingUnworkable, self:GetAllUnworkableTiles(self.RingTables[2].HexRings));
     local innerRingFood = self:GetTotalFood(self.RingTables[1].HexRings) + self:GetTotalFood(self.RingTables[2].HexRings);
-    local innerRingProd = self:GetTotalProd(self.RingTables[1].HexRings) + self:GetTotalFood(self.RingTables[2].HexRings);
+    local innerRingProd = self:GetTotalProd(self.RingTables[1].HexRings) + self:GetTotalProd(self.RingTables[2].HexRings);
     local totalInnerTiles = 18 - #innerRingUnworkable;
 
     _Debug("GetInnerRingWorkable : Total unworkable/total = ", #innerRingUnworkable, totalInnerTiles, " Total workable = ", #innerRingWorkable, " Total standard = ", #innerRingStd, " Total high yields = ", #innerRingHigh);
     _Debug("GetInnerRingWorkable : Total food = ", innerRingFood, " Total prod = ", innerRingProd);
 
-    return innerRingWorkable, innerRingHigh, innerRingFood, innerRingProd;
+    return innerRingUnworkable, innerRingWorkable, innerRingStd, innerRingHigh, innerRingFood, innerRingProd;
 end
 
 
@@ -4383,7 +4924,7 @@ function SpawnBalancing:GetOuterRingWorkable()
     _Debug("GetOuterRingWorkable : Total unworkable/total = ", #outerRingUnworkable,  totalOuterTiles, " Total workable = ", #outerRingWorkable, " Total standard = ", #outerRingStd, " Total high yields = ", #outerRingHigh)
     _Debug("GetOuterRingWorkable : Total food = ", outerRingFood, " Total prod = ", outerRingProd)
 
-    return outerRingWorkable, outerRingHigh, outerRingFood, outerRingProd;
+    return outerRingUnworkable, outerRingWorkable, outerRingStd, outerRingHigh, outerRingFood, outerRingProd;
 end
 
 
@@ -4419,9 +4960,9 @@ function SpawnBalancing:GetAllStandardTiles(listHex)
     local standardsList = {}
     for i = 1, #listHex do
         local hex = listHex[i];
-        -- 4/0 considered HighYields, fish considered standard because 3/1 once worked
-        if ((self:GetHexBaseFood(hex) + self:GetHexBaseProd(hex) == 4 and self:GetHexBaseProd(hex) > 0)
-                or (hex.ResourceType == g_RESOURCE_FISH and hex.FeatureType == g_FEATURE_NONE)) and hex.ExtraYield == false then
+        -- 4yields or fishreef or turtles
+        local isReefFishOrTurtle = (hex.ResourceType == g_RESOURCE_FISH or hex.ResourceType == g_RESOURCE_TURTLES) and hex.FeatureType == g_FEATURE_REEF;
+        if isReefFishOrTurtle or ((self:GetHexBaseFood(hex) + self:GetHexBaseProd(hex) == 4) and hex.ExtraYield == false) then
             --_Debug("Standard yield found ", hex:PrintXY(), hex.TerrainType, hex.FeatureType, hex.ResourceType)
             table.insert(standardsList, hex);
         end
@@ -4434,9 +4975,8 @@ function SpawnBalancing:GetAllHighYieldsTiles(listHex)
     for i = 1, #listHex do
         local hex = listHex[i];
         -- 4+ yields, 4yields+extra, 4food, fish reef or turtles
-        if (self:GetHexBaseFood(hex) + self:GetHexBaseProd(hex) > 4 or self:GetHexBaseFood(hex) == 4)
-                or (self:GetHexBaseFood(hex) + self:GetHexBaseProd(hex) == 4 and hex.ExtraYield)
-                or (hex.FeatureType == g_FEATURE_REEF and (hex.ResourceType == g_RESOURCE_FISH or hex.ResourceType == g_RESOURCE_TURTLES)) then
+        if self:GetHexBaseFood(hex) + self:GetHexBaseProd(hex) > 4
+                or (self:GetHexBaseFood(hex) + self:GetHexBaseProd(hex) >= 4 and hex.ExtraYield) then
             --_Debug("High yield found ", hex:PrintXY(), hex.TerrainType, hex.FeatureType, hex.ResourceType, hex.ExtraYield)
             table.insert(highYieldsList, hex);
         end
@@ -4463,6 +5003,7 @@ function SpawnBalancing:GetTotalProd(listHex)
             totalProd = totalProd + self:GetHexBaseProd(hex)
         end
     end
+    _Debug("GetTotalProd for size ", #listHex, totalProd)
     return totalProd;
 end
 

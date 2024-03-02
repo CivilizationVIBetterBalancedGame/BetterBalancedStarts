@@ -15,7 +15,7 @@
 		<Row ParameterId="BBS_SRESOURCES" Name="LOC_GAME_BBS_SRESOURCES_NAME" Description="LOC_GAME_BBS_SRESOURCES_DESC" Domain="StratResDomain" DefaultValue="0" ConfigurationGroup="Map" ConfigurationId="BBSStratRes" GroupId="MapOptions" SupportsSinglePlayer="1" SortIndex="226" />
       <Row ParameterId="BBS_MIN_DISTANCE" Name="LOC_GAME_BBS_MIN_DISTANCE_NAME" Description="LOC_GAME_BBS_MIN_DISTANCE_DESC" Domain="MinDistance" DefaultValue="0" ConfigurationGroup="Map" ConfigurationId="BBSMinDistance" GroupId="MapOptions" SupportsSinglePlayer="1" SortIndex="234" />
       <Row ParameterId="BBS_MIN_ATTEMPTS" Name="LOC_GAME_BBS_MIN_ATTEMPTS_NAME" Description="LOC_GAME_BBS_MIN_ATTEMPTS_NAME" Domain="MinAttempts" DefaultValue="6" ConfigurationGroup="Map" ConfigurationId="BBSMinAttempts" GroupId="MapOptions" SupportsSinglePlayer="1" SortIndex="235" />
-		<Row ParameterId="BBS_Team_Spawn" Name="LOC_BBS_Team_Spawn_NAME" Description="LOC_BBS_Team_Spawn_DESC" Domain="TeamersDomain" DefaultValue="0" ConfigurationGroup="Map" ConfigurationId="BBS_Team_Spawn" GroupId="MapOptions" Visible="1" SupportsSinglePlayer="0" SortIndex="233"/>
+		<!--<Row ParameterId="BBS_Team_Spawn" Name="LOC_BBS_Team_Spawn_NAME" Description="LOC_BBS_Team_Spawn_DESC" Domain="TeamersDomain" DefaultValue="0" ConfigurationGroup="Map" ConfigurationId="BBS_Team_Spawn" GroupId="MapOptions" Visible="1" SupportsSinglePlayer="0" SortIndex="233"/>-->
 		<Row ParameterId="BBS_NATURAL" Name="LOC_GAME_BBS_NATURAL_NAME" Description="LOC_GAME_BBS_NATURAL_DESC" Domain="NaturalDomain" DefaultValue="1" ConfigurationGroup="Map" ConfigurationId="BBSNatural" GroupId="MapOptions" SortIndex="229" />
 		<!--  Mutually Exclusive -->
 		<Row ParameterId="MapSize" Name="LOC_MAP_SIZE" Description="" Domain="StandardMapSizes" DefaultValue="MAPSIZE_SMALL" ConfigurationGroup="Map" ConfigurationId="MAP_SIZE" Hash="1" ChangeableAfterPlayByCloudMatchCreate="0" SupportsSinglePlayer="0" SupportsLANMultiplayer="0" SupportsInternetMultiplayer="0" SupportsHotSeat="0"  SupportsPlayByCloud="1" GroupId="MapOptions" SortIndex="220"/>
@@ -237,14 +237,14 @@
 		<Row Domain="OldWorldStart" Value="OLD_WORLD" 	Name="Old World Only" 			Description="All civs start in 'old world'." 			SortIndex="10"/>
 		<Row Domain="OldWorldStart" Value="ANYWHERE" 	Name="Start Anywhere" 			Description="Civs start anywhere in the world." 		SortIndex="20"/>
 
-		<Row Domain="TeamersDomain" Value="0" Name="BBS_Team_Spawn_NORMAL_NAME" Description="BBS_Team_Spawn_NORMAL_DESC" SortIndex="10"/>
+		<!--<Row Domain="TeamersDomain" Value="0" Name="BBS_Team_Spawn_NORMAL_NAME" Description="BBS_Team_Spawn_NORMAL_DESC" SortIndex="10"/>
 		<Row Domain="TeamersDomain" Value="1" Name="BBS_Team_Spawn_EW_NAME" Description="BBS_Team_Spawn_EW_DESC" SortIndex="20"/>
-		<Row Domain="TeamersDomain" Value="2" Name="BBS_Team_Spawn_NS_NAME" Description="BBS_Team_Spawn_NS_DESC" SortIndex="30"/>
+		<Row Domain="TeamersDomain" Value="2" Name="BBS_Team_Spawn_NS_NAME" Description="BBS_Team_Spawn_NS_DESC" SortIndex="30"/>-->
 
 		<Row Domain="StratResDomain" Value="0" Name="BBS_SRESOURCES_NORMAL_NAME" Description="BBS_SRESOURCES_NORMAL_DESC" SortIndex="10"/>
 		<Row Domain="StratResDomain" Value="1" Name="BBS_SRESOURCES_MORE_NAME" Description="BBS_SRESOURCES_MORE_DESC" SortIndex="20"/>
 		<Row Domain="StratResDomain" Value="2" Name="BBS_SRESOURCES_MUCHMORE_NAME" Description="BBS_SRESOURCES_MUCHMORE_DESC" SortIndex="30"/>
-		<Row Domain="StratResDomain" Value="3" Name="BBS_SRESOURCES_GARANTEED_NAME" Description="BBS_SRESOURCES_GARANTEED_DESC" SortIndex="40"/>
+		<!--<Row Domain="StratResDomain" Value="3" Name="BBS_SRESOURCES_GARANTEED_NAME" Description="BBS_SRESOURCES_GARANTEED_DESC" SortIndex="40"/>-->
       
       
       <Row Domain="MinAttempts" Value="1" Name="BBS_MIN_ATTEMPTS_ONE_NAME" Description="BBS_MIN_ATTEMPTS_ONE_DESC" SortIndex="10"/>

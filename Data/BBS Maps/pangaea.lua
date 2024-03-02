@@ -235,15 +235,17 @@ function GeneratePlotTypes(world_age)
 					-- split the map in 10 regions horizontally, check we have enough land (>40%?) around pangaea center
 					local mapVerticalRegionIndex = math.floor((x * 100 / g_iW) / 10);
 					local oceanTileAdded = oceanTable[mapVerticalRegionIndex] or 0
-					oceanTable[mapVerticalRegionIndex] = oceanTileAdded + 1;
+					if y > g_iH * 0.1 and y < g_iH * 0.9 then
+						oceanTable[mapVerticalRegionIndex] = oceanTileAdded + 1;
+					end
 				end
 			end
 		end
 
-		local maxWaterCenter = 0.4 * g_iH * 0.1 * g_iW;
-		local maxWaterNextToCenter = 0.6 * g_iH * 0.1 * g_iW;
-		-- Maximum 5% land on border to avoid long peninsula
-		local maxLandBorder = 0.05 * g_iH * 0.1 * g_iW;
+		local maxWaterCenter = 0.2 * g_iH * 0.8 * 0.1 * g_iW;
+		local maxWaterNextToCenter = 0.4 * g_iH * 0.8 * 0.1 * g_iW;
+		-- Maximum 15% land on border to avoid long peninsula
+		local maxLandBorder = 0.15 * g_iH * 0.1 * g_iW;
 		local isLandmassOnBordersOK = landmassOnBordersCount < maxLandBorder;
 		_Debug("Max water per 10th index 3 to 6 : ", maxWaterCenter)
 		_Debug("Max water per 10th index 2 and 7 : ", maxWaterNextToCenter)

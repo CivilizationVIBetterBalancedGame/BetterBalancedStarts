@@ -242,11 +242,14 @@ function BBS_AssignStartingPlots.Create(args)
         end
         print("Assign mean score for try "..tostring(index).." = "..meanScore.." with minimum score of "..tostring(minLocalScore).." and maximum of "..tostring(maxLocalScore))
     end
-    
+
     print("End Assign spawn order",  os.date("%c"))
     print("BBS_AssignTries = "..tostring(BBS_AssignTries).." - BBS_Success = "..tostring(BBS_Success))
     if BBS_Success then
         print("Selected try max score = "..tostring(maxMeanScoreIndex))
+        if isTeamer then
+            Game:SetProperty("BBS_TEAMERCONTINENTCHECK", BBS_HexMap:IsTeamerValidContinentPlacement(maxMeanScoreIndex))
+        end
         for _, c in pairs(BBS_HexMap.tempMajorSpawns[maxMeanScoreIndex]) do
             print("tempMajorSpawns AssignMajorCivSpawn for "..c.Civ.CivilizationLeader.." "..c.Spawn:PrintXY())
             c.Civ:AssignMajorCivSpawn(BBS_HexMap, c.Spawn);
@@ -275,7 +278,6 @@ function BBS_AssignStartingPlots.Create(args)
                 table.insert(allSpawnBalancing, spawn);
             end
         end
-
 
         printAllStartYields(BBS_HexMap);
         BalanceAllCivYields(allSpawnBalancing)
