@@ -1938,12 +1938,16 @@ function HexMap:TerraformTo4Yields(hex, garanteed22)
     if self:HasTerraformTo4YieldsRequirements(hex) == false then
         return false;
     end
+    _Debug("TerraformTo4Yields entry ", garanteed22, hex:PrintXY());
+    -- If true, we should terraform this tile to be 2/2
+    if garanteed22 and hex.Food ~= 2 and hex.Prod ~= 2 then
+        _Debug("TerraformTo4Yields go to TerraformTo22Yields ", garanteed22, hex:PrintXY());
+        return self:TerraformTo22Yields(hex, true);
+    elseif hex.Food + hex.Prod >= 4 then
+        return false;
+    end
     if hex:IsTundraLand() then
         return self:TerraformTo4YieldsTundra(hex)
-    end
-    -- If true, we should terraform this tile to be 2/2
-    if garanteed22 then
-        return self:TerraformTo22Yields(hex, true);
     end
     -- Low yields upgrades
     if hex.TerrainType == g_TERRAIN_TYPE_GRASS and hex.FeatureType == g_FEATURE_FOREST then
@@ -1974,8 +1978,7 @@ function HexMap:TerraformTo4Yields(hex, garanteed22)
 end
 
 function HexMap:HasTerraformTo4YieldsRequirements(hex)
-    if hex.Food + hex.Prod >= 4
-        or hex.IsNaturalWonder
+    if hex.IsNaturalWonder
         or hex:IsSnowLand() or hex:IsDesertLand()
         or g_RESOURCES_STRATEGICS[hex.ResourceType]
         or g_RESOURCES_LUX_LIST[hex.ResourceType]
@@ -2007,8 +2010,9 @@ function HexMap:TerraformTo4YieldsTundra(hex)
 end
 
 function HexMap:TerraformTo22Yields(hex, emptyTileBeforeTerraform)
+    _Debug("TerraformTo22Yields entry");
     if IsFloodplains(hex.FeatureType,true) then
-        _Debug("TerraformTo4Yields - no 2/2 in floodplains ", hex:PrintXY())
+        _Debug("TerraformTo22Yields - no 2/2 in floodplains ", hex:PrintXY())
         return false;
     end
     if emptyTileBeforeTerraform then
@@ -3376,15 +3380,28 @@ function SpawnBalancing:ApplyMinimalLandTiles(iMin, iMax)
             local garanteed22 = i <= 2;
             local tileToUp = minimumStandardTiles - #self.RingTables[i].STANDARD_YIELD_TILES - #self.RingTables[i].HIGH_YIELD_TILES;
             if garanteed22 then
-                tileToUp = minimumStandardTiles - self:Find22TilesInRing(i);
+                tileToUp = minimumStandardTiles - #self:Find22TilesInRing(i);
             end
             _Debug("MinimalTileV2 Ring ", i, " : tileToUp = ", tileToUp);
             _Debug("MinimalTileV2 Ring ", i, " : Empty = ", #self.RingTables[i].EMPTY_TILES);
             _Debug("MinimalTileV2 Ring ", i, " : Low = ",#self.RingTables[i].LOW_YIELD_TILES);
             -- Try to apply randomly desired number of standard yield tiles in ring i
-            while (tileToUp > 0 and self:TerraformRandomInRing(i, TerraformType[4], 0, false, false, garanteed22)) do
-                tileToUp = tileToUp - 1;
+
+            while tileToUp > 0 do
+                local terraformedHex = self:TerraformRandomInRing(i, TerraformType[4], 0, false, false, garanteed22);
+                if terraformedHex ~= nil then
+                    _Debug("Added 4yields tile : ", terraformedHex:PrintXY());
+                    tileToUp = tileToUp - 1;
+                    if garanteed22 then
+                        _Debug("Garanteed 2/2 : ", terraformedHex:PrintXY());
+                        terraformedHex.IsTaggedAsMinimum = true;
+                    end
+                else
+                    _Debug("Could not terraform tile to up in ring ", i);
+                    break;
+                end
             end
+
             -- If left to update, it means there were obstacle to the terraformation (existing resources or features) if possible, relocate them in next ring
             while tileToUp > 0 and i < self.MaxRing do
                 _Debug("MinimalTileV2 Ring ", i, " : leftToUp = ", tileToUp);
@@ -3405,7 +3422,8 @@ function SpawnBalancing:ApplyMinimalLandTiles(iMin, iMax)
                             _Debug("Mountain hex to terraform to hill : ", mountainHex:PrintXY())
                             self:TerraformHex(mountainHex, i, TerraformType[10])
                             _Debug("A mountain had to be terraformed ")
-                            if self:TerraformRandomInRing(i, TerraformType[4], 0, false, false, false) then
+                            local terraformedHex = self:TerraformRandomInRing(i, TerraformType[4], 0, false, false, false)
+                            if terraformedHex ~= nil then
                                 _Debug("Successful mountain terraform into 22")
                                 tileToUp = tileToUp - 1;
                             else
@@ -3420,19 +3438,34 @@ function SpawnBalancing:ApplyMinimalLandTiles(iMin, iMax)
                     end
                 end
             end
+            -- Tag garanteed22 as minimaltiles to avoid further terraforming
+            if i <= 2 then
+                local found22tiles = self:Find22TilesInRing(i);
+                local nbTagged22 = 0;
+                found22tiles = GetShuffledCopyOfTable(found22tiles);
+                for _, h in ipairs(found22tiles) do
+                    if nbTagged22 < i then
+                        h.IsTaggedAsMinimum = true;
+                        nbTagged22 = nbTagged22 + 1;
+                    else
+                        break
+                    end
+                end
+                _Debug("Number of tagged garanteed 22 = ", nbTagged22)
+            end
         end
     end
     _Debug("ApplyMinimalLandTiles DONE")
 end
 
 function SpawnBalancing:Find22TilesInRing(i)
-    local count22 = 0;
+    local list22 = {};
     for _, h in ipairs(self.RingTables[i].STANDARD_YIELD_TILES) do
         if self:GetHexBaseFood(h) >= 2 and self:GetHexBaseProd(h) >= 2 then
-            count22 = count22 + 1;
+            table.insert(list22, h);
         end
     end
-    return count22;
+    return list22;
 end
 
 
@@ -3621,8 +3654,7 @@ end
 -- For balancing, we consider tundra tiles as grassland so we add +1 food on tundra bias
 function SpawnBalancing:GetHexBaseFood(hex)
     local bonusFood = 0;
-    local isTundra = hex:IsTundraLand()
-    if isTundra then
+    if hex:IsTundraLand() or hex:IsDesertLand() then
         bonusFood = 1;
     end
     return hex.Food + bonusFood;
@@ -3630,6 +3662,9 @@ end
 
 function SpawnBalancing:GetHexBaseProd(hex)
     local bonusProd = 0;
+    if hex:IsDesertLand() then
+        bonusProd = 1;
+    end
     -- See if needed
     return hex.Prod + bonusProd;
 end
@@ -3691,10 +3726,6 @@ function SpawnBalancing:CheckMinimumWorkable()
     end
     if #combinaisonList == 0 then
         _Debug("No combinaison of workable tiles")
-        -- Add a 2/2
-        if self:TerraformRandomInRing(1, TerraformType[4], 0, false, false) then
-
-        end
         return
     end
     -- No good combinaison => terraform needed
@@ -4103,14 +4134,15 @@ function SpawnBalancing:TerraformInRingsOrder(iMin, iMax, terraformType, id, nee
             if i == iMax and forcedLastRing then
                 forced = true
             end
-            if self:TerraformRandomInRing(i, terraformType, id, needToBeWalkableTo, forced, boolParam) then
+            local terraformedHex = self:TerraformRandomInRing(i, terraformType, id, needToBeWalkableTo, forced, boolParam);
+            if terraformedHex ~= nil then
                 print("TerraformInRingsOrderOK terraform "..terraformType.." "..tostring(id));
-                return true;
+                return terraformedHex;
             end
         end
     end
     print("TerraformInRingsOrderERROR Could not terraform "..terraformType.." "..tostring(id).." from "..self.Hex:PrintXY());
-    return false;
+    return nil;
 end
 
 -- Used the TerraformInRingsOrder but do a shuffle before
@@ -4125,11 +4157,12 @@ function SpawnBalancing:TerraformInRingsRandomOrder(iMin, iMax, terraformType, i
         if iRing == iMax and forcedLastRing then
             forced = true
         end
-        if self:TerraformRandomInRing(iRing, terraformType, id, needToBeWalkableTo, forced, boolParam) then
-            return true;
+        local terraformedHex = self:TerraformRandomInRing(iRing, terraformType, id, needToBeWalkableTo, forced, boolParam);
+        if terraformedHex ~= nil then
+            return terraformedHex;
         end
     end
-    return false;
+    return nil;
 end
 
 
@@ -4148,7 +4181,7 @@ function SpawnBalancing:TerraformRandomInRing(i, terraformType, id, needToBeWalk
             for _, hex in pairs(listWater) do
                 if self:TerraformHex(hex, i, terraformType, id, true, false, boolParam) then
                     _Debug("Added "..tostring(terraformType).." id "..tostring(id).." to "..hex:PrintXY())
-                    return true;
+                    return hex;
                 else
                     print("Couldnt add on water")
                 end
@@ -4165,7 +4198,7 @@ function SpawnBalancing:TerraformRandomInRing(i, terraformType, id, needToBeWalk
             if needToBeWalkableTo == false or (needToBeWalkableTo and self.Hex:IsWalkableInRange(hex, i)) then
                 if self:TerraformHex(hex, i, terraformType, id, true, false, boolParam) then
                     print("Found a empty tile "..hex:PrintXY().." to add "..tostring(terraformType).." "..tostring(id))
-                    return true;
+                    return hex;
                 end
             end
         end
@@ -4180,7 +4213,7 @@ function SpawnBalancing:TerraformRandomInRing(i, terraformType, id, needToBeWalk
             if needToBeWalkableTo == false or (needToBeWalkableTo and self.Hex:IsWalkableInRange(hex, i)) then
                 if self:TerraformHex(hex, i, terraformType, id, false, true, boolParam) then
                     print("Found a low yield tile "..hex:PrintXY().." to add "..tostring(terraformType).." "..tostring(id))
-                    return true;
+                    return hex;
                 end
             end
         end
@@ -4194,7 +4227,7 @@ function SpawnBalancing:TerraformRandomInRing(i, terraformType, id, needToBeWalk
                     if hex.ResourceType == g_RESOURCE_NONE and hex.FeatureType ~= g_FEATURE_GEOTHERMAL_FISSURE then
                         if self:TerraformHex(hex, i, terraformType, id, true, false, boolParam) then
                             print("Terraformed a "..tostring(hex.FeatureType).." feature "..hex:PrintXY());
-                            return true;
+                            return hex;
                         end
                     end
                     -- Try to add on Resource (feature or not), relocate only bonus
@@ -4202,14 +4235,14 @@ function SpawnBalancing:TerraformRandomInRing(i, terraformType, id, needToBeWalk
                         self:TerraformHex(hex, i, TerraformType[3], g_RESOURCE_NONE, false, true)
                         if self:TerraformHex(hex, i, terraformType, id, true, true, boolParam) then
                             print("Terraformed a "..tostring(hex.ResourceType).." resource "..hex:PrintXY());
-                            return true;
+                            return hex;
                         end
                     end
                 end
             end
         end
     end
-    return false;
+    return nil;
 end
 
 
@@ -4697,7 +4730,7 @@ function SpawnBalancing:BalanceToMean(yieldMargin, standardMargin, unworkableYie
         -- REMOVE FOOD
         elseif innerFoodDiff > yieldMargin then
             -- RNG 1 : Try to remove food on a flat tile
-            _Debug("BalanceToMean Std ok - Try to remove food, canAddProd ", canAddProd);
+            _Debug("BalanceToMean Std ok - Try to remove food, canAddProd ", canAddProd, rng);
             if rng <= 33 or (rng <= 50 and canAddStandard == false) then
                 listWorkR2 = GetShuffledCopyOfTable(listWorkR2);
                 for _, h in ipairs(listWorkR2) do
@@ -4730,7 +4763,7 @@ function SpawnBalancing:BalanceToMean(yieldMargin, standardMargin, unworkableYie
                     end
                 end
             -- RNG 3 CAN NERF A STANDARD
-            elseif diffStandard + standardMargin - 1 > 0 then
+            elseif canRemoveStandard then
                 local listStdR1 = self:GetAllStandardTiles(self.RingTables[1].HexRings);
                 local listStdR2 = self:GetAllStandardTiles(self.RingTables[2].HexRings);
                 listStdR2 = GetShuffledCopyOfTable(listStdR2);
@@ -4784,7 +4817,7 @@ function SpawnBalancing:BalanceToMean(yieldMargin, standardMargin, unworkableYie
                 listWorkR1 = GetShuffledCopyOfTable(listWorkR1);
                 for _, h in ipairs(listWorkR1) do
                     if IsHill(h.TerrainType) and self:TerraformHex(h, 2, TerraformType[8], 0, canRemoveFood, false, false) then
-                        _Debug("BalanceToMean - Added prod on empty hill with canRemoveFood ", canRemoveFood);
+                        _Debug("BalanceToMean - Added prod on empty hill ring 1 with canRemoveFood ", canRemoveFood);
                         return true;
                     end
                 end
@@ -4821,7 +4854,7 @@ function SpawnBalancing:BalanceToMean(yieldMargin, standardMargin, unworkableYie
                 end
                 listWorkR1 = GetShuffledCopyOfTable(listWorkR1);
                 for _, h in ipairs(listWorkR1) do
-                    if IsHill(h.TerrainType) == false and self:TerraformHex(h, 2, TerraformType[9], 0, false, false, canAddFood) then
+                    if IsHill(h.TerrainType) == false and self:TerraformHex(h, 1, TerraformType[9], 0, false, false, canAddFood) then
                         _Debug("BalanceToMean - Removed prod on flat tile with canAddFood ", canAddFood);
                         return true;
                     end
@@ -4837,8 +4870,8 @@ function SpawnBalancing:BalanceToMean(yieldMargin, standardMargin, unworkableYie
                 end
                 listWorkR1 = GetShuffledCopyOfTable(listWorkR1);
                 for _, h in ipairs(listWorkR1) do
-                    if IsHill(h.TerrainType) and self:TerraformHex(h, 2, TerraformType[9], 0, false, false, canAddFood) then
-                        _Debug("BalanceToMean - Removed food on empty hill with canAddFood ", canAddFood);
+                    if IsHill(h.TerrainType) and self:TerraformHex(h, 1, TerraformType[9], 0, false, false, canAddFood) then
+                        _Debug("BalanceToMean - Removed food on empty hill ring 1 with canAddFood ", canAddFood);
                         return true;
                     end
                 end
@@ -4848,14 +4881,14 @@ function SpawnBalancing:BalanceToMean(yieldMargin, standardMargin, unworkableYie
                 local listStdR2 = self:GetAllStandardTiles(self.RingTables[2].HexRings);
                 listStdR2 = GetShuffledCopyOfTable(listStdR2);
                 for _, h in ipairs(listStdR2) do
-                    if self:TerraformHex(h, 2, TerraformType[9], 0, false, false, canAddProd) then
+                    if self:TerraformHex(h, 2, TerraformType[9], 0, false, false, canAddFood) then
                         _Debug("BalanceToMean - Changed standard ring 2 removed food with canAddFood ", canAddFood);
                         return true;
                     end
                 end
                 listStdR1 = GetShuffledCopyOfTable(listStdR1);
                 for _, h in ipairs(listStdR1) do
-                    if self:TerraformHex(h, 1, TerraformType[9], 0, false, false, canAddProd) then
+                    if self:TerraformHex(h, 1, TerraformType[9], 0, false, false, canAddFood) then
                         _Debug("BalanceToMean - Changed standard ring 1 removed food with canAddFood ", canAddFood);
                         return true;
                     end

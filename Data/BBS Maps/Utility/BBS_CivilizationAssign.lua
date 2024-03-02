@@ -398,7 +398,7 @@ function CivilizationAssignSpawn:FindDesertBiasV2(hex)
             end
         end
     end
-    if countDesertR1 >= 2 and countDesertR2 >= 3 and countLandR1 + countLandR2 >= 4 then
+    if countDesertR1 >= 2 and countDesertR2 >= 3 and countLandR1 > 0 and countLandR1 + countLandR2 >= 4 then
         return true;
     end
     return false;
