@@ -243,7 +243,7 @@ function GeneratePlotTypes(world_age)
 		end
 
 		local maxWaterCenter = 0.2 * g_iH * 0.8 * 0.1 * g_iW;
-		local maxWaterNextToCenter = 0.4 * g_iH * 0.8 * 0.1 * g_iW;
+		local maxWaterNextToCenter = 0.5 * g_iH * 0.8 * 0.1 * g_iW;
 		-- Maximum 15% land on border to avoid long peninsula
 		local maxLandBorder = 0.15 * g_iH * 0.1 * g_iW;
 		local isLandmassOnBordersOK = landmassOnBordersCount < maxLandBorder;
@@ -282,8 +282,9 @@ function GeneratePlotTypes(world_age)
 		_Debug("- isLandmassOnBordersOK: ", isLandmassOnBordersOK)
 		_Debug("- hasEnoughLandMiddle: ", hasEnoughLandMiddle)
 		_Debug("- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -");
+
 	end
-	
+
 	local args = {};
 	args.world_age = world_age;
 	args.iW = g_iW;

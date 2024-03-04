@@ -869,6 +869,7 @@ function CivilizationAssignSpawn:IsBiasRespected(hex, hexMap)
      -- Custom bias treated by valid tiles
     local isOneOfBiasRespected = false;
     for _, bias in pairs(self.CivilizationBiases) do
+        local countHill = 0
         -- Mandatory biases
         if bias.Type == "TERRAINS" and IsTundraLand(bias.Value) and hex:IsTundraLand() == false then
             return false;
@@ -921,6 +922,15 @@ function CivilizationAssignSpawn:IsBiasRespected(hex, hexMap)
                         -- At least a mountain in ring 2, density score do the rest
                         if i == 2 and hring:IsMountain() then
                             isOneOfBiasRespected = true;
+                        end
+                    elseif IsHill(bias.Value) then
+                        if i <= 2 and IsHill(hring.TerrainType) then
+                            countHill = countHill + 1;
+                            -- 18 tiles total in ring 1+2, need at least 8
+                            -- For now this is the only bias of greece and korea
+                            if countHill >= 8 then
+                                isOneOfBiasRespected = true;
+                            end
                         end
                     elseif i < 4 and hring.TerrainType == bias.Value then
                         -- Plains and grassland checked by density, tundra and desert bias in valid tile checks
