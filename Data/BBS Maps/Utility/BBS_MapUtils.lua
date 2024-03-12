@@ -2256,14 +2256,14 @@ function HexMap:TerraformAdd1ProdEmptyHex(hex)
     local rng = TerrainBuilder.GetRandomNumber(100, "Random");
     if IsGrassLand(hex.TerrainType) and rng <= 15 then
         _Debug("TerraformAdd1ProdEmptyHex - Add stone")
-        return self:TerraformSetResource(hex, g_RESOURCE_STONE);
+        return self:TerraformSetResource(hex, g_RESOURCE_STONE, false);
     elseif IsHill(hex.TerrainType) then
         _Debug("TerraformAdd1ProdEmptyHex - Add forest on hill")
-        return self:TerraformSetFeature(hex, g_FEATURE_FOREST);
+        return self:TerraformSetFeature(hex, g_FEATURE_FOREST, false);
     -- Change flat to hills or forest
     elseif rng <= 50 then
         _Debug("TerraformAdd1ProdEmptyHex - Add forest on flat")
-        return self:TerraformSetFeature(hex, g_FEATURE_FOREST);
+        return self:TerraformSetFeature(hex, g_FEATURE_FOREST, false);
     else
         _Debug("TerraformAdd1ProdEmptyHex - Add hills on flat")
         return self:TerraformToHill(hex, false);
@@ -2321,11 +2321,11 @@ function HexMap:TerraformRemove1Food(hex, canAddProd)
         or hex.ResourceType == g_RESOURCE_WHEAT
         or hex.ResourceType == g_RESOURCE_BANANAS then
         _Debug("TerraformRemove1Food Removed ressource ", hex.ResourceType)
-        return self:TerraformSetResource(hex, g_RESOURCE_NONE);
+        return self:TerraformSetResource(hex, g_RESOURCE_NONE, false);
     end
     -- Remove features giving food
     if hex.FeatureType == g_FEATURE_JUNGLE or hex.FeatureType == g_FEATURE_MARSH then
-        return self:TerraformSetFeature(hex, g_FEATURE_NONE);
+        return self:TerraformSetFeature(hex, g_FEATURE_NONE, false);
     end
     return false;
 end
@@ -3559,6 +3559,10 @@ function SpawnBalancing:GaranteedStandardHighFoodInnerRing()
     local innerRing = {}
     AddToTable(innerRing, self.RingTables[1].STANDARD_YIELD_TILES);
     AddToTable(innerRing, self.RingTables[2].STANDARD_YIELD_TILES);
+    AddToTable(innerRing, self.RingTables[1].HIGH_EXTRA_YIELDS);
+    AddToTable(innerRing, self.RingTables[2].HIGH_EXTRA_YIELDS);
+    AddToTable(innerRing, self.RingTables[1].HIGH_YIELD_TILES);
+    AddToTable(innerRing, self.RingTables[2].HIGH_YIELD_TILES);
     AddToTable(innerRing, self.RingTables[1].WATER_FISH_OR_LUX);
     AddToTable(innerRing, self.RingTables[2].WATER_FISH_OR_LUX);
     if #innerRing > 1 then
@@ -3663,8 +3667,10 @@ function SpawnBalancing:ApplyMinimalCoastalTiles()
         local hex;
         if #self.RingTables[2].WATER_EMPTY > 0 then
             listWater = self.RingTables[2].WATER_EMPTY;
+            _Debug("Number of empty water tiles r2 = ", #listWater)
         elseif #self.RingTables[2].WATER_RF > 0 then
             listWater = self.RingTables[2].WATER_RF;
+            _Debug("Number of res or feat water tiles r2 = ", #listWater)
             -- replace a random ring, do we need to relocate or adjust later anyway ?
             hex = self:RelocateRandomHexToNextRing(self.RingTables[2].WATER_RF, 2, 3)
             if hex ~= nil then
@@ -3675,9 +3681,9 @@ function SpawnBalancing:ApplyMinimalCoastalTiles()
         if #listWater > 1 then
             listWater = GetShuffledCopyOfTable(listWater);
         end
-        hex = hex or listWater[1]; -- take previously selected hex if relocated, else jsute take random empty
+        hex = hex or listWater[1]; -- take previously selected hex if relocated, else just take random empty
+        _Debug("Try to add "..tostring(TerraformType[2]).." id = "..tostring(g_FEATURE_REEF).." to "..hex:PrintXY())
         self:TerraformHex(hex, 2, TerraformType[2], g_FEATURE_REEF, true, false);
-        _Debug("Added "..tostring(terraformType).." id "..tostring(id).." to "..hex:PrintXY())
         local rng = TerrainBuilder.GetRandomNumber(100, "Ring2 Turtle or Fish");
         local isTurtlesOnMap = Contains(self.HexMap.LuxTable[-1], g_RESOURCE_TURTLES);
         _Debug("Detected turtles available = ", isTurtlesOnMap, rng);
