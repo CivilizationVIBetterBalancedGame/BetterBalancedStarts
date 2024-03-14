@@ -98,8 +98,8 @@ function GenerateTerrainTypes(plotTypes, iW, iH, iFlags, bNoCoastalMountains, te
 	-- Set terrain bands. -- codenaught's values
 	local iDesertPercent = 30;
 	local iPlainsPercent = 50; 
-	local fSnowLatitude  = 0.88 + coldShift;
-	local fTundraLatitude = 0.65 + coldShift;
+	local fSnowLatitude  = 0.9 + coldShift;
+	local fTundraLatitude = 0.68 + coldShift;
 	local fGrassLatitude = 0.1; 
 	local fDesertBottomLatitude = 0.4;
 	local fDesertTopLatitude = 0.54;

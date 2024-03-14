@@ -404,6 +404,19 @@ function CivilizationAssignSpawn:FindDesertBiasV2(hex)
     return false;
 end
 
+function CivilizationAssignSpawn:GetNonTundraTilesCountRing3(hex)
+    local nbNonTundraTilesInRing3 = 0;
+    local mapRing6 = hex.AllRing6Map
+    for i = 1, 3 do
+        for _, h in ipairs(mapRing6[i]) do
+            if h:IsWater() == false and h:IsTundraLand() == false and h:IsSnowLand() == false then
+                nbNonTundraTilesInRing3 = nbNonTundraTilesInRing3 + 1;
+            end
+        end
+    end
+    return nbNonTundraTilesInRing3;
+end
+
 
 function CivilizationAssignSpawn:ValidTundraDensity(hex)
     -- Precalculated number of tundra in ring 6 around hex
@@ -565,7 +578,15 @@ function CivilizationAssignSpawn:ComputeHexScoreCiv(hex)
     if self.IsTundraBias == false then
         score = score - tundraScore;
     end
-    print(hex:PrintXY().." - Score = "..baseScore.." + "..tostring(totalBiasScore).." + "..tostring(peninsulaScore).." - "..tostring(tundraScore).." ("..tostring(hex.TundraScore)..") = "..tostring(math.floor(score + 0.5)), os.date("%c"))
+    -------------------
+    -- 5 - Flood malus - Discourage from spawning inside floodplains if not in bias
+    -------------------
+    local floodMalus = 0;
+    if self.IsFloodplainsBias == false and self:IsFloodplainsMalus(hex) then
+        floodMalus = 20;
+        score = score - floodMalus
+    end
+    _Debug(hex:PrintXY(), " Score = ", baseScore, " BiasScore = ", totalBiasScore, " PeninsulaScore = ", peninsulaScore, " TundraScore = ", tundraScore, " - FloodMalus = ", floodMalus, hex.TundraScore, math.floor(score + 0.5), os.date("%c"))
 
     return math.floor(score + 0.5);
 end
@@ -717,6 +738,20 @@ function ComputeHexScoreByBias(hex, bias)
     return math.min(biasScore, scoreThreshold);
 end
 
+function CivilizationAssignSpawn:IsFloodplainsMalus(hex)
+    local ring1 = hex.AllRing6Map[1]
+    local floodCount = 0;
+    for _, h in ipairs(ring1) do
+        if h:IsFloodplains(true) then
+            floodCount = floodCount + 1;
+        end
+    end
+    if hex:IsFloodplains(true) then
+        floodCount = floodCount + 2
+    end
+    return floodCount >= 2
+end
+
 -- TODO : determine weight 
 function GetBiasFactor(bias)
     if bias.Tier == 1 then
@@ -852,6 +887,7 @@ function CivilizationAssignSpawn:AssignMinorCivSpawn(BBS_HexMap, startingHex)
     end
 end
 
+
 -- Return a boolean testing bias respect on hex in parameter
 function CivilizationAssignSpawn:IsBiasRespected(hex, hexMap)
     -- Biases should be already sorted by tier
@@ -865,6 +901,14 @@ function CivilizationAssignSpawn:IsBiasRespected(hex, hexMap)
     end
     if self.IsFloodplainsBias and hex:IsFloodplains(false) == false then
         return false;
+    end
+    if self.IsTundraBias then
+        local nonTundraRing3 = self:GetNonTundraTilesCountRing3(hex)
+        if self.CivilizationLeader == "LEADER_LAURIER" and nonTundraRing3 > 3 then
+            return false
+        elseif self.CivilizationLeader == "LEADER_PETER_GREAT" and nonTundraRing3 <= 3 then
+            return false
+        end
     end
      -- Custom bias treated by valid tiles
     local isOneOfBiasRespected = false;
