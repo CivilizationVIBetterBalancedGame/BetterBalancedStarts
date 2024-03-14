@@ -11,7 +11,7 @@ function OnLocalPlayerTurnBegin()
 	end
 	if Game.GetCurrentGameTurn() == GameConfiguration.GetStartTurn() then
 		print("BBS UI Welcome")
-		local message = "BBS #"..GetLocalModVersion("c88cba8b-8311-4d35-90c3-51a4a5d66542").." loaded succesfully!"
+		local message = "BBM #"..GetLocalModVersion("c88cba8b-8311-4d35-90c3-51a4a5d66542").." loaded succesfully!"
 
 		if Game:GetProperty("BBS_TEAMERCONTINENTCHECK") ~= nil and Game:GetProperty("BBS_TEAMERCONTINENTCHECK") then
 			print("BBS_TEAMERCONTINENTCHECK - ", Game:GetProperty("BBS_TEAMERCONTINENTCHECK"))
