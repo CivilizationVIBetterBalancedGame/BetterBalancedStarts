@@ -5632,6 +5632,9 @@ function SpawnBalancing:CanNerfFishR2()
 end
 
 function Contains(table1, value)
+    if table1 == nil then
+        return false;
+    end
     for _, v in pairs(table1) do
         if v == value then
           return true
