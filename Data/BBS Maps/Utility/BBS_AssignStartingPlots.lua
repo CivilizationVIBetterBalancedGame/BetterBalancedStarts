@@ -145,7 +145,7 @@ function BBS_AssignStartingPlots.Create(args)
     instance:__InitStartingData()
 
     -- Set game properties
-    Game:SetProperty("BBS_MAJOR_DISTANCE", BBS_HexMap.minimumDistanceMajorToMajorCivs);
+    Game:SetProperty("BBM_MAJOR_DISTANCE", BBS_HexMap.minimumDistanceMajorToMajorCivs);
 
     print("Start Assign Score Centroid",  os.date("%c"))
 
@@ -259,11 +259,24 @@ function BBS_AssignStartingPlots.Create(args)
             if civ.CivilizationLeader ~= BBS_LEADER_TYPE_SPECTATOR then
                 civ.Player:SetStartingPlot(civ.StartingHex.Plot)
                 table.insert(BBS_HexMap.majorSpawns, civ.StartingHex);
-                print(civ.CivilizationLeader.." spawn = "..tostring(civ.StartingHex:PrintXY()))
+                local bW, nbW = civ.StartingHex:HasSpawnEnoughWalkableTiles()
+                print(civ.CivilizationLeader.." spawn = "..tostring(civ.StartingHex:PrintXY()).." - HasWalkableRequirements = "..tostring(bW).." "..tostring(nbW))
+                _Debug("WalkableHexInRing ", civ.StartingHex:PrintXY(), #civ.StartingHex.WalkableHexInRing[1])
+                _Debug("WalkableHexInRing ", civ.StartingHex:PrintXY(), #civ.StartingHex.WalkableHexInRing[2])
+                _Debug("WalkableHexInRing ", civ.StartingHex:PrintXY(), #civ.StartingHex.WalkableHexInRing[3])
+
             else
                 local hex0 = BBS_HexMap:GetHexInMap(j, 0);
                 civ.Player:SetStartingPlot(hex0.Plot)
             end
+        end
+        -- Measure minimum distance
+        for _, hex in ipairs(BBS_HexMap.majorSpawns) do
+            local spawnList = BBS_HexMap.majorSpawns;
+            _Debug("SpawnList ", hex:PrintXY(), #spawnList)
+            RemoveFromTable(spawnList, hex);
+            --local closestDist = hex:DistanceToClosest(BBS_HexMap, spawnList)
+            _Debug("SpawnList ", hex:PrintXY(), #spawnList)
         end
 
         print("Start BalanceMap",  os.date("%c"))

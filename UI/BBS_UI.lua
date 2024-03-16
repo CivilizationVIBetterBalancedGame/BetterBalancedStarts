@@ -18,26 +18,27 @@ function OnLocalPlayerTurnBegin()
 			NotificationManager.SendNotification(Game.GetLocalPlayer(), NotificationTypes.USER_CONTCHECK, "WARNING - Teamer setting - Could not place a team on at least two continents.")
 		end
 
+
 		if (Game:GetProperty("BBS_RESPAWN") == false) then
 			message = message.." Firaxis Placement Algorithm has been used."
 		else
-			message = message.." BBS Placement Algorithm has been used."
-			print(Game:GetProperty("BBS_ITERATION"),Game:GetProperty("BBS_MAJOR_DISTANCE"))
-			if (Game:GetProperty("BBS_ITERATION") ~= nil) and (Game:GetProperty("BBS_MAJOR_DISTANCE") ~= nil) then
-				message = message..tostring(Game:GetProperty("BBS_ITERATION")).." Attempt(s), Min Distance is "..tostring(Game:GetProperty("BBS_MAJOR_DISTANCE"))	
+			message = message.." BBM Placement Algorithm successful."
+			if Game:GetProperty("BBM_MAJOR_DISTANCE") ~= nil then
+				message = message.." Minimum Distance is "..tostring(Game:GetProperty("BBM_MAJOR_DISTANCE"))
 			end
-		end	
-		NotificationManager.SendNotification(Game.GetLocalPlayer(), NotificationTypes.USER_DEFINED_5, message);
-		if (Game:GetProperty("BBS_DISTANCE_ERROR") ~= nil) then
-			message = tostring(Game:GetProperty("BBS_DISTANCE_ERROR"))
-			NotificationManager.SendNotification(Game.GetLocalPlayer(), NotificationTypes.BARBARIANS_SIGHTED, message);
+			print(Game:GetProperty("BBS_ITERATION"),Game:GetProperty("BBS_MAJOR_DISTANCE"))
 		end
-		if (Game:GetProperty("BBS_MINOR_FAILING_TOTAL") ~= nil) then
-			message = tostring(Game:GetProperty("BBS_MINOR_FAILING_TOTAL")).." CS had to be razed to observe minimum distances requirements."
-			NotificationManager.SendNotification(Game.GetLocalPlayer(), NotificationTypes.BARBARIANS_SIGHTED, message);
-		end		
+		NotificationManager.SendNotification(Game.GetLocalPlayer(), NotificationTypes.USER_DEFINED_5, message);
+	if (Game:GetProperty("BBS_DISTANCE_ERROR") ~= nil) then
+	message = tostring(Game:GetProperty("BBS_DISTANCE_ERROR"))
+	NotificationManager.SendNotification(Game.GetLocalPlayer(), NotificationTypes.BARBARIANS_SIGHTED, message);
+	end
+	if (Game:GetProperty("BBS_MINOR_FAILING_TOTAL") ~= nil) then
+	message = tostring(Game:GetProperty("BBS_MINOR_FAILING_TOTAL")).." CS had to be razed to observe minimum distances requirements."
+	NotificationManager.SendNotification(Game.GetLocalPlayer(), NotificationTypes.BARBARIANS_SIGHTED, message);
+	end
 
-		
+
 	end
 	
 	

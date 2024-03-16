@@ -350,8 +350,8 @@ end
 function CivilizationAssignSpawn:GetValidSpawnsInHexList(listHex)
     local validTiles = {}
     for _, hex in pairs(listHex) do
-        if hex.IsMajorSpawnable then --pre calculation of technical spawns
-            if self.IsTundraBias == false and self.IsDesertBias == false and self:ValidTundraDensity(hex) then
+        if hex.IsMajorSpawnable and self:ValidWalkableTiles(hex) and self:ValidTundraDensity(hex) then --pre calculation of technical spawns
+            if self.IsTundraBias == false and self.IsDesertBias == false then
                 -- If Maya ignore fresh water, it will be placed last because there is too much valid tiles
                 if self.IsCoastalBias and hex.IsCoastal and hex:IsTundraLand() == false then
                     -- Fresh water is favored on score calculations
@@ -362,7 +362,7 @@ function CivilizationAssignSpawn:GetValidSpawnsInHexList(listHex)
             elseif self.IsTundraBias and hex:IsTundraLand() and hex.IsFreshWater then
                 table.insert(validTiles, hex);
             --elseif self.IsDesertBias and hex:IsDesertLand() and hex.IsFreshWater then
-            elseif self.IsDesertBias and self:ValidTundraDensity(hex) and self:FindDesertBiasV2(hex) then
+            elseif self.IsDesertBias  and self:FindDesertBiasV2(hex) then
                 table.insert(validTiles, hex);
             end
         end
@@ -417,8 +417,19 @@ function CivilizationAssignSpawn:GetNonTundraTilesCountRing3(hex)
     return nbNonTundraTilesInRing3;
 end
 
+-- On top of peninisula score that goes up to ring 6, make sure we have enough tiles in ring 3 that are accessible to settle
+-- especially for mountains spawns, exception for inca
+function CivilizationAssignSpawn:ValidWalkableTiles(hex)
+    if self.IsMountainLoverBias == false then
+        return hex:HasSpawnEnoughWalkableTiles()
+    end
+    return true;
+end
 
 function CivilizationAssignSpawn:ValidTundraDensity(hex)
+    if self.IsTundraBias and hex:IsTundraLand() then
+        return true;
+    end
     -- Precalculated number of tundra in ring 6 around hex
     if hex.TundraScore > 20 then
         return false;
