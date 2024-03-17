@@ -271,14 +271,16 @@ function BBS_AssignStartingPlots.Create(args)
             end
         end
         -- Measure minimum distance
+        local closestDist = 9999
         for _, hex in ipairs(BBS_HexMap.majorSpawns) do
-            local spawnList = BBS_HexMap.majorSpawns;
-            _Debug("SpawnList ", hex:PrintXY(), #spawnList)
-            RemoveFromTable(spawnList, hex);
-            --local closestDist = hex:DistanceToClosest(BBS_HexMap, spawnList)
-            _Debug("SpawnList ", hex:PrintXY(), #spawnList)
+            local localClosestDist = hex:DistanceToClosest(BBS_HexMap, BBS_HexMap.majorSpawns)
+            if localClosestDist < closestDist then
+                closestDist = localClosestDist;
+            end
         end
-
+        Game:SetProperty("BBM_ACTUALMINDIST", closestDist)
+        _Debug("BBM_ACTUALMINDIST = ", closestDist)
+        _Debug("BBM_ACTUALMINDIST GameProperty = ", Game:GetProperty("BBM_ACTUALMINDIST"))
         print("Start BalanceMap",  os.date("%c"))
         BalanceMap(BBS_HexMap);
 
@@ -312,11 +314,11 @@ function BBS_AssignStartingPlots.Create(args)
             
         end
         --StartPositioner.DivideMapIntoMinorRegions(instance.iNumMinorCivs);
-        Game:SetProperty("BBS_RESPAWN", true)
+        Game:SetProperty("BBM_RESPAWN", true)
         print("End Assign Centroid",  os.date("%c"))
     else
         print("BBS_AssignStartingPlots: To Many Attempts Failed - Go to Firaxis Placement")
-        Game:SetProperty("BBS_RESPAWN", false)
+        Game:SetProperty("BBM_RESPAWN", false)
         local argSPlot = AssignStartingPlots.Create(args)
         return instance;
     end   

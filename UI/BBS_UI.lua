@@ -12,7 +12,7 @@ function OnLocalPlayerTurnBegin()
 	if Game.GetCurrentGameTurn() == GameConfiguration.GetStartTurn() then
 		print("BBS UI Welcome")
 		local message = "BBM #"..GetLocalModVersion("c88cba8b-8311-4d35-90c3-51a4a5d66542").." loaded succesfully!"
-
+		print("BBM_ACTUALMINDIST == ", Game:GetProperty("BBM_ACTUALMINDIST"))
 		if Game:GetProperty("BBS_TEAMERCONTINENTCHECK") ~= nil and Game:GetProperty("BBS_TEAMERCONTINENTCHECK") then
 			print("BBS_TEAMERCONTINENTCHECK - ", Game:GetProperty("BBS_TEAMERCONTINENTCHECK"))
 			NotificationManager.SendNotification(Game.GetLocalPlayer(), NotificationTypes.USER_CONTCHECK, "WARNING - Teamer setting - Could not place a team on at least two continents.")
@@ -23,10 +23,13 @@ function OnLocalPlayerTurnBegin()
 			message = message.." Firaxis Placement Algorithm has been used."
 		else
 			message = message.." BBM Placement Algorithm successful."
-			if Game:GetProperty("BBM_MAJOR_DISTANCE") ~= nil then
+			if Game:GetProperty("BBM_ACTUALMINDIST") ~= nil then
 				message = message.." Minimum Distance is "..tostring(Game:GetProperty("BBM_MAJOR_DISTANCE"))
 			end
-			print(Game:GetProperty("BBS_ITERATION"),Game:GetProperty("BBS_MAJOR_DISTANCE"))
+			--if Game:GetProperty("BBM_MAJOR_DISTANCE") ~= nil then
+			--	message = message.." (Map Min= "..tostring(Game:GetProperty("BBM_MAJOR_DISTANCE")..")")
+			--end
+			--print(Game:GetProperty("BBS_ITERATION"),Game:GetProperty("BBS_MAJOR_DISTANCE"))
 		end
 		NotificationManager.SendNotification(Game.GetLocalPlayer(), NotificationTypes.USER_DEFINED_5, message);
 	if (Game:GetProperty("BBS_DISTANCE_ERROR") ~= nil) then

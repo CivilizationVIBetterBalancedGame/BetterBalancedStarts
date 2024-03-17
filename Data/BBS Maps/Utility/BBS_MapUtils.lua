@@ -498,6 +498,9 @@ function Hex:HexAdd(vec)
 end
 
 function Hex:DistanceTo(other)
+    if self.x == other.x and self.y == other.y then
+        return 0;
+    end
     return Map.GetPlotDistance(self.x, self.y, other.x, other.y);
     --[[local q = self.y - self.x - even(self.x) / 2
     local r = self.x;
@@ -519,16 +522,18 @@ function Hex:Closest(hexMap, points)
     for k = 1, #points do
         point = points[k]
         dist = self:DistanceTo(point)
-        if hexMap.canCircumnavigate then
-            shiftedPoint = Hex.new(point.x + hexMap.width, point.y)
-            shiftedDist = self:DistanceTo(shiftedPoint)
-            if shiftedDist < dist then
-                dist = shiftedDist
+        if dist ~= 0 then
+            if hexMap.canCircumnavigate then
+                shiftedPoint = Hex.new(point.x + hexMap.width, point.y)
+                shiftedDist = self:DistanceTo(shiftedPoint)
+                if shiftedDist < dist then
+                    dist = shiftedDist
+                end
             end
-        end
-        if dist < min then
-            min = dist
-            min_i = k
+            if dist < min then
+                min = dist
+                min_i = k
+            end
         end
     end
 	return points[min_i]
@@ -2099,18 +2104,23 @@ function HexMap:TerraformTo4YieldsTundra(hex, garanteed22)
         return false;
     end
     local rng = TerrainBuilder.GetRandomNumber(100, "Random resource");
-    local rngDeer = TerrainBuilder.GetRandomNumber(100, "Random deer");
     _Debug("TerraformTo4YieldsTundra - added hills ", hex:PrintXY())
-    if rng <= 20 then
+    _Debug("TerraformTo4YieldsTundraDEERANALYSIS - ", rng)
+    if rng <= 10 then
         _Debug("TerraformTo4YieldsTundra - added deer forest ", rng, hex:PrintXY())
-        self:TerraformSetResource(hex, g_RESOURCE_DEER, false);
-        return self:TerraformSetFeature(hex, g_FEATURE_FOREST, false);
-    elseif rng <= 70 then
+        self:TerraformSetTerrain(hex, g_TERRAIN_TYPE_TUNDRA_HILLS);
+        self:TerraformSetResource(hex, g_RESOURCE_DEER, true);
+        return self:TerraformSetFeature(hex, g_FEATURE_FOREST, true);
+    elseif rng <= 35 then
+        _Debug("TerraformTo4YieldsTundra - added deer forest ", rng, hex:PrintXY())
+        self:TerraformSetResource(hex, g_RESOURCE_DEER, true);
+        return self:TerraformSetFeature(hex, g_FEATURE_FOREST, true);
+    elseif rng <= 80 then
         _Debug("TerraformTo4YieldsTundra - added forest ", rng, hex:PrintXY())
-        return self:TerraformSetFeature(hex, g_FEATURE_FOREST, false);
+        return self:TerraformSetFeature(hex, g_FEATURE_FOREST, true);
     else
         _Debug("TerraformTo4YieldsTundra - added deer ", rng, hex:PrintXY())
-        return self:TerraformSetResource(hex, g_RESOURCE_DEER, false);
+        return self:TerraformSetResource(hex, g_RESOURCE_DEER, true);
     end
 end
 
