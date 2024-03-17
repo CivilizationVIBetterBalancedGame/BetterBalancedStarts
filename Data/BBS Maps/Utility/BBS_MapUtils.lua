@@ -1757,7 +1757,7 @@ end
 function Hex:IsSameTerrainCategory(terrainId)
     local isTundraOrSnow = (self:IsTundraLand() or self:IsSnowLand()) and (IsTundraLand(terrainId) or IsSnowLand(terrainId));
     local isDesert = self:IsDesertLand() and IsDesertLand(terrainId)
-    local otherTerrain = (self:IsPlainLand() or self:IsPlainLand()) and (IsGrassLand(terrainId) or IsGrassLand(terrainId));
+    local otherTerrain = (self:IsGrassLand() or self:IsPlainLand()) and (IsGrassLand(terrainId) or IsPlainLand(terrainId));
     return isTundraOrSnow or isDesert or otherTerrain;
 end
 
@@ -1799,7 +1799,7 @@ function HexMap:TerraformSetResource(hex, resourceId, forced)
         if forced and (hex:IsSnowLand() == false and hex:IsDesertLand() == false) then
             ResourceBuilder.SetResourceType(hex.Plot, g_RESOURCE_NONE);
             if resourceId == g_RESOURCE_HORSES then
-                if IsPlainLand(hex.TerrainType) == false and IsGrassLand(hex.TerrainType) == false then
+                if (IsPlainLand(hex.TerrainType) == false and IsGrassLand(hex.TerrainType) == false) or hex:IsFloodplains(true) then
                     return false;
                 end
                 self:TerraformToFlat(hex, true);
@@ -2105,17 +2105,16 @@ function HexMap:TerraformTo4YieldsTundra(hex, garanteed22)
     end
     local rng = TerrainBuilder.GetRandomNumber(100, "Random resource");
     _Debug("TerraformTo4YieldsTundra - added hills ", hex:PrintXY())
-    _Debug("TerraformTo4YieldsTundraDEERANALYSIS - ", rng)
     if rng <= 10 then
         _Debug("TerraformTo4YieldsTundra - added deer forest ", rng, hex:PrintXY())
         self:TerraformSetTerrain(hex, g_TERRAIN_TYPE_TUNDRA_HILLS);
         self:TerraformSetResource(hex, g_RESOURCE_DEER, true);
         return self:TerraformSetFeature(hex, g_FEATURE_FOREST, true);
-    elseif rng <= 35 then
+    elseif rng <= 40 then
         _Debug("TerraformTo4YieldsTundra - added deer forest ", rng, hex:PrintXY())
         self:TerraformSetResource(hex, g_RESOURCE_DEER, true);
         return self:TerraformSetFeature(hex, g_FEATURE_FOREST, true);
-    elseif rng <= 80 then
+    elseif rng <= 95 then
         _Debug("TerraformTo4YieldsTundra - added forest ", rng, hex:PrintXY())
         return self:TerraformSetFeature(hex, g_FEATURE_FOREST, true);
     else
@@ -2350,19 +2349,20 @@ function HexMap:TerraformAdd1ProdEmptyHex(hex, canMinusFood)
     end
     local rng = TerrainBuilder.GetRandomNumber(100, "Random");
     if rng <= 15 and self:TerraformSetResourceRequirements(hex, g_RESOURCE_DEER) then
+        _Debug("TerraformAdd1ProdEmptyHex - Add deer", rng)
         return self:TerraformSetResource(hex, g_RESOURCE_DEER, false);
     elseif IsGrassLand(hex.TerrainType) and rng <= 30 then
-        _Debug("TerraformAdd1ProdEmptyHex - Add stone")
+        _Debug("TerraformAdd1ProdEmptyHex - Add stone", rng)
         return self:TerraformSetResource(hex, g_RESOURCE_STONE, false);
     elseif IsHill(hex.TerrainType) then
-        _Debug("TerraformAdd1ProdEmptyHex - Add forest on hill")
+        _Debug("TerraformAdd1ProdEmptyHex - Add forest on hill", rng)
         return self:TerraformSetFeature(hex, g_FEATURE_FOREST, false);
     -- Change flat to hills or forest
     elseif rng <= 33 then
-        _Debug("TerraformAdd1ProdEmptyHex - Add forest on flat")
+        _Debug("TerraformAdd1ProdEmptyHex - Add forest on flat", rng)
         return self:TerraformSetFeature(hex, g_FEATURE_FOREST, false);
     else
-        _Debug("TerraformAdd1ProdEmptyHex - Add hills on flat")
+        _Debug("TerraformAdd1ProdEmptyHex - Add hills on flat", rng)
         return self:TerraformToHill(hex, false);
     end
 end
@@ -2383,10 +2383,11 @@ function HexMap:TerraformAdd1ProdOnFeatureHex(hex, canMinusFood, canExtraYield)
     end
     local rng = TerrainBuilder.GetRandomNumber(100, "Random");
     if IsFlat(hex.TerrainType) and (hex.FeatureType == g_FEATURE_FOREST or hex.FeatureType == g_FEATURE_JUNGLE) then
-        _Debug("TerraformAdd1ProdOnFeatureHex - To hill")
+        _Debug("TerraformAdd1ProdOnFeatureHex - To hill", rng)
         return self:TerraformToHill(hex, false);
     elseif rng <= 20 and (hex.FeatureType == g_FEATURE_FOREST and IsFlat(hex.TerrainType)
             or (hex.FeatureType == g_FEATURE_NONE and IsHill(hex.TerrainType))) then
+        _Debug("TerraformAdd1ProdOnFeatureHex - Add deer", rng)
         return self:TerraformSetResource(hex, g_RESOURCE_DEER, false);
     elseif canMinusFood then
         if hex.FeatureType == g_FEATURE_MARSH then
@@ -4840,7 +4841,7 @@ function BalanceAllCivYields(spawns)
         local unworkableYieldMargin = 2;
         local allowedChanges = 0;
         local tries = 0;
-        while allowedChanges <= 10 and tries < 10 do
+        while allowedChanges < 8 and tries < 10 do
             if spawn:BalanceToMean(yieldMargin, standardMargin, unworkableYieldMargin) then
                 allowedChanges = allowedChanges + 1;
                 _Debug("BalanceToMean - Changes made : ", allowedChanges)

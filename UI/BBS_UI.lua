@@ -17,10 +17,9 @@ function OnLocalPlayerTurnBegin()
 			print("BBS_TEAMERCONTINENTCHECK - ", Game:GetProperty("BBS_TEAMERCONTINENTCHECK"))
 			NotificationManager.SendNotification(Game.GetLocalPlayer(), NotificationTypes.USER_CONTCHECK, "WARNING - Teamer setting - Could not place a team on at least two continents.")
 		end
-
-
-		if (Game:GetProperty("BBS_RESPAWN") == false) then
+		if (Game:GetProperty("BBM_RESPAWN") == false) then
 			message = message.." Firaxis Placement Algorithm has been used."
+			NotificationManager.SendNotification(Game.GetLocalPlayer(), NotificationTypes.BARBARIANS_SIGHTED, message);
 		else
 			message = message.." BBM Placement Algorithm successful."
 			if Game:GetProperty("BBM_ACTUALMINDIST") ~= nil then
@@ -30,8 +29,8 @@ function OnLocalPlayerTurnBegin()
 			--	message = message.." (Map Min= "..tostring(Game:GetProperty("BBM_MAJOR_DISTANCE")..")")
 			--end
 			--print(Game:GetProperty("BBS_ITERATION"),Game:GetProperty("BBS_MAJOR_DISTANCE"))
+			NotificationManager.SendNotification(Game.GetLocalPlayer(), NotificationTypes.USER_DEFINED_5, message);
 		end
-		NotificationManager.SendNotification(Game.GetLocalPlayer(), NotificationTypes.USER_DEFINED_5, message);
 	if (Game:GetProperty("BBS_DISTANCE_ERROR") ~= nil) then
 	message = tostring(Game:GetProperty("BBS_DISTANCE_ERROR"))
 	NotificationManager.SendNotification(Game.GetLocalPlayer(), NotificationTypes.BARBARIANS_SIGHTED, message);

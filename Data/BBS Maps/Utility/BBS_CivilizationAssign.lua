@@ -574,7 +574,7 @@ function CivilizationAssignSpawn:ComputeHexScoreCiv(hex)
     if self.IsNoBias or self.IsKingNorthBias then
         score = score + math.min(70, peninsulaScore)
         -- Slight adjustment for mountain civ to avoid being stuck inside mountains on standard ridges
-    elseif self.IsMountainBias or self.IsMountainLoverBias then
+    elseif self.IsMountainBias then
         score = score + math.min(60, peninsulaScore)
     else
         -- especially for river and coastal else 5 pt is not much when testing other biases
