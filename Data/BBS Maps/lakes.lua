@@ -60,7 +60,7 @@ function GenerateMap()
 	else
 		world_age = 1 + TerrainBuilder.GetRandomNumber(3, "Random World Age - Lua");
 	end
-
+	
 	plotTypes = GeneratePlotTypes(world_age);
 	local BBS_temp = false;
 	if (GameConfiguration.GetValue("BBStemp") ~= nil) then 
@@ -161,7 +161,7 @@ function GeneratePlotTypes(world_age)
 	local peaks_ridge_flags = g_iFlags;
 	local has_center_rift = false;
 	local sea_level = 1;
-	local world_age = 1;
+	--local world_age = 1;
 
 	local water_percent_modifier = 0; 
 

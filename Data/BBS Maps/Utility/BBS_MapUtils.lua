@@ -779,7 +779,7 @@ function HexMap.new(_width, _height, mapScript)
 end
 
 function HexMap:CanCircumnavigate()
-    return self.mapScript ~= MAP_INLAND_SEA and self.mapScript ~= MAP_TILTED_AXIS;
+    return self.mapScript ~= MapScripts.MAP_INLAND_SEA and self.mapScript ~= MapScripts.MAP_TILTED_AXIS;
 end
 
 function HexMap:SetMinimumDistanceMajorToMajorCivs()
@@ -1303,6 +1303,9 @@ end
 
 function Hex:IsNextToOasis()
     local ring1 = self.AllRing6Map[1];
+    if self.FeatureType == g_FEATURE_OASIS then
+        return true;
+    end
     for _, r1 in pairs(ring1) do
         if r1.FeatureType == g_FEATURE_OASIS then
             return true;
@@ -1761,6 +1764,40 @@ function Hex:IsSameTerrainCategory(terrainId)
     return isTundraOrSnow or isDesert or otherTerrain;
 end
 
+function Hex:FindFloodplainArea()
+    if self:IsFloodplains(true) == false then
+        return;
+    end
+    local visitedRing = {};
+    local visitedHex = {};
+    visitedRing[0] = {};
+    visitedHex[self] = true;
+    table.insert(visitedRing[0], self);
+    local countFloodArea = 1;
+    local n1 -- index previous ring
+    local h --hex analysed during loops
+    local visitedRingN1 -- list of visited hex in previous ring
+    local hRing1 -- ring1 of h
+    local neighbor --current analysed neighbor r1 of h
+    for n = 1, 6 do
+        visitedRing[n] = {};
+        n1 = n - 1;
+        visitedRingN1 = visitedRing[n1]
+        for i = 1, #visitedRingN1 do
+            h = visitedRingN1[i]
+            hRing1 = h.AllRing6Map[1]
+            for j = 1, #hRing1 do
+                neighbor = hRing1[j]
+                if neighbor:IsImpassable() == false and visitedHex[neighbor] == nil and neighbor:IsFloodplains(true) then
+                    countFloodArea = countFloodArea + 1;
+                    visitedHex[neighbor] = true;
+                    table.insert(visitedRing[n], neighbor);
+                end
+            end
+        end
+    end
+    return countFloodArea;
+end
 
 ---------------------------------------
 -- Terraforming methods
@@ -1865,19 +1902,7 @@ function HexMap:TerraformAddRandomLux(hex, canAddOnWater)
     for _, idLux in ipairs(possiblesLux) do
         if self:TerraformSetResource(hex, idLux, false) then
             _Debug("TerraformAddRandomLux - A lux has been added (id = ", idLux, ")")
-            if g_RESOURCES_HIGHFOOD[idLux] and IsGrassLand(hex.TerrainType) and hex.IsFreshWater then
-                _Debug("TerraformAddRandomLux - was a 4+ food on fresh water (id = ", idLux, ")", hex:PrintXY())
-                self:TerraformSetTerrain(hex, g_TERRAIN_TYPE_PLAINS);
-                if hex.FeatureType == g_FEATURE_MARSH then
-                    self:TerraformSetFeature(hex, g_FEATURE_NONE, false);
-                    _Debug("TerraformAddRandomLux - was a 4+ food on fresh water (id = ", idLux, ")", hex:PrintXY())
-                elseif hex:IsFloodplains(false) then
-                    self:TerraformSetFeature(hex, g_FEATURE_FLOODPLAINS_PLAINS, false);
-                end
-            elseif g_RESOURCES_HIGHPROD[idLux] and IsPlainLand(hex.TerrainType) and IsHill(hex.TerrainType) and hex.IsFreshWater then
-                _Debug("TerraformAddRandomLux - was a 3+ prod on fresh water (id = ", idLux, ")", hex:PrintXY())
-                self:TerraformSetTerrain(hex, g_TERRAIN_TYPE_PLAINS);
-            end
+            self:CleanHighYieldsOnFresh(hex)
             return true;
         end
     end
@@ -1904,7 +1929,7 @@ function HexMap:TerraformSetFeature(hex, featureId, forced)
 end
 
 function HexMap:TerraformSetFeatureRequirements(hex, featureId, forced)
-    local disasterTile = (IsFloodplains(hex.FeatureType, true) and IsFloodplains(featureId, true) == false) or hex.FeatureType == g_FEATURE_VOLCANO;
+    local disasterTile = (IsFloodplains(hex.FeatureType, false) and IsFloodplains(featureId, false) == false) or hex.FeatureType == g_FEATURE_VOLCANO;
     if hex.Plot ~= nil and disasterTile == false and (TerrainBuilder.CanHaveFeature(hex.Plot, featureId) or forced) and hex.IsTaggedAsMinimum == false then
         return true
     end
@@ -1998,10 +2023,23 @@ function HexMap:TerraformDesert(hex)
     _Debug("Enter TerraformDesert")
     --50% plain/grass
     -- leave oasis as it is (cant be terraformed correctly to lakes)
-    -- if hex.FeatureType == g_FEATURE_OASIS then
-    --     self:TerraformSetTerrain(hex, g_TERRAIN_TYPE_COAST)
-    --     self:TerraformSetFeature(hex, g_FEATURE_NONE, true);
-    -- end
+    if hex.FeatureType == g_FEATURE_OASIS then
+        _Debug("No terraform of oasis", hex:PrintXY())
+        return false;
+         -- self:TerraformSetTerrain(hex, g_TERRAIN_TYPE_COAST)
+         -- self:TerraformSetFeature(hex, g_FEATURE_NONE, true);
+     elseif hex.FeatureType == g_FEATURE_FLOODPLAINS then
+        local floodArea = hex:FindFloodplainArea()
+        -- minimumFloodArea is 4, lower than this value, flood can safely be removed, else left as such
+        if floodArea < 4 then
+            _Debug("Flood desert to none", hex:PrintXY(), " Floodarea = ", floodArea)
+            return self:TerraformSetFeature(hex, g_FEATURE_NONE, true);
+        else
+            _Debug("Flood desert untouched", hex:PrintXY(), " Floodarea = ", floodArea)
+            return false
+        end
+        --self:TerraformSetFeature(hex, g_FEATURE_FLOODPLAINS_PLAINS, true);
+    end
     local rng = TerrainBuilder.GetRandomNumber(100, "Desert terraform");
     if hex.TerrainType == g_TERRAIN_TYPE_DESERT then
         self:TerraformSetTerrain(hex, g_TERRAIN_TYPE_PLAINS)
@@ -2010,9 +2048,7 @@ function HexMap:TerraformDesert(hex)
     elseif hex.TerrainType == g_TERRAIN_TYPE_DESERT_MOUNTAIN then
         self:TerraformSetTerrain(hex, g_TERRAIN_TYPE_PLAINS_MOUNTAIN)
     end
-    if hex.FeatureType == g_FEATURE_FLOODPLAINS then
-        self:TerraformSetFeature(hex, g_FEATURE_FLOODPLAINS_PLAINS, true);
-    end
+
     if rng <= 33 and hex.FeatureType == g_FEATURE_NONE and hex.ResourceType == g_RESOURCE_NONE then
         self:TerraformSetFeature(hex, g_FEATURE_FOREST, false);
     end
@@ -2104,22 +2140,23 @@ function HexMap:TerraformTo4YieldsTundra(hex, garanteed22)
         return false;
     end
     local rng = TerrainBuilder.GetRandomNumber(100, "Random resource");
-    _Debug("TerraformTo4YieldsTundra - added hills ", hex:PrintXY())
+    _Debug("TerraformTo4YieldsTundra - added hills ", hex:PrintXY());
+    self:TerraformSetTerrain(hex, g_TERRAIN_TYPE_TUNDRA_HILLS);
     if rng <= 10 then
-        _Debug("TerraformTo4YieldsTundra - added deer forest ", rng, hex:PrintXY())
-        self:TerraformSetTerrain(hex, g_TERRAIN_TYPE_TUNDRA_HILLS);
+        _Debug("TerraformTo4YieldsTundra - added deer hills forest ", rng, hex:PrintXY())
         self:TerraformSetResource(hex, g_RESOURCE_DEER, true);
         return self:TerraformSetFeature(hex, g_FEATURE_FOREST, true);
+    elseif rng <= 25 then
+        _Debug("TerraformTo4YieldsTundra - added deer hills ", rng, hex:PrintXY())
+        return self:TerraformSetResource(hex, g_RESOURCE_DEER, true);
     elseif rng <= 40 then
         _Debug("TerraformTo4YieldsTundra - added deer forest ", rng, hex:PrintXY())
+        self:TerraformSetTerrain(hex, g_TERRAIN_TYPE_TUNDRA);
         self:TerraformSetResource(hex, g_RESOURCE_DEER, true);
         return self:TerraformSetFeature(hex, g_FEATURE_FOREST, true);
-    elseif rng <= 95 then
+    else
         _Debug("TerraformTo4YieldsTundra - added forest ", rng, hex:PrintXY())
         return self:TerraformSetFeature(hex, g_FEATURE_FOREST, true);
-    else
-        _Debug("TerraformTo4YieldsTundra - added deer ", rng, hex:PrintXY())
-        return self:TerraformSetResource(hex, g_RESOURCE_DEER, true);
     end
 end
 
@@ -2328,9 +2365,9 @@ function HexMap:TerraformAdd1Prod(hex, canMinusFood, canExtraYield)
         if hex.ResourceType == g_RESOURCE_MAIZE or hex.ResourceType == g_RESOURCE_COPPER then
             self:TerraformSetResource(hex, g_RESOURCE_NONE, false);
         elseif hex.ResourceType == g_RESOURCE_STONE and hex.TerrainType == g_TERRAIN_TYPE_GRASS then
-            self:TerraformToHill(hex, false);
+            return self:TerraformToHill(hex, false);
         elseif hex.Food + hex.Prod == 3 and g_RESOURCES_BONUS_LIST[hex.ResourceType] then
-            self:TerraformTo22Yields(hex, true);
+            return self:TerraformTo22Yields(hex, true);
         else
             return false;
         end
@@ -2429,6 +2466,10 @@ function HexMap:TerraformRemove1Food(hex, canAddProd)
             return self:TerraformSetTerrain(hex, g_TERRAIN_TYPE_PLAINS_HILLS);
         end
     end
+    -- Remove features giving food
+    if hex.FeatureType == g_FEATURE_JUNGLE or hex.FeatureType == g_FEATURE_MARSH then
+        return self:TerraformSetFeature(hex, g_FEATURE_NONE, false);
+    end
     -- Remove bonus resources giving food
     if hex.ResourceType == g_RESOURCE_CATTLE
         or hex.ResourceType == g_RESOURCE_SHEEP
@@ -2437,10 +2478,6 @@ function HexMap:TerraformRemove1Food(hex, canAddProd)
         or hex.ResourceType == g_RESOURCE_BANANAS then
         _Debug("TerraformRemove1Food Removed ressource ", hex.ResourceType)
         return self:TerraformSetResource(hex, g_RESOURCE_NONE, false);
-    end
-    -- Remove features giving food
-    if hex.FeatureType == g_FEATURE_JUNGLE or hex.FeatureType == g_FEATURE_MARSH then
-        return self:TerraformSetFeature(hex, g_FEATURE_NONE, false);
     end
     return false;
 end
@@ -2754,12 +2791,14 @@ function HexMap:CleanGlobalHighYieldsOnFresh()
 end
 
 function HexMap:CleanHighYieldsOnFresh(hex)
-    if hex ~= nil and hex.Food >= 4 and hex.IsFreshWater and g_RESOURCES_HIGHFOOD[hex.ResourceType] then
+    local nextToWater = hex.IsFreshWater or hex.IsCoastal
+    if hex ~= nil and hex.Food >= 4 and nextToWater and g_RESOURCES_HIGHFOOD[hex.ResourceType] then
         _Debug("CleanHighYieldsOnFresh found lux 4+ food in ", hex:PrintXY())
         if hex.TerrainType == g_TERRAIN_TYPE_GRASS then
             self:TerraformSetTerrain(hex, g_TERRAIN_TYPE_PLAINS);
             _Debug("CleanHighYieldsOnFresh lux 4+ food to plains ", hex:PrintXY())
             if hex:IsFloodplains(true) then
+                _Debug("CleanHighYieldsOnFresh changed on flood plains")
                 self:TerraformSetFeature(hex, g_FEATURE_FLOODPLAINS_PLAINS, false);
             elseif hex.FeatureType == g_FEATURE_MARSH then -- Sugar on marsh => 3/1
                 self:TerraformSetFeature(hex, g_FEATURE_NONE, false);
@@ -2769,7 +2808,7 @@ function HexMap:CleanHighYieldsOnFresh(hex)
             self:TerraformSetResource(hex, g_RESOURCE_NONE, false);
         end
         --
-    elseif hex ~= nil and hex.Prod >= 3 and hex.IsFreshWater and g_RESOURCES_HIGHPROD[hex.ResourceType] then
+    elseif hex ~= nil and hex.Prod >= 3 and nextToWater and g_RESOURCES_HIGHPROD[hex.ResourceType] then
         _Debug("CleanHighYieldsOnFresh found 3+ prod settle on ", hex:PrintXY());
         self:TerraformToFlat(hex, false);
         _Debug("CleanHighYieldsOnFresh done for hex ", hex:PrintXY())
@@ -2843,7 +2882,7 @@ function HexMap:PrintMaps()
 end
 -- DEBUGGING - Lux - can use any resource list
 function HexMap:PrintMapsLux()
-    -- Loop through every resources index - only print if they are luxes 
+    -- Loop through every resources index - only print if they are luxes
     for idRes, t in pairs(self.mapResources) do
         if g_RESOURCES_LUX_LIST[idRes] ~= nil then
             local mapResourceIndex = self.mapResources[idRes]
@@ -3165,9 +3204,9 @@ function HexMap:InitKmeanCentroids(n, spawnableHex)
     --         if randomHex:IsWater() == false and self:CheckHexInCentroid(randomHex, centroids) == false then
     --             randomHexIsNotLand = false
     --         else
-    --             randomHex = self:getRandomHex();  
+    --             randomHex = self:getRandomHex();
     --         end
-    --     end 
+    --     end
     --     local newCentroid = Centroid.new(randomHex.x, randomHex.y, i)
     --     print("Init random at centroid ("..tostring(newCentroid.x)..", "..tostring(newCentroid.y)..")")
     --     table.insert(centroids, randomHex)
@@ -3797,7 +3836,7 @@ function SpawnBalancing:ApplyMinimalCoastalTiles()
 
 
 
-    -- 2) Adding river 
+    -- 2) Adding river
     if self.Civ.IsSaltyBias == false then
         self.HexMap:AddCoastalRiver(self.Hex)
     end
