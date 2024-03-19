@@ -2020,7 +2020,7 @@ function HexMap:TerraformDesert(hex)
         -- minimumFloodArea is 4, lower than this value, flood can safely be removed, else left as such
         if floodArea < 4 then
             _Debug("Flood desert to none", hex:PrintXY(), " Floodarea = ", floodArea)
-            return self:TerraformSetFeature(hex, g_FEATURE_NONE, true);
+            self:TerraformSetFeature(hex, g_FEATURE_NONE, true);
         else
             _Debug("Flood desert untouched", hex:PrintXY(), " Floodarea = ", floodArea)
             self:TerraformSetTerrain(hex, g_TERRAIN_TYPE_PLAINS)
