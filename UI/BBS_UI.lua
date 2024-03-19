@@ -1,17 +1,15 @@
-local g_version = "2.2.0"
-
+local g_version = "0.23"
 -------------------------------------------------------------------------------
-print("-------------- BBS UI v"..g_version.." -D- Init --------------")
+print("-------------- BBM UI v"..g_version.." -D- Init --------------")
 -------------------------------------------------------------------------------
-
 function OnLocalPlayerTurnBegin()
 
 	if Game.GetLocalPlayer() == -1 then
 		return
 	end
 	if Game.GetCurrentGameTurn() == GameConfiguration.GetStartTurn() then
-		print("BBS UI Welcome")
-		local message = "BBM #"..GetLocalModVersion("c88cba8b-8311-4d35-90c3-51a4a5d66542").." loaded succesfully!"
+		print("BBM UI Welcome ", g_version)
+		local message = "BBM #"..g_version.." loaded succesfully!"
 		print("BBM_ACTUALMINDIST == ", Game:GetProperty("BBM_ACTUALMINDIST"))
 		if Game:GetProperty("BBS_TEAMERCONTINENTCHECK") ~= nil and Game:GetProperty("BBS_TEAMERCONTINENTCHECK") then
 			print("BBS_TEAMERCONTINENTCHECK - ", Game:GetProperty("BBS_TEAMERCONTINENTCHECK"))
