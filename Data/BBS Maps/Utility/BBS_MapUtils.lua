@@ -1140,19 +1140,10 @@ end
 function HexMap:ComputeMajorSpawnableTiles(hex)
     local isCloseToMapBorderX = self.canCircumnavigate == false and (self.width - hex.x <= 3 or hex.x <= 3);
     local isCloseToMapBorderY = self.height - hex.y <= 3 or hex.y <= 3;
-    local isTooCloseToNaturalWonder = false
+    local isTooCloseToNaturalWonder = hex:IsCloseToNaturalWonder()
     local isCloseToTooManyFlood = hex:IsHexNextTo5FloodTiles();
     local isNextToVolcano = hex:IsNextToVolcano();
     local coastalNextToRiver = hex.IsCoastal and hex.IsFreshWater == false and hex:IsNextToCoastalFreshWater();
-    for i, r in ipairs(hex.AllRing6Map) do
-        for _, h in ipairs(r) do
-            -- Limit to 5 tiles like now
-            if hex.IsNaturalWonder or (h.IsNaturalWonder and i < 5) then
-                isTooCloseToNaturalWonder = true;
-                break;
-            end
-        end
-    end
     local nextTo3LakesInARow = hex:IsHexNextTo3ILakeMountainTilesInARow();
     local isNotInPeninsula = hex.PeninsulaScore >= self.PeninsulaScoreThreshold
     local isTooCloseToSnow = hex:IsHexCloseToSnow()
@@ -1170,7 +1161,7 @@ function HexMap:ComputeMajorSpawnableTiles(hex)
 end
 
 function HexMap:ComputeMinorSpawnableTiles(hex)
-    hex.IsMinorSpawnable = hex:IsWater() == false and self:IsCloseToNaturalWonder() == false;
+    hex.IsMinorSpawnable = hex:IsWater() == false and hex:IsCloseToNaturalWonder() == false;
 end
 
 -- TODO : Testing score calculations depending on distance
@@ -1185,7 +1176,7 @@ end
 function Hex:IsCloseToNaturalWonder()
     for i, r in ipairs(self.AllRing6Map) do
         for _, h in ipairs(r) do
-            -- Limit to 5 tiles like now
+            -- Limit to 5 tiles like BBS
             if self.IsNaturalWonder or (h.IsNaturalWonder and i < 5) then
                 return true;
             end
@@ -2029,9 +2020,10 @@ function HexMap:TerraformDesert(hex)
             return self:TerraformSetFeature(hex, g_FEATURE_NONE, true);
         else
             _Debug("Flood desert untouched", hex:PrintXY(), " Floodarea = ", floodArea)
-            return false
+            self:TerraformSetTerrain(hex, g_TERRAIN_TYPE_PLAINS)
+            return self:TerraformSetFeature(hex, g_FEATURE_FLOODPLAINS_PLAINS, true);
         end
-        --self:TerraformSetFeature(hex, g_FEATURE_FLOODPLAINS_PLAINS, true);
+        --
     end
     local rng = TerrainBuilder.GetRandomNumber(100, "Desert terraform");
     if hex.TerrainType == g_TERRAIN_TYPE_DESERT then
@@ -2459,11 +2451,11 @@ function HexMap:TerraformRemove1Food(hex, canAddProd)
             return self:TerraformSetTerrain(hex, g_TERRAIN_TYPE_PLAINS_HILLS);
         end
     end
-    -- Remove features giving food
-    if hex.FeatureType == g_FEATURE_JUNGLE or hex.FeatureType == g_FEATURE_MARSH then
+    -- Try to remove marsh
+    if hex.FeatureType == g_FEATURE_MARSH then
         return self:TerraformSetFeature(hex, g_FEATURE_NONE, false);
     end
-    -- Remove bonus resources giving food
+        -- Remove bonus resources giving food
     if hex.ResourceType == g_RESOURCE_CATTLE
         or hex.ResourceType == g_RESOURCE_SHEEP
         or hex.ResourceType == g_RESOURCE_RICE
@@ -2471,6 +2463,10 @@ function HexMap:TerraformRemove1Food(hex, canAddProd)
         or hex.ResourceType == g_RESOURCE_BANANAS then
         _Debug("TerraformRemove1Food Removed ressource ", hex.ResourceType)
         return self:TerraformSetResource(hex, g_RESOURCE_NONE, false);
+    end
+    -- Remove features giving food
+    if hex.FeatureType == g_FEATURE_JUNGLE then
+        return self:TerraformSetFeature(hex, g_FEATURE_NONE, false);
     end
     return false;
 end
@@ -3555,6 +3551,7 @@ function SpawnBalancing:TerraformRing6Deserts()
                 if self:TerraformHex(h, 1, TerraformType[1], g_TERRAIN_TYPE_DESERT, true, false) then
                     self:TerraformHex(h, 1, TerraformType[2], g_FEATURE_OASIS, true, false)
                     self:TerraformHex(h, 1, TerraformType[3], g_RESOURCE_NONE, true, false)
+                    h.IsTaggedAsMinimum = true;
                     _Debug("Added oasis at "..h:PrintXY())
                     break;
                 end
