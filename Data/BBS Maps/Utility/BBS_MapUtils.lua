@@ -1170,14 +1170,7 @@ function HexMap:ComputeMajorSpawnableTiles(hex)
 end
 
 function HexMap:ComputeMinorSpawnableTiles(hex)
-    local isTooCloseToNaturalWonder = false
-    for _, h in pairs(hex.AllRing6) do
-        if h.IsNaturalWonder then
-            isTooCloseToNaturalWonder = true;
-            break;
-        end
-    end
-    hex.IsMinorSpawnable = hex:IsWater() == false and isTooCloseToNaturalWonder == false;
+    hex.IsMinorSpawnable = hex:IsWater() == false and self:IsCloseToNaturalWonder() == false;
 end
 
 -- TODO : Testing score calculations depending on distance
