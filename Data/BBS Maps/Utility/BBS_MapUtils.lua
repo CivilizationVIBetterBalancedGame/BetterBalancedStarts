@@ -85,8 +85,11 @@ g_RESOURCE_SHIPWRECK            = GetGameInfoIndex("Resources", "RESOURCE_SHIPWR
 g_RESOURCE_AMBER                = GetGameInfoIndex("Resources", "RESOURCE_AMBER");
 g_RESOURCE_OLIVES               = GetGameInfoIndex("Resources", "RESOURCE_OLIVES");--50
 g_RESOURCE_TURTLES              = GetGameInfoIndex("Resources", "RESOURCE_TURTLES");
-g_RESOURCE_MAIZE                = GetGameInfoIndex("Resources", "RESOURCE_MAIZE");
-g_RESOURCE_HONEY                = GetGameInfoIndex("Resources", "RESOURCE_HONEY");
+-- Resources were added with Mayan DLC so we should not set them to nil if they not exist in database
+g_RESOURCE_MAIZE                = GetGameInfoIndex("Resources", "RESOURCE_MAIZE") or 52;
+g_RESOURCE_HONEY                = GetGameInfoIndex("Resources", "RESOURCE_HONEY") or 53;
+
+
 
 g_RESOURCES_LUX_LIST = {}
 g_RESOURCES_LUX_LIST[g_RESOURCE_CITRUS]= true;
