@@ -4305,9 +4305,7 @@ function SpawnBalancing:RelocateHex(ringTableIndex, destinationRingIndex, hex)
         table.insert(self.RingTables[destinationRingIndex].RELOCATING_TILES, hexData);
     end
     -- if/else not grouped in same condition because TerraformHex actually clean the tile, do not clean feature if not possible
-    if self.HexMap:TerraformSetFeatureRequirements(hex, g_FEATURE_NONE, false) and self:TerraformHex(hex, ringTableIndex, TerraformType[3], g_RESOURCE_NONE, false, false) then
-        return true;
-    elseif self:TerraformHex(hex, ringTableIndex, TerraformType[99], 0, false, false) then
+    if self:TerraformHex(hex, ringTableIndex, TerraformType[99], 0, false, false) then
         return true;
     end
     return false;
