@@ -1152,6 +1152,7 @@ function HexMap:ComputeMajorSpawnableTiles(hex)
     local isTooCloseToSnow = hex:IsHexCloseToSnow()
     hex.IsMajorSpawnable = hex:IsImpassable() == false
         and hex:IsSnowLand() == false
+        and hex.FeatureType ~= g_FEATURE_OASIS
         and isCloseToMapBorderX == false
         and isCloseToMapBorderY == false
         and isNotInPeninsula == true
@@ -1290,9 +1291,6 @@ end
 
 function Hex:IsNextToOasis()
     local ring1 = self.AllRing6Map[1];
-    if self.FeatureType == g_FEATURE_OASIS then
-        return true;
-    end
     for _, r1 in pairs(ring1) do
         if r1.FeatureType == g_FEATURE_OASIS then
             return true;
@@ -3370,29 +3368,19 @@ end
 
 
 
-
-
+-- Main balancing function per civ
+-- To avoid turtles to be deleted after the coastal score calc, we check lux before
 function InitSpawnBalancing(hexMap, civ)
     local balancing = SpawnBalancing.new(civ.StartingHex, hexMap, civ);
     balancing:RemoveRing1MountainsOnRiver();
     balancing:TerraformRing6Deserts();
     balancing:CleanSpawnTile();
-    balancing:ApplyMinimalCoastalTiles();
     balancing:CheckLuxThreshold();
+    balancing:ApplyMinimalCoastalTiles();
     balancing:GaranteedStandardHighFoodInnerRing();
     balancing:CheckInnerRingHighYieldsThreshold();
     balancing:ApplyMinimalLandTiles(1, 6);
-    print("Before ApplyGaranteedStrategics")
-    print(balancing.Hex:PrintXY().." - EMPTY_TILES 1 ".. " = "..tostring(#balancing.RingTables[1].EMPTY_TILES))
-    print(balancing.Hex:PrintXY().." - LOW_YIELD_TILES 1 ".. " = "..tostring(#balancing.RingTables[1].LOW_YIELD_TILES))
-    print(balancing.Hex:PrintXY().." - STANDARD_YIELD_TILES 1 ".. " = "..tostring(#balancing.RingTables[1].STANDARD_YIELD_TILES))
-    print(balancing.Hex:PrintXY().." - HIGH_YIELD_TILES 1 ".. " = "..tostring(#balancing.RingTables[1].HIGH_YIELD_TILES))
     balancing:ApplyGaranteedStrategics();
-    print("After ApplyGaranteedStrategics")
-    print(balancing.Hex:PrintXY().." - EMPTY_TILES 1 ".. " = "..tostring(#balancing.RingTables[1].EMPTY_TILES))
-    print(balancing.Hex:PrintXY().." - LOW_YIELD_TILES 1 ".. " = "..tostring(#balancing.RingTables[1].LOW_YIELD_TILES))
-    print(balancing.Hex:PrintXY().." - STANDARD_YIELD_TILES 1 ".. " = "..tostring(#balancing.RingTables[1].STANDARD_YIELD_TILES))
-    print(balancing.Hex:PrintXY().." - HIGH_YIELD_TILES 1 ".. " = "..tostring(#balancing.RingTables[1].HIGH_YIELD_TILES))
     --balancing:GaranteedHighYield();
     balancing:CheckMinimumWorkable();
     return balancing;
