@@ -4127,7 +4127,7 @@ function SpawnBalancing:CheckLuxThreshold()
     end
     _Debug("CheckLuxThreshold innerRing = ", self.InnerRingLuxCount, " outerRing = ", self.OuterRingLuxCount, " Threshold = ", self.InnerRingLuxCount < self.MaxLuxInnerRingThreshold)
     while self.InnerRingLuxCount < self.MinLuxInnerRingThreshold do
-        local randomHexLux = self:TerraformInRingsRandomOrder(1, 3, TerraformType[11], 0, false, false, false);
+        local randomHexLux = self:TerraformInRingsRandomOrder(2, 3, TerraformType[11], 0, false, false, false);
         if randomHexLux ~= nil then
             _Debug("CheckLuxThreshold - Added lux ");
             self.InnerRingLuxCount = self.InnerRingLuxCount + 1;
@@ -4625,7 +4625,7 @@ end
 -- @param id is the corresponding resource/feature/terrain to apply (some terraformType do not use this)
 -- @param forced is a boolean to change the tile even if it do not meet all conditions (some terraformType do not use this)
 function SpawnBalancing: TerraformHex(hex, ring, terraformType, id, forced, boolParam)
-    if hex.IsTaggedAsMinimum == false and self.HexMap:TerraformHex(hex, terraformType, id, forced, boolParam) then
+    if hex.IsNaturalWonder == false and hex.IsTaggedAsMinimum == false and self.HexMap:TerraformHex(hex, terraformType, id, forced, boolParam) then
         self:FillTableRing(ring)
         --self:UpdateTableDataRing(hex, ring);
         table.insert(self.TerraformedTiles, hex);
