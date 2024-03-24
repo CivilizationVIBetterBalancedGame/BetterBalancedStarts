@@ -2031,6 +2031,10 @@ function HexMap:TerraformDesert(hex)
         self:TerraformSetTerrain(hex, g_TERRAIN_TYPE_PLAINS)
     elseif hex.TerrainType == g_TERRAIN_TYPE_DESERT_HILLS then
         self:TerraformSetTerrain(hex, g_TERRAIN_TYPE_PLAINS_HILLS)
+        -- Avoid 1/3 settle
+        if hex.ResourceType == g_RESOURCE_GYPSUM and (hex.IsFreshWater or hex.IsCoastal) then
+            self:TerraformSetTerrain(hex, g_TERRAIN_TYPE_PLAINS)
+        end
     elseif hex.TerrainType == g_TERRAIN_TYPE_DESERT_MOUNTAIN then
         self:TerraformSetTerrain(hex, g_TERRAIN_TYPE_PLAINS_MOUNTAIN)
     end
@@ -3517,6 +3521,31 @@ function SpawnBalancing:CleanSpawnTile()
             self:TerraformHex(h, 0, TerraformType[3], g_RESOURCE_NONE, false, false);
         end
     end
+
+    -- Get a valid harbor tile if coastal
+    local validHarborTile = false;
+    local fishRing2OK = 0;
+    local harborHex;
+    local waterR1 = self.RingTables[1].WATER_EMPTY;
+    print("Number of water tiles R1 = "..tostring(#waterR1))
+    if #waterR1 > 0 then
+        validHarborTile = true;
+        waterR1 = GetShuffledCopyOfTable(waterR1);
+        harborHex = waterR1[1]
+        harborHex:SetTaggedAsMinimum(true);
+        _Debug("Harbor tile already found and tagged ", harborHex:PrintXY());
+    end
+    if validHarborTile == false and #self.RingTables[1].WATER_RF > 0 then
+        _Debug("No harbor tile found, try relocate")
+        local relocatedHex = self:RelocateRandomHexToNextRing(self.RingTables[1].WATER_RF, 1, 2);
+        if relocatedHex ~= nil and relocatedHex.FeatureType == g_FEATURE_NONE and relocatedHex.ResourceType == g_RESOURCE_NONE then
+            relocatedHex:SetTaggedAsMinimum(true);
+            _Debug("Recheck harbor tile : ", relocatedHex:PrintXY());
+        else
+            _Debug("ApplyMinimalCoastalTilesERROR - Failed to garantee a harbor tile")
+        end
+        self:PlaceRelocatedHexOnRing(3);
+    end
 end
 
 function SpawnBalancing:RemoveRing1MountainsOnRiver()
@@ -3788,35 +3817,7 @@ function SpawnBalancing:ApplyMinimalCoastalTiles()
         return;
     end
     print("Coastal start "..self.Civ.CivilizationLeader)
-    -- 1) Get a valid harbor tile
-
-    local validHarborTile = false;
-    local fishRing2OK = 0;
     local resourceRing3OK = 0;
-    local harborHex;
-    local waterR1 = self.RingTables[1].WATER_EMPTY;
-    print("Number of water tiles R1 = "..tostring(#waterR1))
-    if #waterR1 > 0 then
-        validHarborTile = true;
-        waterR1 = GetShuffledCopyOfTable(waterR1);
-        harborHex = waterR1[1]
-        harborHex:SetTaggedAsMinimum(true);
-        _Debug("Harbor tile already found and tagged ", harborHex:PrintXY());
-    end
-    if validHarborTile == false and #self.RingTables[1].WATER_RF > 0 then
-        _Debug("No harbor tile found, try relocate")
-        local relocatedHex = self:RelocateRandomHexToNextRing(self.RingTables[1].WATER_RF, 1, 2);
-        self:PlaceRelocatedHexOnRing(2);
-        if relocatedHex ~= nil then
-            relocatedHex:SetTaggedAsMinimum(true);
-            _Debug("Recheck harbor tile : ", relocatedHex:PrintXY());
-        else
-            _Debug("ApplyMinimalCoastalTilesERROR - Failed to garantee a harbor tile")
-        end
-    end
-
-
-
     -- 2) Adding river
     if self.Civ.IsSaltyBias == false then
         self.HexMap:AddCoastalRiver(self.Hex)
