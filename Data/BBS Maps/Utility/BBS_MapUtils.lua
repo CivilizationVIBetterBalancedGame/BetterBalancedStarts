@@ -2009,10 +2009,8 @@ function HexMap:TerraformDesert(hex)
     --50% plain/grass
     -- leave oasis as it is (cant be terraformed correctly to lakes)
     if hex.FeatureType == g_FEATURE_OASIS then
-        _Debug("No terraform of oasis", hex:PrintXY())
-        return false;
-         -- self:TerraformSetTerrain(hex, g_TERRAIN_TYPE_COAST)
-         -- self:TerraformSetFeature(hex, g_FEATURE_NONE, true);
+        _Debug("Removed oasis", hex:PrintXY())
+         self:TerraformSetFeature(hex, g_FEATURE_NONE, true);
      elseif hex.FeatureType == g_FEATURE_FLOODPLAINS then
         local floodArea = hex:FindFloodplainArea()
         -- minimumFloodArea is 4, lower than this value, flood can safely be removed, else left as such
