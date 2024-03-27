@@ -351,12 +351,12 @@ function CivilizationAssignSpawn:GetValidSpawnsInHexList(listHex)
     local validTiles = {}
     for _, hex in pairs(listHex) do
         if hex.IsMajorSpawnable and self:ValidWalkableTiles(hex) and self:ValidTundraDensity(hex) then --pre calculation of technical spawns
-            if self.IsTundraBias == false and self.IsDesertBias == false then
+            if self.IsTundraBias == false and self.IsDesertBias == false and hex:IsNextToOasis() == false then
                 -- If Maya ignore fresh water, it will be placed last because there is too much valid tiles
                 if self.IsCoastalBias and hex.IsCoastal and hex:IsTundraLand() == false then
                     -- Fresh water is favored on score calculations
                     table.insert(validTiles, hex);
-                elseif self.IsCoastalBias == false and hex:IsNextToOasis() == false and (hex.IsFreshWater or hex.IsCoastal) and hex:IsTundraLand() == false then
+                elseif self.IsCoastalBias == false and (hex.IsFreshWater or hex.IsCoastal) and hex:IsTundraLand() == false then
                     table.insert(validTiles, hex);
                 end
             elseif self.IsTundraBias and hex:IsTundraLand() and hex.IsFreshWater then

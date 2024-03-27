@@ -308,7 +308,7 @@ function BBS_AssignStartingPlots.Create(args)
                     foundSpawn = true;
                     cs:AssignMinorCivSpawn(BBS_HexMap, testedHex)
                     cs.Player:SetStartingPlot(cs.StartingHex.Plot)
-                    print("CS "..tostring(i).." spawn = "..tostring(cs.StartingHex:PrintXY()))
+                    print("CS "..tostring(i).." - "..tostring(cs.CivilizationName).." spawn = "..tostring(cs.StartingHex:PrintXY()))
                 end
             end
             

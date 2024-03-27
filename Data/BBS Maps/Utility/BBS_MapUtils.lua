@@ -3044,7 +3044,7 @@ function HexMap:GetAnyMinorSpawnablesTiles()
     for y = 0, self.height - 1 do
         for x = 0, self.width - 1 do
             local hex = self:GetHexInMap(x, y)
-            if hex:IsWater() == false and hex:IsSnowLand() == false and hex.IsMinorSpawnable then
+            if hex:IsImpassable() == false and hex:IsSnowLand() == false and hex.IsMinorSpawnable then
                 table.insert(valid, hex)
             end
         end
