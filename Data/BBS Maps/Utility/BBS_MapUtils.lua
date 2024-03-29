@@ -3492,14 +3492,14 @@ function SpawnBalancing:CleanSpawnTile()
     if self.Civ.CivilizationLeader == "LEADER_MENELIK" then
         self.HexMap:TerraformToHill(self.Hex, true);
     end
-    -- If spawn on a resource, try relocate it on ring 1
+    -- If spawn on a resource, try relocate it on ring 3
     if self.Hex.ResourceType ~= g_RESOURCE_NONE then
         local hexData = { TerrainId = self.Hex.TerrainType,  FeatureId = self.Hex.FeatureType, ResourceId = self.Hex.ResourceType, Relocated = false}
         print("Spawned on a resource, relocating "..tostring(self.Hex.ResourceType))
-        table.insert(self.RingTables[1].RELOCATING_TILES, hexData);
+        table.insert(self.RingTables[3].RELOCATING_TILES, hexData);
         self:TerraformHex(self.Hex, 0, TerraformType[3], g_RESOURCE_NONE, false, false)
     end
-    self:PlaceRelocatedHexOnRing(1);
+    self:PlaceRelocatedHexOnRing(3);
 
     -- 4 food settle (ring 1) on fresh is forbidden
     for _, h in pairs(self.RingTables[1].HexRings) do
@@ -3563,14 +3563,21 @@ function SpawnBalancing:TerraformRing6Deserts()
     if self.Civ.IsDesertBias then
         _Debug("Desert bias check fresh water");
         -- 1-tile river will be added on coast
-        if self.Hex.IsOnRiver == false and self.Hex:IsNextToOasis() == false and self.Hex.IsCoastal == false then
+        if self.Hex:IsNextToOasis() then
+            for _, h in pairs(self.RingTables[1].DESERT) do
+                if h.FeatureType == g_FEATURE_OASIS then
+                    _Debug("Oasis is already present and tagged as guaranteed");
+                    h:SetTaggedAsMinimum(true);
+                end
+            end
+        elseif self.Hex.IsOnRiver == false and self.Hex:IsNextToOasis() == false and self.Hex.IsCoastal == false then
             _Debug("Desert bias need to add oasis");
             for _, h in pairs(self.RingTables[1].DESERT) do
                 if self:TerraformHex(h, 1, TerraformType[1], g_TERRAIN_TYPE_DESERT, true, false) then
                     self:TerraformHex(h, 1, TerraformType[2], g_FEATURE_OASIS, true, false)
                     self:TerraformHex(h, 1, TerraformType[3], g_RESOURCE_NONE, true, false)
-                    h.IsTaggedAsMinimum = true;
-                    _Debug("Added oasis at "..h:PrintXY())
+                    h:SetTaggedAsMinimum(true);
+                    _Debug("Added minimum oasis at "..h:PrintXY())
                     break;
                 end
             end
@@ -4623,7 +4630,7 @@ end
 -- @param terraformType is the "enum" type for the terraform to apply
 -- @param id is the corresponding resource/feature/terrain to apply (some terraformType do not use this)
 -- @param forced is a boolean to change the tile even if it do not meet all conditions (some terraformType do not use this)
-function SpawnBalancing: TerraformHex(hex, ring, terraformType, id, forced, boolParam)
+function SpawnBalancing:TerraformHex(hex, ring, terraformType, id, forced, boolParam)
     if hex.IsNaturalWonder == false and hex.IsTaggedAsMinimum == false and self.HexMap:TerraformHex(hex, terraformType, id, forced, boolParam) then
         self:FillTableRing(ring)
         --self:UpdateTableDataRing(hex, ring);
