@@ -177,6 +177,18 @@ function GeneratePlotTypes()
    
    local hills = 43;
    
+   local world_age = MapConfiguration.GetValue("world_age");
+	if (world_age == 1) then --new
+		hills = 43
+	elseif (world_age == 2) then --standard
+		hills = 54
+	elseif (world_age == 3) then -- old
+		hills = 58
+	else
+		hills = 43 + TerrainBuilder.GetRandomNumber(15, "Random World Age - Lua");
+	end
+   
+	
 	local lakes = 15;
 	local lake_grain = 3;
 	
