@@ -314,7 +314,7 @@ function CivilizationAssignSpawn:CalculateOrderCentroidsScore(BBS_HexMap)
     for i, centroid in pairs(BBS_HexMap.centroidsArray) do
         local centScore = self:ComputeBiasScoreCivCentroid(centroid);
         local meanPeninsulaScore = 0;
-        local validTiles = self:GetValidSpawnsInHexList(centroid.HexCluster);
+        local validTiles = self:GetValidSpawnsInHexList(BBS_HexMap, centroid.HexCluster);
         local validBiasTiles = {}
         if #validTiles > 0 then
             for _, hex in pairs(validTiles) do
@@ -347,10 +347,13 @@ function CivilizationAssignSpawn:CalculateOrderCentroidsScore(BBS_HexMap)
 end
 
 -- Main method to get valid spawns tiles depending on civ bias
-function CivilizationAssignSpawn:GetValidSpawnsInHexList(listHex)
+function CivilizationAssignSpawn:GetValidSpawnsInHexList(BBS_HexMap, listHex)
     local validTiles = {}
+    local isTerraMap = BBS_HexMap.mapScript == MapScripts.MAP_TERRA;
     for _, hex in pairs(listHex) do
-        if hex.IsMajorSpawnable and self:ValidWalkableTiles(hex) and self:ValidTundraDensity(hex) then --pre calculation of technical spawns
+        -- In Terra, major civ spawn on the biggest island
+        local terraCondition = isTerraMap == false or (isTerraMap and hex.Plot:GetArea():GetID() == BBS_HexMap.BiggestIsland:GetID())
+        if terraCondition and hex.IsMajorSpawnable and self:ValidWalkableTiles(hex) and self:ValidTundraDensity(hex) then --pre calculation of technical spawns
             if self.IsTundraBias == false and self.IsDesertBias == false and hex:IsNextToOasis() == false then
                 -- If Maya ignore fresh water, it will be placed last because there is too much valid tiles
                 if self.IsCoastalBias and hex.IsCoastal and hex:IsTundraLand() == false then

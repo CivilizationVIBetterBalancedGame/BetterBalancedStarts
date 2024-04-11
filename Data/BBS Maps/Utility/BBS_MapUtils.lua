@@ -776,6 +776,7 @@ function HexMap.new(_width, _height, mapScript)
     instance.tempMajorSpawns = {};
     instance.majorSpawns = {};
     instance.minorSpawns = {};
+    instance.BiggestIsland = Areas.FindBiggestArea(false);
     -- instance:InitSetSpawnableWater -- too close to border, non fresh or coast, peninsula score
     -- Put maps parameters here ? (world age, temperature, rainfall etc)
     return instance;
@@ -3042,6 +3043,8 @@ function HexMap:GetAnyMinorSpawnablesTiles()
     for y = 0, self.height - 1 do
         for x = 0, self.width - 1 do
             local hex = self:GetHexInMap(x, y)
+            local isTerraMap = self.mapScript == MapScripts.MAP_TERRA;
+            local terraCondition = isTerraMap == false or (isTerraMap and hex.Plot:GetArea():GetID() ~= self.BiggestIsland:GetID())
             if hex:IsImpassable() == false and hex:IsSnowLand() == false and hex.IsMinorSpawnable then
                 table.insert(valid, hex)
             end
