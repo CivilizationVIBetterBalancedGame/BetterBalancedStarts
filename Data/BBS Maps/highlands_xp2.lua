@@ -10,7 +10,7 @@ include "MapEnums"
 include "MapUtilities"
 include "BBS_MountainsCliffs"
 include "RiversLakes"
-include "FeatureGenerator"
+include "BBM_FeatureGenerator"
 include "TerrainGenerator"
 include "BBS_TerrainGenerator"
 include "BBS_NaturalWonderGenerator"
@@ -53,10 +53,10 @@ function GenerateMap()
 	if temperature == 4 then
 		temperature  =  1 + TerrainBuilder.GetRandomNumber(3, "Random Temperature- Lua");
 	end
-	
+
 	plotTypes = GeneratePlotTypes();
 	local BBS_temp = false;
-	if (GameConfiguration.GetValue("BBStemp") ~= nil) then 
+	if (GameConfiguration.GetValue("BBStemp") ~= nil) then
 		if (GameConfiguration.GetValue("BBStemp") == true) then
 			BBS_temp = true;
 			print ("BBS Temperature: On");
@@ -68,13 +68,13 @@ function GenerateMap()
 		else
 		BBS_temp = false;
 		terrainTypes = GenerateTerrainTypes(plotTypes, g_iW, g_iH, g_iFlags, false, temperature);
-	end				   
+	end
 	ApplyBaseTerrain(plotTypes, terrainTypes, g_iW, g_iH);
-	
+
 	AreaBuilder.Recalculate();
 	TerrainBuilder.AnalyzeChokepoints();
 	TerrainBuilder.StampContinents();
-	
+
 	-- Temp
 	local iContinentBoundaryPlots = GetContinentBoundaryPlotCount(g_iW, g_iH);
 	local biggest_area = Areas.FindBiggestArea(false);
@@ -82,7 +82,7 @@ function GenerateMap()
 	if (MapConfiguration.GetValue("BBSRidge") ~= 1) then
 		print("Adding Ridges");
 		AddTerrainFromContinents(plotTypes, terrainTypes, 5, g_iW, g_iH, iContinentBoundaryPlots);
-	end	
+	end
 	AreaBuilder.Recalculate();
 
 	-- River generation is affected by plot types, originating from highlands and preferring to traverse lowlands.
@@ -92,7 +92,7 @@ function GenerateMap()
 			g_riverPlots[i] = 0;
 		end
 	end
-	
+
 	-- River generation is affected by plot types, originating from highlands and preferring to traverse lowlands.
 	AddRivers();
 
@@ -102,7 +102,7 @@ function GenerateMap()
 
 	AddFeatures();
 	TerrainBuilder.AnalyzeChokepoints();
-	
+
 	print("Adding cliffs");
 	AddCliffs(plotTypes, terrainTypes);
 
@@ -113,7 +113,7 @@ function GenerateMap()
 
 	AddFeaturesFromContinents();
 	MarkCoastalLowlands();
-	
+
 --	for i = 0, (g_iW * g_iH) - 1, 1 do
 --		pPlot = Map.GetPlotByIndex(i);
 --		print ("i: plotType, terrainType, featureType: " .. tostring(i) .. ": " .. tostring(plotTypes[i]) .. ", " .. tostring(terrainTypes[i]) .. ", " .. tostring(pPlot:GetFeatureType(i)));
@@ -122,7 +122,7 @@ function GenerateMap()
 	local iContinentBoundaryPlots = GetContinentBoundaryPlotCount(g_iW, g_iH);
 
 	AreaBuilder.Recalculate();
-	
+
 	resourcesConfig = MapConfiguration.GetValue("resources");
 	local startConfig = MapConfiguration.GetValue("start");-- Get the start config
 	local args = {
@@ -134,11 +134,11 @@ function GenerateMap()
 	local resGen =  BBS_ResourceGenerator.Create(args);
 
 	print("Creating start plot database.");
-	
+
 	-- START_MIN_Y and START_MAX_Y is the percent of the map ignored for major civs' starting positions.
 	local args = {
 		MIN_MAJOR_CIV_FERTILITY = 150,
-		MIN_MINOR_CIV_FERTILITY = 50, 
+		MIN_MINOR_CIV_FERTILITY = 50,
 		MIN_BARBARIAN_FERTILITY = 1,
 		START_MIN_Y = 5,
 		START_MAX_Y = 5,
@@ -147,7 +147,7 @@ function GenerateMap()
 	local start_plot_database = BBS_Assign(args)
 
 	local GoodyGen = AddGoodies(g_iW, g_iH);
-   
+
 
 	local Balance = BBS_Script();
 end
@@ -157,11 +157,11 @@ function GeneratePlotTypes()
 	print("Generating Plot Types");
 	local plotTypes = {};
 	local plotTypes = table.fill(g_PLOT_TYPE_LAND, g_iW * g_iH);
-	
+
 	g_iW, g_iH = Map.GetGridSize();
 	g_iFlags = TerrainBuilder.GetFractalFlags();
-	
-	
+
+
 	local MapSizeTypes = {};
 	for row in GameInfo.Maps() do
 		MapSizeTypes[row.MapSizeType] = row.PlateValue;
@@ -170,41 +170,41 @@ function GeneratePlotTypes()
 	local numPlates = MapSizeTypes[sizekey] or 4;
 
 	local grain = numPlates + 1;
-	
+
 	local mountains = 75;
 	local hills = 43;
-	
+
 	local lakes = 15;
 	local lake_grain = 3;
-	
+
 	local fracFlags = {};
-	
+
 	if(invert_heights) then
 		fracFlags.FRAC_INVERT_HEIGHTS = true;
 	end
-	
+
 	if(polar) then
 		fracFlags.FRAC_POLAR = true;
 	end
-	
+
 	local terrainFrac = Fractal.Create(g_iW, g_iH, grain, fracFlags, 6, 5);
 	local lakesFrac = Fractal.Create(g_iW, g_iH, lake_grain, fracFlags, 6, 5);
 	local mountain_passFrac = Fractal.Create(g_iW, g_iH, grain, fracFlags, 6, 5);
-	
+
 	local iLakesThreshold = lakesFrac:GetHeight(100 - lakes);
 	local iHillsThreshold = terrainFrac:GetHeight(hills);
 	local iMountainsThreshold = terrainFrac:GetHeight(mountains);
 
 	local iPassThreshold = mountain_passFrac:GetHeight(85);
-	
+
 	mountain_passFrac:BuildRidges(numPlates, {}, 1, 2);
-	
+
 	for x = 0, g_iW - 1, 1 do
 		for y = 0, g_iH - 1, 1 do
 			local i = y*g_iW + x + 1;
 			local lakeVal = lakesFrac:GetHeight(x,y);
 			local val = terrainFrac:GetHeight(x,y);
-			
+
 			if lakeVal >= iLakesThreshold then
 				plotTypes[i] = g_PLOT_TYPE_OCEAN;
 			elseif val >= iMountainsThreshold then
@@ -221,9 +221,9 @@ function GeneratePlotTypes()
 			end
 		end
 	end
-	
+
 	AreaBuilder.Recalculate();
-	
+
 	return plotTypes;
 end
 
@@ -235,9 +235,9 @@ function AddFeatures()
 	if rainfall == 4 then
 		rainfall = 1 + TerrainBuilder.GetRandomNumber(3, "Random Rainfall - Lua");
 	end
-	
+
 	local args = {rainfall = rainfall}
-	featuregen = FeatureGenerator.Create(args);
+	featuregen = BBM_FeatureGenerator.Create(args);
 	featuregen:AddFeatures(true, false);  --second parameter is whether or not rivers start inland);
 end
 

@@ -187,7 +187,7 @@
 	<File>Data/BBS Maps/Utility/BBS_MountainsCliffs.lua</File>
 	<File>Data/BBS Maps/Utility/BBS_AssignStartingPlots.lua</File>
 	<File>Data/BBS Maps/Utility/DW_CoastalLowlands.lua</File>
-	<File>Data/BBS Maps/Utility/DW_FeatureGenerator.lua</File>
+	<File>Data/BBS Maps/Utility/BBM_FeatureGenerator.lua</File>
 	<File>Data/BBS Maps/Utility/DW_MapUtilities.lua</File>
 	<File>Data/BBS Maps/Utility/DW_MountainsCliffs.lua</File>
 	<File>Data/BBS Maps/Utility/DW_RiversLakes.lua</File>
@@ -370,7 +370,7 @@
 	<File>Data/BBS Maps/Utility/BBS_AssignStartingPlots.lua</File>
 	<File>Data/BBS Maps/Utility/BBS_MountainsCliffs.lua</File>
 	<File>Data/BBS Maps/Utility/DW_CoastalLowlands.lua</File>
-	<File>Data/BBS Maps/Utility/DW_FeatureGenerator.lua</File>
+	<File>Data/BBS Maps/Utility/BBM_FeatureGenerator.lua</File>
 	<File>Data/BBS Maps/Utility/DW_MapUtilities.lua</File>
 	<File>Data/BBS Maps/Utility/DW_MountainsCliffs.lua</File>
 	<File>Data/BBS Maps/Utility/DW_RiversLakes.lua</File>

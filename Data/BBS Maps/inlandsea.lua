@@ -10,7 +10,7 @@ include "MapEnums"
 include "MapUtilities"
 include "BBS_MountainsCliffs"
 include "RiversLakes"
-include "FeatureGenerator"
+include "BBM_FeatureGenerator"
 include "BBS_TerrainGenerator"
 include "TerrainGenerator"
 include "BBS_NaturalWonderGenerator"
@@ -256,7 +256,7 @@ function AddFeatures()
 	end
 	
 	local args = {rainfall = rain}
-	featuregen = FeatureGenerator.Create(args);
+	featuregen = BBM_FeatureGenerator.Create(args);
 	featuregen:AddFeatures(true, false);  --second parameter is whether or not rivers start inland);
 end
 
@@ -704,11 +704,11 @@ function AddFeatures()
 	end
 	
 	local args = {rainfall = rainfall}
-	featuregen = FeatureGenerator.Create(args);
+	featuregen = BBM_FeatureGenerator.Create(args);
 	featuregen:AddFeatures(true, false);  --second parameter is whether or not rivers start inland);
 end
 ------------------------------------------------------------------------------
-function FeatureGenerator:AddIceAtPlot(plot, iX, iY, lat)
+function BBM_FeatureGenerator:AddIceAtPlot(plot, iX, iY, lat)
 	return
 end
 ------------------------------------------------------------------------------

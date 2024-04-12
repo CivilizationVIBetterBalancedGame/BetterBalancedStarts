@@ -10,7 +10,7 @@ include "MapEnums"
 include "MapUtilities"
 include "BBS_MountainsCliffs"
 include "RiversLakes"
-include "FeatureGenerator"
+include "BBM_FeatureGenerator"
 include "TerrainGenerator"
 include "BBS_NaturalWonderGenerator"
 include "BBS_ResourceGenerator"
@@ -114,7 +114,7 @@ function GenerateMap()
 	iReefPercent = 8;
 	
 	local args = {rainfall = rainfall}
-	featuregen = FeatureGenerator.Create(args);
+	featuregen = BBM_FeatureGenerator.Create(args);
 	
 	AddFeatures();
 	

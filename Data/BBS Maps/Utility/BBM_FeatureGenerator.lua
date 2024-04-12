@@ -1,5 +1,5 @@
 ------------------------------------------------------------------------------
---	FILE:	 DW_FeatureGenerator.lua
+--	FILE:	 BBM_FeatureGenerator.lua
 --	AUTHOR:  EvilVictor (Seven05)
 --	PURPOSE: Map Utility Script
 ------------------------------------------------------------------------------
@@ -7,9 +7,9 @@
 ------------------------------------------------------------------------------
 
 ------------------------------------------------------------------------------
-DW_FeatureGenerator = {};
+BBM_FeatureGenerator = {};
 ------------------------------------------------------------------------------
-function DW_FeatureGenerator.Create(args)
+function BBM_FeatureGenerator.Create(args)
 	--
 	local args = args or {};
 	local rainfall = args.rainfall or 2; -- Default is Normal rainfall.
@@ -49,18 +49,18 @@ function DW_FeatureGenerator.Create(args)
 	local instance = {
 	
 		-- methods
-		__initFractals			= DW_FeatureGenerator.__initFractals,
-		__initFeatureTypes		= DW_FeatureGenerator.__initFeatureTypes,
-		AddFeatures				= DW_FeatureGenerator.AddFeatures,
-		AddFeaturesFromContinents = DW_FeatureGenerator.AddFeaturesFromContinents,
-		GetLatitudeAtPlot		= DW_FeatureGenerator.GetLatitudeAtPlot,
-		AddFeaturesAtPlot		= DW_FeatureGenerator.AddFeaturesAtPlot,
-		AddOasisAtPlot			= DW_FeatureGenerator.AddOasisAtPlot,
-		AddIceToMap				= DW_FeatureGenerator.AddIceToMap,
-		AddMarshAtPlot			= DW_FeatureGenerator.AddMarshAtPlot,
-		AddJunglesAtPlot		= DW_FeatureGenerator.AddJunglesAtPlot,
-		AddForestsAtPlot		= DW_FeatureGenerator.AddForestsAtPlot,
-		AddReefAtPlot			= DW_FeatureGenerator.AddReefAtPlot,
+		__initFractals			= BBM_FeatureGenerator.__initFractals,
+		__initFeatureTypes		= BBM_FeatureGenerator.__initFeatureTypes,
+		AddFeatures				= BBM_FeatureGenerator.AddFeatures,
+		AddFeaturesFromContinents = BBM_FeatureGenerator.AddFeaturesFromContinents,
+		GetLatitudeAtPlot		= BBM_FeatureGenerator.GetLatitudeAtPlot,
+		AddFeaturesAtPlot		= BBM_FeatureGenerator.AddFeaturesAtPlot,
+		AddOasisAtPlot			= BBM_FeatureGenerator.AddOasisAtPlot,
+		AddIceToMap				= BBM_FeatureGenerator.AddIceToMap,
+		AddMarshAtPlot			= BBM_FeatureGenerator.AddMarshAtPlot,
+		AddJunglesAtPlot		= BBM_FeatureGenerator.AddJunglesAtPlot,
+		AddForestsAtPlot		= BBM_FeatureGenerator.AddForestsAtPlot,
+		AddReefAtPlot			= BBM_FeatureGenerator.AddReefAtPlot,
 		
 		-- members
 		iGridW = gridWidth,
@@ -94,7 +94,7 @@ function DW_FeatureGenerator.Create(args)
 	return instance;
 end
 ------------------------------------------------------------------------------
-function DW_FeatureGenerator:AddFeatures(allow_mountains_on_coast, bRiversStartInland)
+function BBM_FeatureGenerator:AddFeatures(allow_mountains_on_coast, bRiversStartInland)
 
 	-- First let's add Floodplains
 	local iMinFloodplainSize = 4 --4;
@@ -177,7 +177,7 @@ function DW_FeatureGenerator:AddFeatures(allow_mountains_on_coast, bRiversStartI
 	print("Number of Marshes:    ", self.iMarshCount);
 end
 ------------------------------------------------------------------------------
-function DW_FeatureGenerator:AddFeaturesFromContinents()
+function BBM_FeatureGenerator:AddFeaturesFromContinents()
 
 	local aPossibleFissureIndices:table = {};
 
@@ -263,7 +263,7 @@ function DW_FeatureGenerator:AddFeaturesFromContinents()
 	print("Number of Fissures: ", self.iFissureCount)
 end
 ------------------------------------------------------------------------------
-function DW_FeatureGenerator:AddIceToMap()
+function BBM_FeatureGenerator:AddIceToMap()
 
 	local iTargetIceTiles = (self.iGridH * self.iGridW * GlobalParameters.ICE_TILES_PERCENT) / 100;
 
@@ -422,7 +422,7 @@ function DW_FeatureGenerator:AddIceToMap()
 	end
 end
 ------------------------------------------------------------------------------
-function DW_FeatureGenerator:AddMarshAtPlot(plot, iX, iY)
+function BBM_FeatureGenerator:AddMarshAtPlot(plot, iX, iY)
 	--Marsh Check. First see if it can place the feature.
 	
 	if(TerrainBuilder.CanHaveFeature(plot, g_FEATURE_MARSH)) then
@@ -484,7 +484,7 @@ function DW_FeatureGenerator:AddMarshAtPlot(plot, iX, iY)
 	return false;
 end
 ------------------------------------------------------------------------------
-function DW_FeatureGenerator:AddJunglesAtPlot(plot, iX, iY)
+function BBM_FeatureGenerator:AddJunglesAtPlot(plot, iX, iY)
 	--Jungle Check. First see if it can place the feature.
 	
 	if(TerrainBuilder.CanHaveFeature(plot, g_FEATURE_JUNGLE)) then
@@ -546,7 +546,7 @@ function DW_FeatureGenerator:AddJunglesAtPlot(plot, iX, iY)
 	return false
 end
 ------------------------------------------------------------------------------
-function DW_FeatureGenerator:AddForestsAtPlot(plot, iX, iY)
+function BBM_FeatureGenerator:AddForestsAtPlot(plot, iX, iY)
 	--Forest Check. First see if it can place the feature.
 	
 	if(TerrainBuilder.CanHaveFeature(plot, g_FEATURE_FOREST)) then
@@ -585,7 +585,7 @@ function DW_FeatureGenerator:AddForestsAtPlot(plot, iX, iY)
 	end
 end
 ------------------------------------------------------------------------------
-function DW_FeatureGenerator:AddReefAtPlot(plot, iX, iY)
+function BBM_FeatureGenerator:AddReefAtPlot(plot, iX, iY)
 	--Reef Check. First see if it can place the feature.
 	local lat = math.abs((self.iGridH/2) - iY)/(self.iGridH/2)
 	if(TerrainBuilder.CanHaveFeature(plot, g_FEATURE_REEF) and lat < self.iceLat * 0.9) then

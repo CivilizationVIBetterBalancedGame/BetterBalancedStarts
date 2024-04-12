@@ -10,7 +10,7 @@ include "MapEnums"
 include "MapUtilities"
 include "BBS_MountainsCliffs"
 include "RiversLakes"
-include "FeatureGenerator"
+include "BBM_FeatureGenerator"
 include "BBS_TerrainGenerator"
 include "TerrainGenerator"
 include "BBS_NaturalWonderGenerator"
@@ -48,7 +48,7 @@ function GenerateMap()
 	if temperature == 4 then
 		temperature  =  1 + TerrainBuilder.GetRandomNumber(3, "Random Temperature- Lua");
 	end
-	
+
 	--	local world_age
 	local world_age = MapConfiguration.GetValue("world_age");
 	if (world_age == 1) then
@@ -60,15 +60,15 @@ function GenerateMap()
 	else
 		world_age = 2 + TerrainBuilder.GetRandomNumber(4, "Random World Age - Lua");
 	end
-	
+
 	local temperature = MapConfiguration.GetValue("temperature"); -- Default setting is Temperate.
 	if temperature == 4 then
 		temperature  =  1 + TerrainBuilder.GetRandomNumber(3, "Random Temperature- Lua");
 	end
-	
+
 	plotTypes = GeneratePlotTypes(world_age);
 	local BBS_temp = false;
-	if (GameConfiguration.GetValue("BBStemp") ~= nil) then 
+	if (GameConfiguration.GetValue("BBStemp") ~= nil) then
 		if (GameConfiguration.GetValue("BBStemp") == true) then
 			BBS_temp = true;
 			print ("BBS Temperature: On");
@@ -82,7 +82,7 @@ function GenerateMap()
 		terrainTypes = GenerateTerrainTypes(plotTypes, g_iW, g_iH, g_iFlags, false, temperature, 0, 0, 6, 0.05, 0.1, -0.05, 0.0, 0.0);
 	end
 	ApplyBaseTerrain(plotTypes, terrainTypes, g_iW, g_iH);
-	
+
 	AreaBuilder.Recalculate();
 	TerrainBuilder.AnalyzeChokepoints();
 	TerrainBuilder.StampContinents();
@@ -98,14 +98,14 @@ function GenerateMap()
 
 	-- River generation is affected by plot types, originating from highlands and preferring to traverse lowlands.
 	AddRivers();
-	
+
 	-- Lakes would interfere with rivers, causing them to stop and not reach the ocean, if placed any sooner.
 	local numLargeLakes = GameInfo.Maps[Map.GetMapSize()].Continents
 	AddLakes(numLargeLakes);
 
 	AddFeatures();
 	TerrainBuilder.AnalyzeChokepoints();
-	
+
 	print("Adding cliffs");
 	AddCliffs(plotTypes, terrainTypes);
 
@@ -113,10 +113,10 @@ function GenerateMap()
 		numberToPlace = GameInfo.Maps[Map.GetMapSize()].NumNaturalWonders,
 	};
 	local nwGen = BBS_NaturalWonderGenerator.Create(args);
-	
+
 	AddFeaturesFromContinents();
 	MarkCoastalLowlands();
-	
+
 	--for i = 0, (g_iW * g_iH) - 1, 1 do
 		--pPlot = Map.GetPlotByIndex(i);
 		--print ("i: plotType, terrainType, featureType: " .. tostring(i) .. ": " .. tostring(plotTypes[i]) .. ", " .. tostring(terrainTypes[i]) .. ", " .. tostring(pPlot:GetFeatureType(i)));
@@ -131,11 +131,11 @@ function GenerateMap()
 	local resGen = BBS_ResourceGenerator.Create(args);
 
 	print("Creating start plot database.");
-	
+
 	-- START_MIN_Y and START_MAX_Y is the percent of the map ignored for major civs' starting positions.
 	local args = {
 		MIN_MAJOR_CIV_FERTILITY = 175,
-		MIN_MINOR_CIV_FERTILITY = 25, 
+		MIN_MINOR_CIV_FERTILITY = 25,
 		MIN_BARBARIAN_FERTILITY = 1,
 		START_MIN_Y = 15,
 		START_MAX_Y = 15,
@@ -151,7 +151,7 @@ end
 function GeneratePlotTypes(world_age)
 	print("Generating Plot Types");
 	local plotTypes = {};
-	
+
 	local sea_level_low = 65;
 	local sea_level_normal = 72;
 	local sea_level_high = 78;
@@ -214,12 +214,12 @@ function GeneratePlotTypes(world_age)
 	local riftsFrac = Fractal.Create(g_iW, g_iH, rift_grain, {}, 6, 5);
 	g_continentsFrac = Fractal.CreateRifts(g_iW, g_iH, continent_grain, fracFlags, riftsFrac, 6, 5);
 	g_continentsFrac:BuildRidges(numPlates, {}, 1, 2);
-	
+
 	hillsFrac = Fractal.Create(g_iW, g_iH, continent_grain, {}, 6, 5);
 	mountainsFrac = Fractal.Create(g_iW, g_iH, continent_grain, {}, 6, 5);
 	hillsFrac:BuildRidges(numPlates, g_iFlags, 1, 2);
 	mountainsFrac:BuildRidges(numPlates * 2/3, g_iFlags, 6, 1);
-	local iWaterThreshold = g_continentsFrac:GetHeight(water_percent);	
+	local iWaterThreshold = g_continentsFrac:GetHeight(water_percent);
 	local iHillsBottom1 = hillsFrac:GetHeight(hillsBottom1);
 	local iHillsTop1 = hillsFrac:GetHeight(hillsTop1);
 	local iHillsBottom2 = hillsFrac:GetHeight(hillsBottom2);
@@ -240,7 +240,7 @@ function GeneratePlotTypes(world_age)
 			local mountainVal = mountainsFrac:GetHeight(x, y);
 			local hillVal = hillsFrac:GetHeight(x, y);
 			local pPlot = Map.GetPlotByIndex(i);
-	
+
 			if(val <= iWaterThreshold) then
 				plotTypes[i] = g_PLOT_TYPE_OCEAN;
 				TerrainBuilder.SetTerrainType(pPlot, g_TERRAIN_TYPE_OCEAN);  -- temporary setting so can calculate areas
@@ -279,12 +279,12 @@ function GeneratePlotTypes(world_age)
 			end
 		end
 	end
-	
+
 	ShiftPlotTypes(plotTypes);
 	AreaBuilder.Recalculate();
 
-	-- Generate Large Islands	
-	local args = {};	
+	-- Generate Large Islands
+	local args = {};
 	islands = plotTypes;
 	args.iWaterPercent = 68 + water_percent_modifier;
 	args.iRegionWidth = math.ceil(g_iW);
@@ -297,9 +297,9 @@ function GeneratePlotTypes(world_age)
 	args.iRegionFracXExp = 6;
 	args.iRegionFracYExp = 5;
 	plotTypes = GenerateFractalLayerWithoutHills(args, plotTypes);
-	
-	-- Generate Medium Islands	
-	local args = {};	
+
+	-- Generate Medium Islands
+	local args = {};
 	islands = plotTypes;
 	args.iWaterPercent = 77 + water_percent_modifier;
 	args.iRegionWidth = math.ceil(g_iW);
@@ -314,7 +314,7 @@ function GeneratePlotTypes(world_age)
     plotTypes = GenerateFractalLayerWithoutHills(args, plotTypes);
 
 	-- Generate Small Islands
-	local args = {};	
+	local args = {};
 	islands = plotTypes;
 	args.iWaterPercent = 86 + water_percent_modifier;
 	args.iRegionWidth = math.ceil(g_iW);
@@ -329,7 +329,7 @@ function GeneratePlotTypes(world_age)
     plotTypes = GenerateFractalLayerWithoutHills(args, plotTypes);
 
 	-- Generate Tiny Islands
-	local args = {};	
+	local args = {};
 	islands = plotTypes;
 	args.iWaterPercent = 95+ water_percent_modifier;
 	args.iRegionWidth = math.ceil(g_iW);
@@ -375,9 +375,9 @@ function AddFeatures()
 	if rainfall == 4 then
 		rainfall = 1 + TerrainBuilder.GetRandomNumber(3, "Random Rainfall - Lua");
 	end
-	
+
 	local args = {rainfall = rainfall, iMarshPercent = 9, iJunglePercent = 60, iIcePercent = -5}
-	featuregen = FeatureGenerator.Create(args);
+	featuregen = BBM_FeatureGenerator.Create(args);
 	featuregen:AddFeatures(true, true);  --second parameter is whether or not rivers start inland);
 end
 

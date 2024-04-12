@@ -10,7 +10,7 @@ include "MapEnums"
 include "DW_MapUtilities"
 include "DW_MountainsCliffs"
 include "DW_RiversLakes"
-include "DW_FeatureGenerator"
+include "BBM_FeatureGenerator"
 include "DW_TerrainGenerator"
 include "BBS_NaturalWonderGenerator"
 include "BBS_ResourceGenerator"
@@ -606,7 +606,7 @@ function AddFeatures()
 	args.iOasisPercent = 1;
 	args.iReefPercent = 8;
 	
-	featuregen = DW_FeatureGenerator.Create(args);
+	featuregen = BBM_FeatureGenerator.Create(args);
 	featuregen:AddFeatures(true, true);
 end
 

@@ -10,7 +10,7 @@ include "MapEnums"
 include "MapUtilities"
 include "BBS_MountainsCliffs"
 include "RiversLakes"
-include "FeatureGenerator"
+include "BBM_FeatureGenerator"
 include "BBS_TerrainGenerator"
 include "TerrainGenerator"
 include "BBS_NaturalWonderGenerator"
@@ -145,7 +145,7 @@ function AddFeatures()
 	print("Adding Features");
 	
 	local args = {rainfall = 4}
-	featuregen = FeatureGenerator.Create(args);
+	featuregen = BBM_FeatureGenerator.Create(args);
 	featuregen:AddFeatures(true, true);  --second parameter is whether or not rivers start inland);
 end
 
