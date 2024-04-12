@@ -36,7 +36,7 @@ function DW_FeatureGenerator.Create(args)
 	local iMarshPercent = args.iMarshPercent or 3;
 	local iOasisPercent = args.iOasisPercent or 1;
 	local iReefPercent = args.iReefPercent or 8;
-
+	local maxFloodplainSize = MapConfiguration.GetValue("BBMMaxFloodplainsSize") or 8;
 	iJunglePercent = iJunglePercent + (rainfall * 2);
 	iForestPercent = iForestPercent + rainfall;
 	iMarshPercent = iMarshPercent + rainfall / 2;
@@ -71,7 +71,7 @@ function DW_FeatureGenerator.Create(args)
 		iMarshMaxPercent = iMarshPercent,
 		iOasisMaxPercent = iOasisPercent,
 		iReefMaxPercent = iReefPercent,
-
+		iMaxFloodplainSize = maxFloodplainSize,
 		iForestCount = 0,
 		iJungleCount = 0,
 		iMarshCount = 0,
@@ -98,8 +98,7 @@ function DW_FeatureGenerator:AddFeatures(allow_mountains_on_coast, bRiversStartI
 
 	-- First let's add Floodplains
 	local iMinFloodplainSize = 4 --4;
-	local iMaxFloodplainSize = 10 --10;
-	TerrainBuilder.GenerateFloodplains(bRiversStartInland, iMinFloodplainSize, iMaxFloodplainSize);
+	TerrainBuilder.GenerateFloodplains(bRiversStartInland, iMinFloodplainSize, self.iMaxFloodplainSize);
 
 	local flag = allow_mountains_on_coast or true;
 

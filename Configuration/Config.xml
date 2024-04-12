@@ -13,6 +13,10 @@
 		<Row ParameterId="Resources" Name="LOC_MAP_RESOURCES_NAME" Description="LOC_MAP_RESOURCES_DESCRIPTION" Domain="Resources" DefaultValue="2" ConfigurationGroup="Map" ConfigurationId="resources" GroupId="MapOptions" Hash="0" SupportsSinglePlayer="0" SortIndex="225"/>
 		<Row ParameterId="BBS_RIDGES" Name="LOC_GAME_BBS_RIDGE_NAME" Description="LOC_GAME_BBS_RIDGE_DESC" Domain="RidgeDomain" DefaultValue="0" ConfigurationGroup="Map" ConfigurationId="BBSRidge" GroupId="MapOptions" SortIndex="231" />
 		<Row ParameterId="BBS_SRESOURCES" Name="LOC_GAME_BBS_SRESOURCES_NAME" Description="LOC_GAME_BBS_SRESOURCES_DESC" Domain="StratResDomain" DefaultValue="0" ConfigurationGroup="Map" ConfigurationId="BBSStratRes" GroupId="MapOptions" SupportsSinglePlayer="1" SortIndex="226" />
+
+		<Row ParameterId="BBM_MaxFloodplainsSize" Name="LOC_BBM_MAXFLOODPLAINS_SIZE" Description="LOC_BBM_MAXFLOODPLAINS_SIZE_DESCRIPTION" Domain="BBMMaxFloodplainsSizeRange" DefaultValue="8" ConfigurationGroup="Map" ConfigurationId="BBMMaxFloodplainsSize" Hash="0" GroupId="MapOptions" SortIndex="232"/>
+
+
       <Row ParameterId="BBS_MIN_DISTANCE" Name="LOC_GAME_BBS_MIN_DISTANCE_NAME" Description="LOC_GAME_BBS_MIN_DISTANCE_DESC" Domain="MinDistance" DefaultValue="0" ConfigurationGroup="Map" ConfigurationId="BBSMinDistance" GroupId="MapOptions" SupportsSinglePlayer="1" SortIndex="234" />
       <Row ParameterId="BBS_MIN_ATTEMPTS" Name="LOC_GAME_BBS_MIN_ATTEMPTS_NAME" Description="LOC_GAME_BBS_MIN_ATTEMPTS_NAME" Domain="MinAttempts" DefaultValue="6" ConfigurationGroup="Map" ConfigurationId="BBSMinAttempts" GroupId="MapOptions" SupportsSinglePlayer="1" SortIndex="235" />
 		<!--<Row ParameterId="BBS_Team_Spawn" Name="LOC_BBS_Team_Spawn_NAME" Description="LOC_BBS_Team_Spawn_DESC" Domain="TeamersDomain" DefaultValue="0" ConfigurationGroup="Map" ConfigurationId="BBS_Team_Spawn" GroupId="MapOptions" Visible="1" SupportsSinglePlayer="0" SortIndex="233"/>-->
@@ -245,8 +249,17 @@
 		<Row Domain="StratResDomain" Value="1" Name="BBS_SRESOURCES_MORE_NAME" Description="BBS_SRESOURCES_MORE_DESC" SortIndex="20"/>
 		<Row Domain="StratResDomain" Value="2" Name="BBS_SRESOURCES_MUCHMORE_NAME" Description="BBS_SRESOURCES_MUCHMORE_DESC" SortIndex="30"/>
 		<!--<Row Domain="StratResDomain" Value="3" Name="BBS_SRESOURCES_GARANTEED_NAME" Description="BBS_SRESOURCES_GARANTEED_DESC" SortIndex="40"/>-->
-      
-      
+
+		<Row Domain="BBMMaxFloodplainsSizeRange" Value="4" Name="4" Description="LOC_BBM_MAXFLOODPLAINS_SIZE_4_DESCRIPTION" SortIndex="10"/>
+		<Row Domain="BBMMaxFloodplainsSizeRange" Value="5" Name="5" Description="LOC_BBM_MAXFLOODPLAINS_SIZE_5_DESCRIPTION" SortIndex="20"/>
+		<Row Domain="BBMMaxFloodplainsSizeRange" Value="6" Name="6" Description="LOC_BBM_MAXFLOODPLAINS_SIZE_6_DESCRIPTION" SortIndex="30"/>
+		<Row Domain="BBMMaxFloodplainsSizeRange" Value="7" Name="7" Description="LOC_BBM_MAXFLOODPLAINS_SIZE_7_DESCRIPTION" SortIndex="40"/>
+		<Row Domain="BBMMaxFloodplainsSizeRange" Value="8" Name="8" Description="LOC_BBM_MAXFLOODPLAINS_SIZE_8_DESCRIPTION" SortIndex="50"/>
+		<Row Domain="BBMMaxFloodplainsSizeRange" Value="9" Name="9" Description="LOC_BBM_MAXFLOODPLAINS_SIZE_9_DESCRIPTION" SortIndex="60"/>
+		<Row Domain="BBMMaxFloodplainsSizeRange" Value="10" Name="10" Description="LOC_BBM_MAXFLOODPLAINS_SIZE_10_DESCRIPTION" SortIndex="70"/>
+		<Row Domain="BBMMaxFloodplainsSizeRange" Value="11" Name="11" Description="LOC_BBM_MAXFLOODPLAINS_SIZE_11_DESCRIPTION" SortIndex="80"/>
+		<Row Domain="BBMMaxFloodplainsSizeRange" Value="12" Name="12" Description="LOC_BBM_MAXFLOODPLAINS_SIZE_12_DESCRIPTION" SortIndex="90"/>
+
       <Row Domain="MinAttempts" Value="1" Name="BBS_MIN_ATTEMPTS_ONE_NAME" Description="BBS_MIN_ATTEMPTS_ONE_DESC" SortIndex="10"/>
       <Row Domain="MinAttempts" Value="2" Name="BBS_MIN_ATTEMPTS_TWO_NAME" Description="BBS_MIN_ATTEMPTS_TWO_DESC" SortIndex="20"/>
       <Row Domain="MinAttempts" Value="3" Name="BBS_MIN_ATTEMPTS_THREE_NAME" Description="BBS_MIN_ATTEMPTS_THREE_DESC" SortIndex="30"/>

@@ -284,7 +284,6 @@ function BBS_AssignStartingPlots.Create(args)
         print("Start BalanceMap",  os.date("%c"))
         BalanceMap(BBS_HexMap);
 
-
         print("Start InitSpawnBalancing",  os.date("%c"))
         local allSpawnBalancing = {}
         for _, civ in pairs(BBS_Civilisations) do
