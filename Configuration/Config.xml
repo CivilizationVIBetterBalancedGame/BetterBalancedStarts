@@ -11,15 +11,15 @@
 		<Row ParameterId="Debug_No_Balancing" Name="DEBUG_NAME" Description="DEBUG_DESC" Domain="bool" DefaultValue="0" ConfigurationGroup="Game" ConfigurationId="DEBUG_BALANCING" GroupId="AdvancedOptions" Visible="0" Hash="0" SortIndex="2900" />
 		<Row ParameterId="Resources" Name="LOC_MAP_RESOURCES_NAME" Description="LOC_MAP_RESOURCES_DESCRIPTION" Domain="Resources" DefaultValue="2" ConfigurationGroup="Map" ConfigurationId="resources" GroupId="MapOptions" Hash="0" SupportsLANMultiplayer="0" SupportsInternetMultiplayer="0" SupportsHotSeat="0" SortIndex="225"/>
 		<Row ParameterId="Resources" Name="LOC_MAP_RESOURCES_NAME" Description="LOC_MAP_RESOURCES_DESCRIPTION" Domain="Resources" DefaultValue="2" ConfigurationGroup="Map" ConfigurationId="resources" GroupId="MapOptions" Hash="0" SupportsSinglePlayer="0" SortIndex="225"/>
+		
 		<Row ParameterId="BBS_RIDGES" Name="LOC_GAME_BBS_RIDGE_NAME" Description="LOC_GAME_BBS_RIDGE_DESC" Domain="RidgeDomain" DefaultValue="0" ConfigurationGroup="Map" ConfigurationId="BBSRidge" GroupId="MapOptions" SortIndex="231" />
 		<Row ParameterId="BBS_SRESOURCES" Name="LOC_GAME_BBS_SRESOURCES_NAME" Description="LOC_GAME_BBS_SRESOURCES_DESC" Domain="StratResDomain" DefaultValue="0" ConfigurationGroup="Map" ConfigurationId="BBSStratRes" GroupId="MapOptions" SupportsSinglePlayer="1" SortIndex="226" />
-
+		
 		<Row ParameterId="BBM_MaxFloodplainsSize" Name="LOC_BBM_MAXFLOODPLAINS_SIZE" Description="LOC_BBM_MAXFLOODPLAINS_SIZE_DESCRIPTION" Domain="BBMMaxFloodplainsSizeRange" DefaultValue="8" ConfigurationGroup="Map" ConfigurationId="BBMMaxFloodplainsSize" Hash="0" GroupId="MapOptions" SortIndex="232"/>
-
-
-      <Row ParameterId="BBS_MIN_DISTANCE" Name="LOC_GAME_BBS_MIN_DISTANCE_NAME" Description="LOC_GAME_BBS_MIN_DISTANCE_DESC" Domain="MinDistance" DefaultValue="0" ConfigurationGroup="Map" ConfigurationId="BBSMinDistance" GroupId="MapOptions" SupportsSinglePlayer="1" SortIndex="234" />
-      <Row ParameterId="BBS_MIN_ATTEMPTS" Name="LOC_GAME_BBS_MIN_ATTEMPTS_NAME" Description="LOC_GAME_BBS_MIN_ATTEMPTS_NAME" Domain="MinAttempts" DefaultValue="6" ConfigurationGroup="Map" ConfigurationId="BBSMinAttempts" GroupId="MapOptions" SupportsSinglePlayer="1" SortIndex="235" />
-		<!--<Row ParameterId="BBS_Team_Spawn" Name="LOC_BBS_Team_Spawn_NAME" Description="LOC_BBS_Team_Spawn_DESC" Domain="TeamersDomain" DefaultValue="0" ConfigurationGroup="Map" ConfigurationId="BBS_Team_Spawn" GroupId="MapOptions" Visible="1" SupportsSinglePlayer="0" SortIndex="233"/>-->
+    	
+		<!--<Row ParameterId="BBS_MIN_DISTANCE" Name="LOC_GAME_BBS_MIN_DISTANCE_NAME" Description="LOC_GAME_BBS_MIN_DISTANCE_DESC" Domain="MinDistance" DefaultValue="0" ConfigurationGroup="Map" ConfigurationId="BBSMinDistance" GroupId="MapOptions" SupportsSinglePlayer="1" SortIndex="234" />-->
+    	<Row ParameterId="BBM_MIN_ATTEMPTS" Name="LOC_GAME_BBM_MIN_ATTEMPTS_NAME" Description="LOC_GAME_BBM_MIN_ATTEMPTS_NAME" Domain="BBMMinAttempts" DefaultValue="5" ConfigurationGroup="Map" ConfigurationId="BBMMinAttempts" GroupId="MapOptions" SupportsSinglePlayer="1" SortIndex="235" />
+		
 		<Row ParameterId="BBS_NATURAL" Name="LOC_GAME_BBS_NATURAL_NAME" Description="LOC_GAME_BBS_NATURAL_DESC" Domain="NaturalDomain" DefaultValue="1" ConfigurationGroup="Map" ConfigurationId="BBSNatural" GroupId="MapOptions" SortIndex="229" />
 		<!--  Mutually Exclusive -->
 		<Row ParameterId="MapSize" Name="LOC_MAP_SIZE" Description="" Domain="StandardMapSizes" DefaultValue="MAPSIZE_SMALL" ConfigurationGroup="Map" ConfigurationId="MAP_SIZE" Hash="1" ChangeableAfterPlayByCloudMatchCreate="0" SupportsSinglePlayer="0" SupportsLANMultiplayer="0" SupportsInternetMultiplayer="0" SupportsHotSeat="0"  SupportsPlayByCloud="1" GroupId="MapOptions" SortIndex="220"/>
@@ -150,90 +150,6 @@
 
 		<Row Key1="Map" Key2="EarthStandard_XP2.lua" ParameterId="EarthStandard_XP2MapName" 		Name="MapName" Description="" Domain="text" DefaultValue="EarthStandard_XP2" 		ConfigurationGroup="Map" ConfigurationId="MapName" GroupId="MapOptions" Visible="0" SortIndex="2010"/>
 		<Row Key1="Map" Key2="TSLEarthStandard_XP2.lua" ParameterId="TSLEarthStandard_XP2MapName" 		Name="MapName" Description="" Domain="text" DefaultValue="TSLEarthStandard_XP2" 		ConfigurationGroup="Map" ConfigurationId="MapName" GroupId="MapOptions" Visible="0" SortIndex="2010"/>
-		<!--  Extra Maps -->
-		<Row Key1="Map" Key2="PerfectWorld6.lua" ParameterId="PerfectWorld6MapName" 		Name="MapName" Description="" Domain="text" DefaultValue="PerfectWorld6" 		ConfigurationGroup="Map" ConfigurationId="MapName" GroupId="MapOptions" Visible="0" SortIndex="2010"/>
-		<Row Key1="Map" Key2="PerfectWorld6.lua" ParameterId="SpawnRecalculation" Name="LOC_GAME_SPAWN_RECALCULATION" Description="LOC_GAME_SPAWN_RECALCULATION_DESC" Domain="bool" DefaultValue="1" ConfigurationGroup="Game" ConfigurationId="SpawnRecalculation" GroupId="BBSOptions" SortIndex="2050"/>
-		<Row Key1="Map" Key2="PerfectWorld6.lua" ParameterId="OldWorldStart" Name="Old World Start" Description="Decide whether civs should start only in the 'old world' or everywhere." Domain="OldWorldStart" DefaultValue="OLD_WORLD" ConfigurationGroup="Map" ConfigurationId="oldworld" GroupId="MapOptions" Hash="0" SortIndex="230"/>
-		<Row Key1="Map" Key2="PerfectWorld6.lua" ParameterId="Resources" Name="LOC_MAP_RESOURCES_NAME" Description="LOC_MAP_RESOURCES_DESCRIPTION" Domain="Resources" DefaultValue="2" ConfigurationGroup="Map" ConfigurationId="resources" GroupId="MapOptions" Hash="0" SortIndex="270"/>
-		<Row Key1="Map" Key2="PerfectWorld6.lua" ParameterId="StartPosition" Name="LOC_MAP_START_POSITION_NAME" Description="LOC_MAP_START_POSITION_DESCRIPTION" Domain="StartPosition" DefaultValue="2" ConfigurationGroup="Map" ConfigurationId="start" GroupId="MapOptions" Hash="0" SortIndex="280"/>
-		
-		<Row Key1="Map" Key2="DWArchipelago.lua" ParameterId="DWArchipelagoMapName" 		Name="MapName" Description="" Domain="text" DefaultValue="Archipelago+" 		ConfigurationGroup="Map" ConfigurationId="MapName" GroupId="MapOptions" Visible="0" SortIndex="2010"/>
-		<Row Key1="Map" Key2="DWArchipelago.lua" ParameterId="SpawnRecalculation" Name="LOC_GAME_SPAWN_RECALCULATION" Description="LOC_GAME_SPAWN_RECALCULATION_DESC" Domain="bool" DefaultValue="1" ConfigurationGroup="Game" ConfigurationId="SpawnRecalculation" GroupId="BBSOptions" SortIndex="2050"/>
-		<Row Key1="Map" Key2="DWArchipelago.lua" ParameterId="WorldAge" Name="LOC_MAP_WORLD_AGE_NAME" Description="LOC_MAP_WORLD_AGE_DESCRIPTION" Domain="WorldAge" DefaultValue="2" ConfigurationGroup="Map" ConfigurationId="world_age" GroupId="MapOptions" Hash="0" SortIndex="230"/>
-		<Row Key1="Map" Key2="DWArchipelago.lua" ParameterId="Temperature" Name="LOC_MAP_TEMPERATURE_NAME" Description="LOC_MAP_TEMPERATURE_DESCRIPTION" Domain="Temperature" DefaultValue="2" ConfigurationGroup="Map" ConfigurationId="temperature" GroupId="MapOptions" Hash="0" SortIndex="240"/>
-		<Row Key1="Map" Key2="DWArchipelago.lua" ParameterId="Rainfall" Name="LOC_MAP_RAINFALL_NAME" Description="LOC_MAP_RAINFALL_DESCRIPTION" Domain="Rainfall" DefaultValue="2" ConfigurationGroup="Map" ConfigurationId="rainfall" GroupId="MapOptions" Hash="0" SortIndex="250"/>
-		<Row Key1="Map" Key2="DWArchipelago.lua" ParameterId="SeaLevel" Name="LOC_MAP_SEA_LEVEL_NAME" Description="LOC_MAP_SEA_LEVEL_LOW_DESCRIPTION" Domain="SeaLevel" DefaultValue="2" ConfigurationGroup="Map" ConfigurationId="sea_level" GroupId="MapOptions" Hash="0" SortIndex="260"/>
-		<Row Key1="Map" Key2="DWArchipelago.lua" ParameterId="Resources" Name="LOC_MAP_RESOURCES_NAME" Description="LOC_MAP_RESOURCES_DESCRIPTION" Domain="Resources" DefaultValue="2" ConfigurationGroup="Map" ConfigurationId="resources" GroupId="MapOptions" Hash="0" SortIndex="270"/>
-		<Row Key1="Map" Key2="DWArchipelago.lua" ParameterId="StartPosition" Name="LOC_MAP_START_POSITION_NAME" Description="LOC_MAP_START_POSITION_DESCRIPTION" Domain="StartPosition" DefaultValue="2" ConfigurationGroup="Map" ConfigurationId="start" GroupId="MapOptions" Hash="0" SortIndex="280"/>
-		<Row Key1="Map" Key2="DWArchipelago.lua" ParameterId="AutoRemap" Name="LOC_GAME_SPAWN_REMAP" Description="LOC_GAME_SPAWN_REMAP_DESC" Domain="bool" DefaultValue="0" ConfigurationGroup="Game" ConfigurationId="AutoRemap" GroupId="AdvancedOptions" Visible="0" SortIndex="2051"/>
-
-
-		<Row Key1="Map" Key2="DWContinents.lua" ParameterId="DWContinentsMapName" 		Name="MapName" Description="" Domain="text" DefaultValue="Continents+" 		ConfigurationGroup="Map" ConfigurationId="MapName" GroupId="MapOptions" Visible="0" SortIndex="2010"/>
-		<Row Key1="Map" Key2="DWContinents.lua" ParameterId="SpawnRecalculation" Name="LOC_GAME_SPAWN_RECALCULATION" Description="LOC_GAME_SPAWN_RECALCULATION_DESC" Domain="bool" DefaultValue="1" ConfigurationGroup="Game" ConfigurationId="SpawnRecalculation" GroupId="BBSOptions" SortIndex="2050"/>
-		<Row Key1="Map" Key2="DWContinents.lua" ParameterId="WorldAge" Name="LOC_MAP_WORLD_AGE_NAME" Description="LOC_MAP_WORLD_AGE_DESCRIPTION" Domain="WorldAge" DefaultValue="2" ConfigurationGroup="Map" ConfigurationId="world_age" GroupId="MapOptions" Hash="0" SortIndex="230"/>
-		<Row Key1="Map" Key2="DWContinents.lua" ParameterId="Temperature" Name="LOC_MAP_TEMPERATURE_NAME" Description="LOC_MAP_TEMPERATURE_DESCRIPTION" Domain="Temperature" DefaultValue="2" ConfigurationGroup="Map" ConfigurationId="temperature" GroupId="MapOptions" Hash="0" SortIndex="240"/>
-		<Row Key1="Map" Key2="DWContinents.lua" ParameterId="Rainfall" Name="LOC_MAP_RAINFALL_NAME" Description="LOC_MAP_RAINFALL_DESCRIPTION" Domain="Rainfall" DefaultValue="2" ConfigurationGroup="Map" ConfigurationId="rainfall" GroupId="MapOptions" Hash="0" SortIndex="250"/>
-		<Row Key1="Map" Key2="DWContinents.lua" ParameterId="SeaLevel" Name="LOC_MAP_SEA_LEVEL_NAME" Description="LOC_MAP_SEA_LEVEL_LOW_DESCRIPTION" Domain="SeaLevel" DefaultValue="2" ConfigurationGroup="Map" ConfigurationId="sea_level" GroupId="MapOptions" Hash="0" SortIndex="260"/>
-		<Row Key1="Map" Key2="DWContinents.lua" ParameterId="Resources" Name="LOC_MAP_RESOURCES_NAME" Description="LOC_MAP_RESOURCES_DESCRIPTION" Domain="Resources" DefaultValue="2" ConfigurationGroup="Map" ConfigurationId="resources" GroupId="MapOptions" Hash="0" SortIndex="270"/>
-		<Row Key1="Map" Key2="DWContinents.lua" ParameterId="StartPosition" Name="LOC_MAP_START_POSITION_NAME" Description="LOC_MAP_START_POSITION_DESCRIPTION" Domain="StartPosition" DefaultValue="2" ConfigurationGroup="Map" ConfigurationId="start" GroupId="MapOptions" Hash="0" SortIndex="280"/>
-		<Row Key1="Map" Key2="DWContinents.lua" ParameterId="AutoRemap" Name="LOC_GAME_SPAWN_REMAP" Description="LOC_GAME_SPAWN_REMAP_DESC" Domain="bool" DefaultValue="0" ConfigurationGroup="Game" ConfigurationId="AutoRemap" GroupId="AdvancedOptions" Visible="0" SortIndex="2051"/>
-
-
-		<Row Key1="Map" Key2="DWFractal.lua" ParameterId="DWFractalMapName" 		Name="MapName" Description="" Domain="text" DefaultValue="Fractal+" 		ConfigurationGroup="Map" ConfigurationId="MapName" GroupId="MapOptions" Visible="0" SortIndex="2010"/>
-		<Row Key1="Map" Key2="DWFractal.lua" ParameterId="SpawnRecalculation" Name="LOC_GAME_SPAWN_RECALCULATION" Description="LOC_GAME_SPAWN_RECALCULATION_DESC" Domain="bool" DefaultValue="1" ConfigurationGroup="Game" ConfigurationId="SpawnRecalculation" GroupId="BBSOptions" SortIndex="2050"/>
-		<Row Key1="Map" Key2="DWFractal.lua" ParameterId="WorldAge" Name="LOC_MAP_WORLD_AGE_NAME" Description="LOC_MAP_WORLD_AGE_DESCRIPTION" Domain="WorldAge" DefaultValue="2" ConfigurationGroup="Map" ConfigurationId="world_age" GroupId="MapOptions" Hash="0" SortIndex="230"/>
-		<Row Key1="Map" Key2="DWFractal.lua" ParameterId="Temperature" Name="LOC_MAP_TEMPERATURE_NAME" Description="LOC_MAP_TEMPERATURE_DESCRIPTION" Domain="Temperature" DefaultValue="2" ConfigurationGroup="Map" ConfigurationId="temperature" GroupId="MapOptions" Hash="0" SortIndex="240"/>
-		<Row Key1="Map" Key2="DWFractal.lua" ParameterId="Rainfall" Name="LOC_MAP_RAINFALL_NAME" Description="LOC_MAP_RAINFALL_DESCRIPTION" Domain="Rainfall" DefaultValue="2" ConfigurationGroup="Map" ConfigurationId="rainfall" GroupId="MapOptions" Hash="0" SortIndex="250"/>
-		<Row Key1="Map" Key2="DWFractal.lua" ParameterId="SeaLevel" Name="LOC_MAP_SEA_LEVEL_NAME" Description="LOC_MAP_SEA_LEVEL_LOW_DESCRIPTION" Domain="SeaLevel" DefaultValue="2" ConfigurationGroup="Map" ConfigurationId="sea_level" GroupId="MapOptions" Hash="0" SortIndex="260"/>
-		<Row Key1="Map" Key2="DWFractal.lua" ParameterId="Resources" Name="LOC_MAP_RESOURCES_NAME" Description="LOC_MAP_RESOURCES_DESCRIPTION" Domain="Resources" DefaultValue="2" ConfigurationGroup="Map" ConfigurationId="resources" GroupId="MapOptions" Hash="0" SortIndex="270"/>
-		<Row Key1="Map" Key2="DWFractal.lua" ParameterId="StartPosition" Name="LOC_MAP_START_POSITION_NAME" Description="LOC_MAP_START_POSITION_DESCRIPTION" Domain="StartPosition" DefaultValue="2" ConfigurationGroup="Map" ConfigurationId="start" GroupId="MapOptions" Hash="0" SortIndex="280"/>
-		<Row Key1="Map" Key2="DWFractal.lua" ParameterId="AutoRemap" Name="LOC_GAME_SPAWN_REMAP" Description="LOC_GAME_SPAWN_REMAP_DESC" Domain="bool" DefaultValue="0" ConfigurationGroup="Game" ConfigurationId="AutoRemap" GroupId="AdvancedOptions" Visible="0" SortIndex="2051"/>
-
-
-		<Row Key1="Map" Key2="DWPangaea.lua" ParameterId="DWContinentsMapName" 		Name="MapName" Description="" Domain="text" DefaultValue="Pangaea+" 		ConfigurationGroup="Map" ConfigurationId="MapName" GroupId="MapOptions" Visible="0" SortIndex="2010"/>
-		<Row Key1="Map" Key2="DWPangaea.lua" ParameterId="SpawnRecalculation" Name="LOC_GAME_SPAWN_RECALCULATION" Description="LOC_GAME_SPAWN_RECALCULATION_DESC" Domain="bool" DefaultValue="1" ConfigurationGroup="Game" ConfigurationId="SpawnRecalculation" GroupId="BBSOptions" SortIndex="2050"/>
-		<Row Key1="Map" Key2="DWPangaea.lua" ParameterId="WorldAge" Name="LOC_MAP_WORLD_AGE_NAME" Description="LOC_MAP_WORLD_AGE_DESCRIPTION" Domain="WorldAge" DefaultValue="2" ConfigurationGroup="Map" ConfigurationId="world_age" GroupId="MapOptions" Hash="0" SortIndex="230"/>
-		<Row Key1="Map" Key2="DWPangaea.lua" ParameterId="Temperature" Name="LOC_MAP_TEMPERATURE_NAME" Description="LOC_MAP_TEMPERATURE_DESCRIPTION" Domain="Temperature" DefaultValue="2" ConfigurationGroup="Map" ConfigurationId="temperature" GroupId="MapOptions" Hash="0" SortIndex="240"/>
-		<Row Key1="Map" Key2="DWPangaea.lua" ParameterId="Rainfall" Name="LOC_MAP_RAINFALL_NAME" Description="LOC_MAP_RAINFALL_DESCRIPTION" Domain="Rainfall" DefaultValue="2" ConfigurationGroup="Map" ConfigurationId="rainfall" GroupId="MapOptions" Hash="0" SortIndex="250"/>
-		<Row Key1="Map" Key2="DWPangaea.lua" ParameterId="SeaLevel" Name="LOC_MAP_SEA_LEVEL_NAME" Description="LOC_MAP_SEA_LEVEL_LOW_DESCRIPTION" Domain="SeaLevel" DefaultValue="2" ConfigurationGroup="Map" ConfigurationId="sea_level" GroupId="MapOptions" Hash="0" SortIndex="260"/>
-		<Row Key1="Map" Key2="DWPangaea.lua" ParameterId="Resources" Name="LOC_MAP_RESOURCES_NAME" Description="LOC_MAP_RESOURCES_DESCRIPTION" Domain="Resources" DefaultValue="2" ConfigurationGroup="Map" ConfigurationId="resources" GroupId="MapOptions" Hash="0" SortIndex="270"/>
-		<Row Key1="Map" Key2="DWPangaea.lua" ParameterId="StartPosition" Name="LOC_MAP_START_POSITION_NAME" Description="LOC_MAP_START_POSITION_DESCRIPTION" Domain="StartPosition" DefaultValue="2" ConfigurationGroup="Map" ConfigurationId="start" GroupId="MapOptions" Hash="0" SortIndex="280"/>
-		<Row Key1="Map" Key2="DWPangaea.lua" ParameterId="AutoRemap" Name="LOC_GAME_SPAWN_REMAP" Description="LOC_GAME_SPAWN_REMAP_DESC" Domain="bool" DefaultValue="0" ConfigurationGroup="Game" ConfigurationId="AutoRemap" GroupId="AdvancedOptions" Visible="0" SortIndex="2051"/>
-
-
-		<Row Key1="Map" Key2="DWSmallContinents.lua" ParameterId="DWSmallContinentsMapName" 		Name="MapName" Description="" Domain="text" DefaultValue="SmallContinents+" 		ConfigurationGroup="Map" ConfigurationId="MapName" GroupId="MapOptions" Visible="0" SortIndex="2010"/>
-		<Row Key1="Map" Key2="DWSmallContinents.lua" ParameterId="SpawnRecalculation" Name="LOC_GAME_SPAWN_RECALCULATION" Description="LOC_GAME_SPAWN_RECALCULATION_DESC" Domain="bool" DefaultValue="1" ConfigurationGroup="Game" ConfigurationId="SpawnRecalculation" GroupId="BBSOptions" SortIndex="2050"/>
-		<Row Key1="Map" Key2="DWSmallContinents.lua" ParameterId="WorldAge" Name="LOC_MAP_WORLD_AGE_NAME" Description="LOC_MAP_WORLD_AGE_DESCRIPTION" Domain="WorldAge" DefaultValue="2" ConfigurationGroup="Map" ConfigurationId="world_age" GroupId="MapOptions" Hash="0" SortIndex="230"/>
-		<Row Key1="Map" Key2="DWSmallContinents.lua" ParameterId="Temperature" Name="LOC_MAP_TEMPERATURE_NAME" Description="LOC_MAP_TEMPERATURE_DESCRIPTION" Domain="Temperature" DefaultValue="2" ConfigurationGroup="Map" ConfigurationId="temperature" GroupId="MapOptions" Hash="0" SortIndex="240"/>
-		<Row Key1="Map" Key2="DWSmallContinents.lua" ParameterId="Rainfall" Name="LOC_MAP_RAINFALL_NAME" Description="LOC_MAP_RAINFALL_DESCRIPTION" Domain="Rainfall" DefaultValue="2" ConfigurationGroup="Map" ConfigurationId="rainfall" GroupId="MapOptions" Hash="0" SortIndex="250"/>
-		<Row Key1="Map" Key2="DWSmallContinents.lua" ParameterId="SeaLevel" Name="LOC_MAP_SEA_LEVEL_NAME" Description="LOC_MAP_SEA_LEVEL_LOW_DESCRIPTION" Domain="SeaLevel" DefaultValue="2" ConfigurationGroup="Map" ConfigurationId="sea_level" GroupId="MapOptions" Hash="0" SortIndex="260"/>
-		<Row Key1="Map" Key2="DWSmallContinents.lua" ParameterId="Resources" Name="LOC_MAP_RESOURCES_NAME" Description="LOC_MAP_RESOURCES_DESCRIPTION" Domain="Resources" DefaultValue="2" ConfigurationGroup="Map" ConfigurationId="resources" GroupId="MapOptions" Hash="0" SortIndex="270"/>
-		<Row Key1="Map" Key2="DWSmallContinents.lua" ParameterId="StartPosition" Name="LOC_MAP_START_POSITION_NAME" Description="LOC_MAP_START_POSITION_DESCRIPTION" Domain="StartPosition" DefaultValue="2" ConfigurationGroup="Map" ConfigurationId="start" GroupId="MapOptions" Hash="0" SortIndex="280"/>
-		<Row Key1="Map" Key2="DWSmallContinents.lua" ParameterId="AutoRemap" Name="LOC_GAME_SPAWN_REMAP" Description="LOC_GAME_SPAWN_REMAP_DESC" Domain="bool" DefaultValue="0" ConfigurationGroup="Game" ConfigurationId="AutoRemap" GroupId="AdvancedOptions" Visible="0" SortIndex="2051"/>
-
-
-		<Row Key1="Map" Key2="DWMixedLand.lua" ParameterId="DWMixedLandMapName" 		Name="MapName" Description="" Domain="text" DefaultValue="MixedLand+" 		ConfigurationGroup="Map" ConfigurationId="MapName" GroupId="MapOptions" Visible="0" SortIndex="2010"/>
-		<Row Key1="Map" Key2="DWMixedLand.lua" ParameterId="SpawnRecalculation" Name="LOC_GAME_SPAWN_RECALCULATION" Description="LOC_GAME_SPAWN_RECALCULATION_DESC" Domain="bool" DefaultValue="1" ConfigurationGroup="Game" ConfigurationId="SpawnRecalculation" GroupId="BBSOptions" SortIndex="2050"/>
-		<Row Key1="Map" Key2="DWMixedLand.lua" ParameterId="WorldAge" Name="LOC_MAP_WORLD_AGE_NAME" Description="LOC_MAP_WORLD_AGE_DESCRIPTION" Domain="WorldAge" DefaultValue="2" ConfigurationGroup="Map" ConfigurationId="world_age" GroupId="MapOptions" Hash="0" SortIndex="230"/>
-		<Row Key1="Map" Key2="DWMixedLand.lua" ParameterId="Temperature" Name="LOC_MAP_TEMPERATURE_NAME" Description="LOC_MAP_TEMPERATURE_DESCRIPTION" Domain="Temperature" DefaultValue="2" ConfigurationGroup="Map" ConfigurationId="temperature" GroupId="MapOptions" Hash="0" SortIndex="240"/>
-		<Row Key1="Map" Key2="DWMixedLand.lua" ParameterId="Rainfall" Name="LOC_MAP_RAINFALL_NAME" Description="LOC_MAP_RAINFALL_DESCRIPTION" Domain="Rainfall" DefaultValue="2" ConfigurationGroup="Map" ConfigurationId="rainfall" GroupId="MapOptions" Hash="0" SortIndex="250"/>
-		<Row Key1="Map" Key2="DWMixedLand.lua" ParameterId="SeaLevel" Name="LOC_MAP_SEA_LEVEL_NAME" Description="LOC_MAP_SEA_LEVEL_LOW_DESCRIPTION" Domain="SeaLevel" DefaultValue="2" ConfigurationGroup="Map" ConfigurationId="sea_level" GroupId="MapOptions" Hash="0" SortIndex="260"/>
-		<Row Key1="Map" Key2="DWMixedLand.lua" ParameterId="Resources" Name="LOC_MAP_RESOURCES_NAME" Description="LOC_MAP_RESOURCES_DESCRIPTION" Domain="Resources" DefaultValue="2" ConfigurationGroup="Map" ConfigurationId="resources" GroupId="MapOptions" Hash="0" SortIndex="270"/>
-		<Row Key1="Map" Key2="DWMixedLand.lua" ParameterId="StartPosition" Name="LOC_MAP_START_POSITION_NAME" Description="LOC_MAP_START_POSITION_DESCRIPTION" Domain="StartPosition" DefaultValue="2" ConfigurationGroup="Map" ConfigurationId="start" GroupId="MapOptions" Hash="0" SortIndex="280"/>
-		<Row Key1="Map" Key2="DWMixedLand.lua" ParameterId="AutoRemap" Name="LOC_GAME_SPAWN_REMAP" Description="LOC_GAME_SPAWN_REMAP_DESC" Domain="bool" DefaultValue="0" ConfigurationGroup="Game" ConfigurationId="AutoRemap" GroupId="AdvancedOptions" Visible="0" SortIndex="2051"/>
-
-
-		<Row Key1="Map" Key2="DWMixedIslands.lua" ParameterId="DWContinentsMapName" 		Name="MapName" Description="" Domain="text" DefaultValue="MixedIslands+" 		ConfigurationGroup="Map" ConfigurationId="MapName" GroupId="MapOptions" Visible="0" SortIndex="2010"/>
-		<Row Key1="Map" Key2="DWMixedIslands.lua" ParameterId="SpawnRecalculation" Name="LOC_GAME_SPAWN_RECALCULATION" Description="LOC_GAME_SPAWN_RECALCULATION_DESC" Domain="bool" DefaultValue="1" ConfigurationGroup="Game" ConfigurationId="SpawnRecalculation" GroupId="BBSOptions" SortIndex="2050"/>
-		<Row Key1="Map" Key2="DWMixedIslands.lua" ParameterId="WorldAge" Name="LOC_MAP_WORLD_AGE_NAME" Description="LOC_MAP_WORLD_AGE_DESCRIPTION" Domain="WorldAge" DefaultValue="2" ConfigurationGroup="Map" ConfigurationId="world_age" GroupId="MapOptions" Hash="0" SortIndex="230"/>
-		<Row Key1="Map" Key2="DWMixedIslands.lua" ParameterId="Temperature" Name="LOC_MAP_TEMPERATURE_NAME" Description="LOC_MAP_TEMPERATURE_DESCRIPTION" Domain="Temperature" DefaultValue="2" ConfigurationGroup="Map" ConfigurationId="temperature" GroupId="MapOptions" Hash="0" SortIndex="240"/>
-		<Row Key1="Map" Key2="DWMixedIslands.lua" ParameterId="Rainfall" Name="LOC_MAP_RAINFALL_NAME" Description="LOC_MAP_RAINFALL_DESCRIPTION" Domain="Rainfall" DefaultValue="2" ConfigurationGroup="Map" ConfigurationId="rainfall" GroupId="MapOptions" Hash="0" SortIndex="250"/>
-		<Row Key1="Map" Key2="DWMixedIslands.lua" ParameterId="SeaLevel" Name="LOC_MAP_SEA_LEVEL_NAME" Description="LOC_MAP_SEA_LEVEL_LOW_DESCRIPTION" Domain="SeaLevel" DefaultValue="2" ConfigurationGroup="Map" ConfigurationId="sea_level" GroupId="MapOptions" Hash="0" SortIndex="260"/>
-		<Row Key1="Map" Key2="DWMixedIslands.lua" ParameterId="Resources" Name="LOC_MAP_RESOURCES_NAME" Description="LOC_MAP_RESOURCES_DESCRIPTION" Domain="Resources" DefaultValue="2" ConfigurationGroup="Map" ConfigurationId="resources" GroupId="MapOptions" Hash="0" SortIndex="270"/>
-		<Row Key1="Map" Key2="DWMixedIslands.lua" ParameterId="StartPosition" Name="LOC_MAP_START_POSITION_NAME" Description="LOC_MAP_START_POSITION_DESCRIPTION" Domain="StartPosition" DefaultValue="2" ConfigurationGroup="Map" ConfigurationId="start" GroupId="MapOptions" Hash="0" SortIndex="280"/>
-		<Row Key1="Map" Key2="DWMixedIslands.lua" ParameterId="AutoRemap" Name="LOC_GAME_SPAWN_REMAP" Description="LOC_GAME_SPAWN_REMAP_DESC" Domain="bool" DefaultValue="0" ConfigurationGroup="Game" ConfigurationId="AutoRemap" GroupId="AdvancedOptions" Visible="0" SortIndex="2051"/>
-
-
 	
 	</Parameters>
 
@@ -260,16 +176,16 @@
 		<Row Domain="BBMMaxFloodplainsSizeRange" Value="11" Name="11" Description="LOC_BBM_MAXFLOODPLAINS_SIZE_11_DESCRIPTION" SortIndex="80"/>
 		<Row Domain="BBMMaxFloodplainsSizeRange" Value="12" Name="12" Description="LOC_BBM_MAXFLOODPLAINS_SIZE_12_DESCRIPTION" SortIndex="90"/>
 
-      <Row Domain="MinAttempts" Value="1" Name="BBS_MIN_ATTEMPTS_ONE_NAME" Description="BBS_MIN_ATTEMPTS_ONE_DESC" SortIndex="10"/>
-      <Row Domain="MinAttempts" Value="2" Name="BBS_MIN_ATTEMPTS_TWO_NAME" Description="BBS_MIN_ATTEMPTS_TWO_DESC" SortIndex="20"/>
-      <Row Domain="MinAttempts" Value="3" Name="BBS_MIN_ATTEMPTS_THREE_NAME" Description="BBS_MIN_ATTEMPTS_THREE_DESC" SortIndex="30"/>
-      <Row Domain="MinAttempts" Value="4" Name="BBS_MIN_ATTEMPTS_FOUR_NAME" Description="BBS_MIN_ATTEMPTS_FOUR_DESC" SortIndex="40"/>
-      <Row Domain="MinAttempts" Value="5" Name="BBS_MIN_ATTEMPTS_FIVE_NAME" Description="BBS_MIN_ATTEMPTS_FIVE_DESC" SortIndex="50"/>
-      <Row Domain="MinAttempts" Value="6" Name="BBS_MIN_ATTEMPTS_SIX_NAME" Description="BBS_MIN_ATTEMPTS_SIX_DESC" SortIndex="60"/>
-      <Row Domain="MinAttempts" Value="7" Name="BBS_MIN_ATTEMPTS_SEVEN_NAME" Description="BBS_MIN_ATTEMPTS_SEVEN_DESC" SortIndex="70"/>
-      <Row Domain="MinAttempts" Value="8" Name="BBS_MIN_ATTEMPTS_EIGHT_NAME" Description="BBS_MIN_ATTEMPTS_EIGHT_DESC" SortIndex="80"/>
-      <Row Domain="MinAttempts" Value="9" Name="BBS_MIN_ATTEMPTS_NINE_NAME" Description="BBS_MIN_ATTEMPTS_NINE_DESC" SortIndex="90"/>
-      <Row Domain="MinAttempts" Value="10" Name="BBS_MIN_ATTEMPTS_TEN_NAME" Description="BBS_MIN_ATTEMPTS_TEN_DESC" SortIndex="100"/>
+      <Row Domain="BBMMinAttempts" Value="1" Name="BBM_MIN_ATTEMPTS_ONE_NAME" Description="BBM_MIN_ATTEMPTS_ONE_DESC" SortIndex="10"/>
+      <Row Domain="BBMMinAttempts" Value="2" Name="BBM_MIN_ATTEMPTS_TWO_NAME" Description="BBM_MIN_ATTEMPTS_TWO_DESC" SortIndex="20"/>
+      <Row Domain="BBMMinAttempts" Value="3" Name="BBM_MIN_ATTEMPTS_THREE_NAME" Description="BBM_MIN_ATTEMPTS_THREE_DESC" SortIndex="30"/>
+      <Row Domain="BBMMinAttempts" Value="4" Name="BBM_MIN_ATTEMPTS_FOUR_NAME" Description="BBM_MIN_ATTEMPTS_FOUR_DESC" SortIndex="40"/>
+      <Row Domain="BBMMinAttempts" Value="5" Name="BBM_MIN_ATTEMPTS_FIVE_NAME" Description="BBM_MIN_ATTEMPTS_FIVE_DESC" SortIndex="50"/>
+      <Row Domain="BBMMinAttempts" Value="6" Name="BBM_MIN_ATTEMPTS_SIX_NAME" Description="BBM_MIN_ATTEMPTS_SIX_DESC" SortIndex="60"/>
+      <Row Domain="BBMMinAttempts" Value="7" Name="BBM_MIN_ATTEMPTS_SEVEN_NAME" Description="BBM_MIN_ATTEMPTS_SEVEN_DESC" SortIndex="70"/>
+      <Row Domain="BBMMinAttempts" Value="8" Name="BBM_MIN_ATTEMPTS_EIGHT_NAME" Description="BBM_MIN_ATTEMPTS_EIGHT_DESC" SortIndex="80"/>
+      <Row Domain="BBMMinAttempts" Value="9" Name="BBM_MIN_ATTEMPTS_NINE_NAME" Description="BBM_MIN_ATTEMPTS_NINE_DESC" SortIndex="90"/>
+      <Row Domain="BBMMinAttempts" Value="10" Name="BBM_MIN_ATTEMPTS_TEN_NAME" Description="BBM_MIN_ATTEMPTS_TEN_DESC" SortIndex="100"/>
 
       
       <Row Domain="MinDistance" Value="0" Name="BBS_MIN_DISTANCE_AUTO_NAME" Description="BBS_MIN_DISTANCE_AUTO_DESC" SortIndex="10"/>

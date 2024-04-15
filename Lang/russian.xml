@@ -273,67 +273,67 @@
 	
 	<!-- == Players options == -->
 	<!-- = Attempts = -->
-	<Replace Tag="LOC_GAME_BBS_MIN_ATTEMPTS_NAME" Language="ru_RU">
+	<Replace Tag="LOC_GAME_BBM_MIN_ATTEMPTS_NAME" Language="ru_RU">
 			<Text>Минимум попыток BBS</Text>
 		</Replace>
-		<Replace Tag="BBS_MIN_ATTEMPTS_ONE_NAME" Language="ru_RU">
+		<Replace Tag="BBM_MIN_ATTEMPTS_ONE_NAME" Language="ru_RU">
 			<Text>1</Text>
 		</Replace>
-		<Replace Tag="BBS_MIN_ATTEMPTS_ONE_DESC" Language="ru_RU">
+		<Replace Tag="BBM_MIN_ATTEMPTS_ONE_DESC" Language="ru_RU">
 			<Text>1 попытка</Text>
 		</Replace>
-		<Replace Tag="BBS_MIN_ATTEMPTS_TWO_NAME" Language="ru_RU">
+		<Replace Tag="BBM_MIN_ATTEMPTS_TWO_NAME" Language="ru_RU">
 			<Text>2</Text>
 		</Replace>
-		<Replace Tag="BBS_MIN_ATTEMPTS_TWO_DESC" Language="ru_RU">
+		<Replace Tag="BBM_MIN_ATTEMPTS_TWO_DESC" Language="ru_RU">
 			<Text>2 попытки</Text>
 		</Replace>
-		<Replace Tag="BBS_MIN_ATTEMPTS_THREE_NAME" Language="ru_RU">
+		<Replace Tag="BBM_MIN_ATTEMPTS_THREE_NAME" Language="ru_RU">
 			<Text>3</Text>
 		</Replace>
-		<Replace Tag="BBS_MIN_ATTEMPTS_THREE_DESC" Language="ru_RU">
+		<Replace Tag="BBM_MIN_ATTEMPTS_THREE_DESC" Language="ru_RU">
 			<Text>3 попытки</Text>
 		</Replace>
-		<Replace Tag="BBS_MIN_ATTEMPTS_FOUR_NAME" Language="ru_RU">
+		<Replace Tag="BBM_MIN_ATTEMPTS_FOUR_NAME" Language="ru_RU">
 			<Text>4</Text>
 		</Replace>
-		<Replace Tag="BBS_MIN_ATTEMPTS_FOUR_DESC" Language="ru_RU">
+		<Replace Tag="BBM_MIN_ATTEMPTS_FOUR_DESC" Language="ru_RU">
 			<Text>4 попытки</Text>
 		</Replace>
-		<Replace Tag="BBS_MIN_ATTEMPTS_FIVE_NAME" Language="ru_RU">
+		<Replace Tag="BBM_MIN_ATTEMPTS_FIVE_NAME" Language="ru_RU">
 			<Text>5</Text>
 		</Replace>
-		<Replace Tag="BBS_MIN_ATTEMPTS_FIVE_DESC" Language="ru_RU">
+		<Replace Tag="BBM_MIN_ATTEMPTS_FIVE_DESC" Language="ru_RU">
 			<Text>5 попыток</Text>
 		</Replace>
-		<Replace Tag="BBS_MIN_ATTEMPTS_SIX_NAME" Language="ru_RU">
+		<Replace Tag="BBM_MIN_ATTEMPTS_SIX_NAME" Language="ru_RU">
 			<Text>6</Text>
 		</Replace>
-		<Replace Tag="BBS_MIN_ATTEMPTS_SIX_DESC" Language="ru_RU">
+		<Replace Tag="BBM_MIN_ATTEMPTS_SIX_DESC" Language="ru_RU">
 			<Text>6 попыток</Text>
 		</Replace>
-		<Replace Tag="BBS_MIN_ATTEMPTS_SEVEN_NAME" Language="ru_RU">
+		<Replace Tag="BBM_MIN_ATTEMPTS_SEVEN_NAME" Language="ru_RU">
 			<Text>7</Text>
 		</Replace>
-		<Replace Tag="BBS_MIN_ATTEMPTS_SEVEN_DESC" Language="ru_RU">
+		<Replace Tag="BBM_MIN_ATTEMPTS_SEVEN_DESC" Language="ru_RU">
 			<Text>7 попыток</Text>
 		</Replace>
-		<Replace Tag="BBS_MIN_ATTEMPTS_EIGHT_NAME" Language="ru_RU">
+		<Replace Tag="BBM_MIN_ATTEMPTS_EIGHT_NAME" Language="ru_RU">
 			<Text>8</Text>
 		</Replace>
-		<Replace Tag="BBS_MIN_ATTEMPTS_EIGHT_DESC" Language="ru_RU">
+		<Replace Tag="BBM_MIN_ATTEMPTS_EIGHT_DESC" Language="ru_RU">
 			<Text>8 попыток</Text>
 		</Replace>
-		<Replace Tag="BBS_MIN_ATTEMPTS_NINE_NAME" Language="ru_RU">
+		<Replace Tag="BBM_MIN_ATTEMPTS_NINE_NAME" Language="ru_RU">
 			<Text>9</Text>
 		</Replace>
-		<Replace Tag="BBS_MIN_ATTEMPTS_NINE_DESC" Language="ru_RU">
+		<Replace Tag="BBM_MIN_ATTEMPTS_NINE_DESC" Language="ru_RU">
 			<Text>9 попыток</Text>
 		</Replace>
-		<Replace Tag="BBS_MIN_ATTEMPTS_TEN_NAME" Language="ru_RU">
+		<Replace Tag="BBM_MIN_ATTEMPTS_TEN_NAME" Language="ru_RU">
 			<Text>10</Text>
 		</Replace>
-		<Replace Tag="BBS_MIN_ATTEMPTS_TEN_DESC" Language="ru_RU">
+		<Replace Tag="BBM_MIN_ATTEMPTS_TEN_DESC" Language="ru_RU">
 			<Text>10 попыток</Text>
 		</Replace>	
 	

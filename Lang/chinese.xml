@@ -252,67 +252,67 @@
 
 		<!-- == Players options == -->
 		<!-- = Attempts = -->
-		<Replace Tag="LOC_GAME_BBS_MIN_ATTEMPTS_NAME" Language="zh_Hans_CN">
+		<Replace Tag="LOC_GAME_BBM_MIN_ATTEMPTS_NAME" Language="zh_Hans_CN">
 			<Text>BBS最小尝试次数</Text>
 		</Replace>
-		<Replace Tag="BBS_MIN_ATTEMPTS_ONE_NAME" Language="zh_Hans_CN">
+		<Replace Tag="BBM_MIN_ATTEMPTS_ONE_NAME" Language="zh_Hans_CN">
 			<Text>1</Text>
 		</Replace>
-		<Replace Tag="BBS_MIN_ATTEMPTS_ONE_DESC" Language="zh_Hans_CN">
+		<Replace Tag="BBM_MIN_ATTEMPTS_ONE_DESC" Language="zh_Hans_CN">
 			<Text>1次</Text>
 		</Replace>
-		<Replace Tag="BBS_MIN_ATTEMPTS_TWO_NAME" Language="zh_Hans_CN">
+		<Replace Tag="BBM_MIN_ATTEMPTS_TWO_NAME" Language="zh_Hans_CN">
 			<Text>2</Text>
 		</Replace>
-		<Replace Tag="BBS_MIN_ATTEMPTS_TWO_DESC" Language="zh_Hans_CN">
+		<Replace Tag="BBM_MIN_ATTEMPTS_TWO_DESC" Language="zh_Hans_CN">
 			<Text>2次</Text>
 		</Replace>
-		<Replace Tag="BBS_MIN_ATTEMPTS_THREE_NAME" Language="zh_Hans_CN">
+		<Replace Tag="BBM_MIN_ATTEMPTS_THREE_NAME" Language="zh_Hans_CN">
 			<Text>3</Text>
 		</Replace>
-		<Replace Tag="BBS_MIN_ATTEMPTS_THREE_DESC" Language="zh_Hans_CN">
+		<Replace Tag="BBM_MIN_ATTEMPTS_THREE_DESC" Language="zh_Hans_CN">
 			<Text>3次</Text>
 		</Replace>
-		<Replace Tag="BBS_MIN_ATTEMPTS_FOUR_NAME" Language="zh_Hans_CN">
+		<Replace Tag="BBM_MIN_ATTEMPTS_FOUR_NAME" Language="zh_Hans_CN">
 			<Text>4</Text>
 		</Replace>
-		<Replace Tag="BBS_MIN_ATTEMPTS_FOUR_DESC" Language="zh_Hans_CN">
+		<Replace Tag="BBM_MIN_ATTEMPTS_FOUR_DESC" Language="zh_Hans_CN">
 			<Text>4次</Text>
 		</Replace>
-		<Replace Tag="BBS_MIN_ATTEMPTS_FIVE_NAME" Language="zh_Hans_CN">
+		<Replace Tag="BBM_MIN_ATTEMPTS_FIVE_NAME" Language="zh_Hans_CN">
 			<Text>5</Text>
 		</Replace>
-		<Replace Tag="BBS_MIN_ATTEMPTS_FIVE_DESC" Language="zh_Hans_CN">
+		<Replace Tag="BBM_MIN_ATTEMPTS_FIVE_DESC" Language="zh_Hans_CN">
 			<Text>5次</Text>
 		</Replace>
-		<Replace Tag="BBS_MIN_ATTEMPTS_SIX_NAME" Language="zh_Hans_CN">
+		<Replace Tag="BBM_MIN_ATTEMPTS_SIX_NAME" Language="zh_Hans_CN">
 			<Text>6</Text>
 		</Replace>
-		<Replace Tag="BBS_MIN_ATTEMPTS_SIX_DESC" Language="zh_Hans_CN">
+		<Replace Tag="BBM_MIN_ATTEMPTS_SIX_DESC" Language="zh_Hans_CN">
 			<Text>6次</Text>
 		</Replace>
-		<Replace Tag="BBS_MIN_ATTEMPTS_SEVEN_NAME" Language="zh_Hans_CN">
+		<Replace Tag="BBM_MIN_ATTEMPTS_SEVEN_NAME" Language="zh_Hans_CN">
 			<Text>7</Text>
 		</Replace>
-		<Replace Tag="BBS_MIN_ATTEMPTS_SEVEN_DESC" Language="zh_Hans_CN">
+		<Replace Tag="BBM_MIN_ATTEMPTS_SEVEN_DESC" Language="zh_Hans_CN">
 			<Text>7次</Text>
 		</Replace>
-		<Replace Tag="BBS_MIN_ATTEMPTS_EIGHT_NAME" Language="zh_Hans_CN">
+		<Replace Tag="BBM_MIN_ATTEMPTS_EIGHT_NAME" Language="zh_Hans_CN">
 			<Text>8</Text>
 		</Replace>
-		<Replace Tag="BBS_MIN_ATTEMPTS_EIGHT_DESC" Language="zh_Hans_CN">
+		<Replace Tag="BBM_MIN_ATTEMPTS_EIGHT_DESC" Language="zh_Hans_CN">
 			<Text>8次</Text>
 		</Replace>
-		<Replace Tag="BBS_MIN_ATTEMPTS_NINE_NAME" Language="zh_Hans_CN">
+		<Replace Tag="BBM_MIN_ATTEMPTS_NINE_NAME" Language="zh_Hans_CN">
 			<Text>9</Text>
 		</Replace>
-		<Replace Tag="BBS_MIN_ATTEMPTS_NINE_DESC" Language="zh_Hans_CN">
+		<Replace Tag="BBM_MIN_ATTEMPTS_NINE_DESC" Language="zh_Hans_CN">
 			<Text>9次</Text>
 		</Replace>
-		<Replace Tag="BBS_MIN_ATTEMPTS_TEN_NAME" Language="zh_Hans_CN">
+		<Replace Tag="BBM_MIN_ATTEMPTS_TEN_NAME" Language="zh_Hans_CN">
 			<Text>10</Text>
 		</Replace>
-		<Replace Tag="BBS_MIN_ATTEMPTS_TEN_DESC" Language="zh_Hans_CN">
+		<Replace Tag="BBM_MIN_ATTEMPTS_TEN_DESC" Language="zh_Hans_CN">
 			<Text>10次</Text>
 		</Replace>
 		<!-- = Teamers start position = -->

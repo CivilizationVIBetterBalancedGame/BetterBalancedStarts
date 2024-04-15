@@ -1018,3 +1018,14 @@ function CivilizationAssignSpawn:IsBiasRespected(hex, hexMap)
 end
 
 
+function CivilizationAssignSpawn:FindTotalNumberOfValidTiles(BBS_HexMap)
+    local totalValidTiles = 0;
+    for i, centroid in pairs(BBS_HexMap.centroidsArray) do
+        local centScore = self:ComputeBiasScoreCivCentroid(centroid);
+        local meanPeninsulaScore = 0;
+        local validTiles = self:GetValidSpawnsInHexList(BBS_HexMap, centroid.HexCluster);
+        totalValidTiles = totalValidTiles + #validTiles;
+    end    
+end
+
+

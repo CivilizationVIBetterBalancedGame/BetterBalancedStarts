@@ -53,7 +53,7 @@ function BBS_AssignStartingPlots.Create(args)
         BBS_STRATEGIC_RESOURCES = MapConfiguration.GetValue("BBSStratRes"),
         BBS_BASE_RESOURCES = MapConfiguration.GetValue("resources"),
         BBS_START = MapConfiguration.GetValue("start"),
-        BBS_MIN_DISTANCE = MapConfiguration.GetValue("BBSMinDistance"),
+        BBM_MIN_ATTEMPTS = MapConfiguration.GetValue("BBMMinAttempts"),
     }
 
     instance = {
@@ -144,6 +144,16 @@ function BBS_AssignStartingPlots.Create(args)
 
     instance:__InitStartingData()
 
+    if Contains(MapScripts, bbs_game_config.BBS_MAP_SCRIPT) == false then
+        print("Map is not supported by BBM ' Firaxis placement will be used");
+        Game:SetProperty("BBM_SUPPORTEDMAP", false)
+        CallFiraxisPlacement(args);
+        return instance;
+    else
+        Game:SetProperty("BBM_SUPPORTEDMAP", true)
+        print("Map is supported by BBM");
+    end
+
     -- Set game properties
     Game:SetProperty("BBM_MAJOR_DISTANCE", BBS_HexMap.minimumDistanceMajorToMajorCivs);
 
@@ -188,11 +198,17 @@ function BBS_AssignStartingPlots.Create(args)
     end
 
     -- Recursive call 
-    local BBS_AssignTries = 1;
+    local BBS_AssignTries = 0;
     local BBS_Success = false;
-    while BBS_Success == false and BBS_AssignTries <= 5 do
+    local TriesMajorSpawnableLeft = {};
+    while BBS_Success == false and BBS_AssignTries <= bbs_game_config.BBM_MIN_ATTEMPTS do
+        BBS_AssignTries = BBS_AssignTries + 1;
         -- Place all civs and fill BBS_HexMap.tempMajorSpawns
         local placementOK = instance:__PlaceMajorCivs(BBS_Civilisations, BBS_HexMap, BBS_AssignTries);
+        -- Determine how many spawnable tiles left
+        local countMajorSpawnableLeft = BBS_HexMap:GetNumberMajorSpawnable(true);
+        TriesMajorSpawnableLeft[BBS_AssignTries] = countMajorSpawnableLeft;
+       
         instance:__ResetMajorsSpawns(BBS_Civilisations, BBS_HexMap);
         if placementOK == false then
             --instance:__ResetMajorsSpawns(BBS_Civilisations, BBS_HexMap);
@@ -201,14 +217,14 @@ function BBS_AssignStartingPlots.Create(args)
         else
             print("BBS_Success on try "..tostring(BBS_AssignTries),  os.date("%c"))
         end
-        BBS_AssignTries = BBS_AssignTries + 1
     end
     local maxMeanScore = 0;
     local globalMinScore = 0;
     local maxMeanScoreIndex = 0
-
+    local globalMajorSpawnableScore = 0;
     for index, c in pairs(BBS_HexMap.tempMajorSpawns) do
         local list = BBS_HexMap.tempMajorSpawns[index]
+        local majorSpawnableScore = TriesMajorSpawnableLeft[index]
         local minLocalScore = 9999;
         local maxLocalScore = 0;
         local minDiffScore = 0;
@@ -225,11 +241,14 @@ function BBS_AssignStartingPlots.Create(args)
                 end
             end
 
+            _Debug("majorSpawnableScore = ", majorSpawnableScore);
+            
             meanScore = totalScore / #list
             if isTeamer and BBS_HexMap:IsTeamerValidContinentPlacement(index) == false then
                 _Debug("Malus try score because all team spawns in a single continent")
                 meanScore = meanScore - 20;
             end
+
             minDiffScore = maxLocalScore - minLocalScore
             -- Take the highest minimum score, if equals, highest mean
             if (minLocalScore > globalMinScore) or (meanScore > maxMeanScore and minLocalScore >= globalMinScore) then
@@ -237,6 +256,7 @@ function BBS_AssignStartingPlots.Create(args)
                 --globalMinDiffScore = minDiffScore;
                 maxMeanScore = meanScore;
                 globalMinScore = minLocalScore;
+                globalMajorSpawnableScore = majorSpawnableScore;
                 maxMeanScoreIndex = index;
             end
         end
@@ -312,14 +332,11 @@ function BBS_AssignStartingPlots.Create(args)
             end
             
         end
-        --StartPositioner.DivideMapIntoMinorRegions(instance.iNumMinorCivs);
         Game:SetProperty("BBM_RESPAWN", true)
         print("End Assign Centroid",  os.date("%c"))
     else
         print("BBS_AssignStartingPlots: To Many Attempts Failed - Go to Firaxis Placement")
-        Game:SetProperty("BBM_RESPAWN", false)
-        local argSPlot = AssignStartingPlots.Create(args)
-        return instance;
+        CallFiraxisPlacement(args);
     end   
     
     -- print("BBS_AssignStartingPlots: Sending Data")
@@ -372,7 +389,7 @@ function BBS_AssignStartingPlots:__InitStartingData()
     print("Hill% = "..tostring(hillpercent).." %")
      --------------------
     print("Done parsing map",  os.date("%c"))
-    _Debug("END BBS WORK",  os.date("%c"))
+    _Debug("END BBM WORK",  os.date("%c"))
 end
 
 function BBS_AssignStartingPlots:__PlaceMajorCivs(civs, BBS_HexMap, index) 
@@ -405,6 +422,7 @@ function BBS_AssignStartingPlots:__ResetMajorsSpawns(civs, BBS_HexMap)
 end
 
 -- At least 4v4 and 2 teams
+-- Fixed index is used here in case team number is not the usual 1 and 2
 function IsTeamerConfig()
     local teamCount = 0
     local team1Size = 0
@@ -419,6 +437,13 @@ function IsTeamerConfig()
         end
         fixedIndex = fixedIndex + 1;
     end
-    _Debug("IsTeamerConfig : ", teamCount, team1Size, team2Size)
-    return teamCount == 2 and team1Size >= 4 and team2Size >= 4;
+    local isTeamerConfig = teamCount == 2 and team1Size >= 4 and team2Size >= 4;
+    _Debug("IsTeamerConfig : ", teamCount, team1Size, team2Size, isTeamerConfig);
+    return isTeamerConfig;
+end
+
+
+function CallFiraxisPlacement(args)
+    Game:SetProperty("BBM_RESPAWN", false)
+    local argSPlot = AssignStartingPlots.Create(args)
 end

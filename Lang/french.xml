@@ -237,7 +237,7 @@
    <Replace Tag="BBS_MIN_DISTANCE_TWENTYFIVE_DESC" Language="fr_FR">
 		  <Text>25 cases</Text>
 	</Replace>
-	<Replace Tag="LOC_GAME_BBS_MIN_ATTEMPTS_NAME" Language="fr_FR">
+	<Replace Tag="LOC_GAME_BBM_MIN_ATTEMPTS_NAME" Language="fr_FR">
 		  <Text>Nombre d'essais de BBS</Text>
 	</Replace>
 
@@ -272,73 +272,73 @@
 		<Text>12 cases maximum inondables par rivière. A noter les cases inondables peuvent s'agglomérer à la jonction de plusieurs rivières</Text>
 	</Replace>		
 		
-   <Replace Tag="BBS_MIN_ATTEMPTS_ONE_NAME" Language="fr_FR">
+   <Replace Tag="BBM_MIN_ATTEMPTS_ONE_NAME" Language="fr_FR">
 		  <Text>1</Text>
 	</Replace>
-   <Replace Tag="BBS_MIN_ATTEMPTS_ONE_DESC" Language="fr_FR">
+   <Replace Tag="BBM_MIN_ATTEMPTS_ONE_DESC" Language="fr_FR">
 		  <Text>1 essai</Text>
 	</Replace>
    
-   <Replace Tag="BBS_MIN_ATTEMPTS_TWO_NAME" Language="fr_FR">
+   <Replace Tag="BBM_MIN_ATTEMPTS_TWO_NAME" Language="fr_FR">
 		  <Text>2</Text>
 	</Replace>
-   <Replace Tag="BBS_MIN_ATTEMPTS_TWO_DESC" Language="fr_FR">
+   <Replace Tag="BBM_MIN_ATTEMPTS_TWO_DESC" Language="fr_FR">
 		  <Text>2 essais</Text>
 	</Replace>
    
-   <Replace Tag="BBS_MIN_ATTEMPTS_THREE_NAME" Language="fr_FR">
+   <Replace Tag="BBM_MIN_ATTEMPTS_THREE_NAME" Language="fr_FR">
 		  <Text>3</Text>
 	</Replace>
-   <Replace Tag="BBS_MIN_ATTEMPTS_THREE_DESC" Language="fr_FR">
+   <Replace Tag="BBM_MIN_ATTEMPTS_THREE_DESC" Language="fr_FR">
 		  <Text>3 essais</Text>
 	</Replace>
    
-   <Replace Tag="BBS_MIN_ATTEMPTS_FOUR_NAME" Language="fr_FR">
+   <Replace Tag="BBM_MIN_ATTEMPTS_FOUR_NAME" Language="fr_FR">
 		  <Text>4</Text>
 	</Replace>
-   <Replace Tag="BBS_MIN_ATTEMPTS_FOUR_DESC" Language="fr_FR">
+   <Replace Tag="BBM_MIN_ATTEMPTS_FOUR_DESC" Language="fr_FR">
 		  <Text>4 essais</Text>
 	</Replace>
    
-   <Replace Tag="BBS_MIN_ATTEMPTS_FIVE_NAME" Language="fr_FR">
+   <Replace Tag="BBM_MIN_ATTEMPTS_FIVE_NAME" Language="fr_FR">
 		  <Text>5</Text>
 	</Replace>
-   <Replace Tag="BBS_MIN_ATTEMPTS_FIVE_DESC" Language="fr_FR">
+   <Replace Tag="BBM_MIN_ATTEMPTS_FIVE_DESC" Language="fr_FR">
 		  <Text>5 essais</Text>
 	</Replace>
    
-   <Replace Tag="BBS_MIN_ATTEMPTS_SIX_NAME" Language="fr_FR">
+   <Replace Tag="BBM_MIN_ATTEMPTS_SIX_NAME" Language="fr_FR">
 		  <Text>6</Text>
 	</Replace>
-   <Replace Tag="BBS_MIN_ATTEMPTS_SIX_DESC" Language="fr_FR">
+   <Replace Tag="BBM_MIN_ATTEMPTS_SIX_DESC" Language="fr_FR">
 		  <Text>6 essais</Text>
 	</Replace>
    
-   <Replace Tag="BBS_MIN_ATTEMPTS_SEVEN_NAME" Language="fr_FR">
+   <Replace Tag="BBM_MIN_ATTEMPTS_SEVEN_NAME" Language="fr_FR">
 		  <Text>7</Text>
 	</Replace>
-   <Replace Tag="BBS_MIN_ATTEMPTS_SEVEN_DESC" Language="fr_FR">
+   <Replace Tag="BBM_MIN_ATTEMPTS_SEVEN_DESC" Language="fr_FR">
 		  <Text>7 essais</Text>
 	</Replace>
    
-   <Replace Tag="BBS_MIN_ATTEMPTS_EIGHT_NAME" Language="fr_FR">
+   <Replace Tag="BBM_MIN_ATTEMPTS_EIGHT_NAME" Language="fr_FR">
 		  <Text>8</Text>
 	</Replace>
-   <Replace Tag="BBS_MIN_ATTEMPTS_EIGHT_DESC" Language="fr_FR">
+   <Replace Tag="BBM_MIN_ATTEMPTS_EIGHT_DESC" Language="fr_FR">
 		  <Text>8 essais</Text>
 	</Replace>
    
-   <Replace Tag="BBS_MIN_ATTEMPTS_NINE_NAME" Language="fr_FR">
+   <Replace Tag="BBM_MIN_ATTEMPTS_NINE_NAME" Language="fr_FR">
 		  <Text>9</Text>
 	</Replace>
-   <Replace Tag="BBS_MIN_ATTEMPTS_NINE_DESC" Language="fr_FR">
+   <Replace Tag="BBM_MIN_ATTEMPTS_NINE_DESC" Language="fr_FR">
 		  <Text>9 essais</Text>
 	</Replace>
    
-   <Replace Tag="BBS_MIN_ATTEMPTS_TEN_NAME" Language="fr_FR">
+   <Replace Tag="BBM_MIN_ATTEMPTS_TEN_NAME" Language="fr_FR">
 		  <Text>10</Text>
 	</Replace>
-   <Replace Tag="BBS_MIN_ATTEMPTS_TEN_DESC" Language="fr_FR">
+   <Replace Tag="BBM_MIN_ATTEMPTS_TEN_DESC" Language="fr_FR">
 		  <Text>10 essais</Text>
 	</Replace>
    

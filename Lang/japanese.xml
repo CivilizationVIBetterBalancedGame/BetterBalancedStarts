@@ -252,67 +252,67 @@
 
 		<!-- == Players options == -->
 		<!-- =attempts = -->
-		<Replace Tag="LOC_GAME_BBS_MIN_ATTEMPTS_NAME" Language="ja_JP">
+		<Replace Tag="LOC_GAME_BBM_MIN_ATTEMPTS_NAME" Language="ja_JP">
 			<Text>BBS最小試行回数</Text>
 		</Replace>
-		<Replace Tag="BBS_MIN_ATTEMPTS_ONE_NAME" Language="ja_JP">
+		<Replace Tag="BBM_MIN_ATTEMPTS_ONE_NAME" Language="ja_JP">
 			<Text>1</Text>
 		</Replace>
-		<Replace Tag="BBS_MIN_ATTEMPTS_ONE_DESC" Language="ja_JP">
+		<Replace Tag="BBM_MIN_ATTEMPTS_ONE_DESC" Language="ja_JP">
 			<Text>1回</Text>
 		</Replace>
-		<Replace Tag="BBS_MIN_ATTEMPTS_TWO_NAME" Language="ja_JP">
+		<Replace Tag="BBM_MIN_ATTEMPTS_TWO_NAME" Language="ja_JP">
 			<Text>2</Text>
 		</Replace>
-		<Replace Tag="BBS_MIN_ATTEMPTS_TWO_DESC" Language="ja_JP">
+		<Replace Tag="BBM_MIN_ATTEMPTS_TWO_DESC" Language="ja_JP">
 			<Text>2回</Text>
 		</Replace>
-		<Replace Tag="BBS_MIN_ATTEMPTS_THREE_NAME" Language="ja_JP">
+		<Replace Tag="BBM_MIN_ATTEMPTS_THREE_NAME" Language="ja_JP">
 			<Text>3</Text>
 		</Replace>
-		<Replace Tag="BBS_MIN_ATTEMPTS_THREE_DESC" Language="ja_JP">
+		<Replace Tag="BBM_MIN_ATTEMPTS_THREE_DESC" Language="ja_JP">
 			<Text>3回</Text>
 		</Replace>
-		<Replace Tag="BBS_MIN_ATTEMPTS_FOUR_NAME" Language="ja_JP">
+		<Replace Tag="BBM_MIN_ATTEMPTS_FOUR_NAME" Language="ja_JP">
 			<Text>4</Text>
 		</Replace>
-		<Replace Tag="BBS_MIN_ATTEMPTS_FOUR_DESC" Language="ja_JP">
+		<Replace Tag="BBM_MIN_ATTEMPTS_FOUR_DESC" Language="ja_JP">
 			<Text>4回</Text>
 		</Replace>
-		<Replace Tag="BBS_MIN_ATTEMPTS_FIVE_NAME" Language="ja_JP">
+		<Replace Tag="BBM_MIN_ATTEMPTS_FIVE_NAME" Language="ja_JP">
 			<Text>5</Text>
 		</Replace>
-		<Replace Tag="BBS_MIN_ATTEMPTS_FIVE_DESC" Language="ja_JP">
+		<Replace Tag="BBM_MIN_ATTEMPTS_FIVE_DESC" Language="ja_JP">
 			<Text>5回</Text>
 		</Replace>
-		<Replace Tag="BBS_MIN_ATTEMPTS_SIX_NAME" Language="ja_JP">
+		<Replace Tag="BBM_MIN_ATTEMPTS_SIX_NAME" Language="ja_JP">
 			<Text>6</Text>
 		</Replace>
-		<Replace Tag="BBS_MIN_ATTEMPTS_SIX_DESC" Language="ja_JP">
+		<Replace Tag="BBM_MIN_ATTEMPTS_SIX_DESC" Language="ja_JP">
 			<Text>6回</Text>
 		</Replace>
-		<Replace Tag="BBS_MIN_ATTEMPTS_SEVEN_NAME" Language="ja_JP">
+		<Replace Tag="BBM_MIN_ATTEMPTS_SEVEN_NAME" Language="ja_JP">
 			<Text>7</Text>
 		</Replace>
-		<Replace Tag="BBS_MIN_ATTEMPTS_SEVEN_DESC" Language="ja_JP">
+		<Replace Tag="BBM_MIN_ATTEMPTS_SEVEN_DESC" Language="ja_JP">
 			<Text>7回</Text>
 		</Replace>
-		<Replace Tag="BBS_MIN_ATTEMPTS_EIGHT_NAME" Language="ja_JP">
+		<Replace Tag="BBM_MIN_ATTEMPTS_EIGHT_NAME" Language="ja_JP">
 			<Text>8</Text>
 		</Replace>
-		<Replace Tag="BBS_MIN_ATTEMPTS_EIGHT_DESC" Language="ja_JP">
+		<Replace Tag="BBM_MIN_ATTEMPTS_EIGHT_DESC" Language="ja_JP">
 			<Text>8回</Text>
 		</Replace>
-		<Replace Tag="BBS_MIN_ATTEMPTS_NINE_NAME" Language="ja_JP">
+		<Replace Tag="BBM_MIN_ATTEMPTS_NINE_NAME" Language="ja_JP">
 			<Text>9</Text>
 		</Replace>
-		<Replace Tag="BBS_MIN_ATTEMPTS_NINE_DESC" Language="ja_JP">
+		<Replace Tag="BBM_MIN_ATTEMPTS_NINE_DESC" Language="ja_JP">
 			<Text>9回</Text>
 		</Replace>
-		<Replace Tag="BBS_MIN_ATTEMPTS_TEN_NAME" Language="ja_JP">
+		<Replace Tag="BBM_MIN_ATTEMPTS_TEN_NAME" Language="ja_JP">
 			<Text>10</Text>
 		</Replace>
-		<Replace Tag="BBS_MIN_ATTEMPTS_TEN_DESC" Language="ja_JP">
+		<Replace Tag="BBM_MIN_ATTEMPTS_TEN_DESC" Language="ja_JP">
 			<Text>10回</Text>
 		</Replace>
 		<!-- = Teamers start position = -->
