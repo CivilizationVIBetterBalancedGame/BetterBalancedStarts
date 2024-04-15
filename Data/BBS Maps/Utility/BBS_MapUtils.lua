@@ -2353,6 +2353,8 @@ function HexMap:TerraformAdd1Prod(hex, canMinusFood, canExtraYield)
             return self:TerraformToHill(hex, false);
         elseif hex.Food + hex.Prod == 3 and g_RESOURCES_BONUS_LIST[hex.ResourceType] then
             return self:TerraformTo22Yields(hex, true);
+        elseif canMinusFood and hex.ResourceType == g_RESOURCE_CATTLE or hex.ResourceType == g_RESOURCE_WHEAT or hex.ResourceType == g_RESOURCE_RICE then
+            
         else
             return false;
         end
@@ -3327,31 +3329,35 @@ function printAllStartYields(hexMap)
 end
 
 function BalanceMap(hexMap)
-    local iCounter = 0;
+    local iForestCounter = 0;
+    local iNearFloodsCounter = 0;
     for y = 0, hexMap.height - 1 do
         for x = 0, hexMap.width - 1 do
             local hex = hexMap:GetHexInMap(x, y);
-            if hex:IsImpassable() == false
-                and hex.ResourceType == g_RESOURCE_NONE
-                and hex.FeatureType == g_FEATURE_NONE then
-
+            if hex:IsImpassable() == false and hex.ResourceType == g_RESOURCE_NONE then
                 local ring1 = hex.AllRing6Map[1];
                 local iForestScore = 0;
                 local iHillsScore = 0;
-
+                local iFloodplainsScore = 0;
                 for _, h in pairs(ring1) do
-                    if h.FeatureType == g_FEATURE_FOREST or h.FeatureType == g_FEATURE_JUNGLE then
+                    if hex.FeatureType == g_FEATURE_NONE and h.FeatureType == g_FEATURE_FOREST or h.FeatureType == g_FEATURE_JUNGLE then
                         iForestScore = iForestScore + 1;
+                    elseif (hex.FeatureType == g_FEATURE_FOREST or hex.FeatureType == g_FEATURE_JUNGLE) and h:IsFloodplains(true) then
+                        iFloodplainsScore = iFloodplainsScore + 1;                 
                     end
+                end 
+                if hex.FeatureType == g_FEATURE_NONE and BalanceMapForests(hexMap, hex, iForestScore) then
+                    iForestCounter = iForestCounter + 1;
                 end
-                if BalanceMapForests(hexMap, hex, iForestScore) then
-                    iCounter = iCounter + 1;
+                if (hex.FeatureType == g_FEATURE_NONE or hex.FeatureType == g_FEATURE_FOREST or hex.FeatureType == g_FEATURE_JUNGLE) 
+                    and BalanceNearFloodplainsYields(hexMap, hex, iFloodplainsScore) then
+                    iNearFloodsCounter = iNearFloodsCounter + 1;
                 end
             end
         end
     end
-    print("Added "..tostring(iCounter).." Forest to the base map.")
-
+    print("Added "..tostring(iForestCounter).." Forest to the base map.")
+    print("Changed "..tostring(iNearFloodsCounter).." near floods to add prod.")
 end
 
 ---------------------------------------
@@ -3384,6 +3390,34 @@ function BalanceMapForests(hexMap, hex, iScore)
     return false;
 end
 
+function BalanceNearFloodplainsYields(hexMap, hex, iScore) 
+    local percentage = 0;
+    if iScore == 1 then
+        percentage = 10
+    elseif iScore == 2 then
+        percentage = 50
+    elseif iScore == 3 then
+        percentage = 66
+    elseif iScore >= 4 then
+        percentage = 75
+    else
+        return false;
+    end
+
+    local rng = TerrainBuilder.GetRandomNumber(100, "Add prod");
+    if rng < percentage then
+        if IsFlat(hex.TerrainType) and hexMap:TerraformToHill(hex, false) then
+            -- Chance to add also forest near lots of floods
+            if hex.FeatureType == g_FEATURE_NONE and ((iScore >= 4 and rng < 25) or (iScore >= 2 and rng < 10)) then
+                _Debug("BalanceNearFloodplainsYields add forest + hills ", hex:PrintXY())
+                return hexMap:TerraformSetFeature(hex, g_FEATURE_FOREST, false);
+            end
+            _Debug("BalanceNearFloodplainsYields add hills ", hex:PrintXY())
+            return true;
+        end
+    end
+    return false;
+end
 
 
 -- Main balancing function per civ
@@ -4909,9 +4943,9 @@ function BalanceAllCivYields(spawns)
     MeansBalancing.MeanInnerRingUnworkable = math.floor((meanInnerRingUnworkable / #spawns) + 0.5);
     MeansBalancing.MeanInnerRingWorkable =math.floor((meanInnerRingWorkable / #spawns) + 0.5);
     --MeansBalancing.MeanInnerStandardYields = math.floor((meanInnerStandardYields / #spawns) + 0.5);
-    MeansBalancing.MeanInnerStandardYields = math.floor((meanInnerStandardYields / #spawns) + 0.5);
+    MeansBalancing.MeanInnerStandardYields = math.min(5, math.floor((meanInnerStandardYields / #spawns) + 0.5));
     _Debug("MeanInnerStandardYields = ", MeansBalancing.MeanInnerStandardYields)
-    local maxStdGoal = math.max(0, 6 - MeansBalancing.MeanInnerStandardYields);
+    local maxStdGoal = math.max(0, 7 - MeansBalancing.MeanInnerStandardYields);
     local rngMeanStd = TerrainBuilder.GetRandomNumber(maxStdGoal, "maxStdGoal");
     _Debug("rngMeanStd = ", rngMeanStd, " maxStdGoal = ", maxStdGoal)
     MeansBalancing.MeanInnerStandardYields = MeansBalancing.MeanInnerStandardYields + rngMeanStd;
@@ -4986,6 +5020,9 @@ function BalanceAllCivYields(spawns)
     -- Debug final print recap
     ----------------------------
     _Debug("Final balance recap :")
+    _Debug("meanInnerRingStandard = "..tostring( MeansBalancing.MeanInnerStandardYields));
+    _Debug("meanInnerRingFood = "..tostring( MeansBalancing.MeanInnerRingFood));
+    _Debug("meanInnerRingProd = "..tostring(MeansBalancing.MeanInnerRingProd));
     for _, spawn in pairs(spawns) do
         local recap = recapBalance[spawn];
         _Debug("Civ : ", spawn.Civ.CivilizationLeader, " StdDiff : ", recap.StdDiff, " InnerFoodDiff : ", recap.InnerFoodDiff, " InnerProdDiff : ", recap.InnerProdDiff)
@@ -5013,15 +5050,9 @@ function HighYieldsTeamerBalancing(spawns)
             table.insert(team2Civ, spawn)
         end
     end
-    for _, s in pairs(team1Civ) do
-        print("Team 1 leaders = ", s.Civ.CivilizationLeader);
-    end
-    for _, s in pairs(team2Civ) do
-        print("Team 2 leaders = ", s.Civ.CivilizationLeader);
-    end
-
+    
     _Debug("HighYieldsTeamerBalancing Team 1 team1HighYields = ", team1HighYields, " team2HighYields = ", team2HighYields);
-    local highYieldsMargin = 1;
+    local highYieldsMargin = 0;
     local upgradeDone = 0;
     if team1HighYields < team2HighYields - highYieldsMargin then
         local team1HighYieldToUp = team2HighYields - highYieldsMargin - team1HighYields;
@@ -5050,6 +5081,7 @@ function HighYieldsTeamerBalancing(spawns)
     end    
 end
  
+
 
 -- TODO Please refacto after finish
 function SpawnBalancing:BalanceToMean(yieldMargin, standardMargin, unworkableYieldMargin)

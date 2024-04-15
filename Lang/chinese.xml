@@ -253,7 +253,7 @@
 		<!-- == Players options == -->
 		<!-- = Attempts = -->
 		<Replace Tag="LOC_GAME_BBM_MIN_ATTEMPTS_NAME" Language="zh_Hans_CN">
-			<Text>BBS最小尝试次数</Text>
+			<Text>BBM最小尝试次数</Text>
 		</Replace>
 		<Replace Tag="BBM_MIN_ATTEMPTS_ONE_NAME" Language="zh_Hans_CN">
 			<Text>1</Text>

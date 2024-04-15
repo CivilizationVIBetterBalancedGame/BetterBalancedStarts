@@ -238,7 +238,7 @@
 		  <Text>25 cases</Text>
 	</Replace>
 	<Replace Tag="LOC_GAME_BBM_MIN_ATTEMPTS_NAME" Language="fr_FR">
-		  <Text>Nombre d'essais de BBS</Text>
+		  <Text>Nombre d'essais de BBM</Text>
 	</Replace>
 
 	<Replace Tag="LOC_BBM_MAXFLOODPLAINS_SIZE" Language="fr_FR">

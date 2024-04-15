@@ -284,7 +284,7 @@
 		<!-- == Players options == -->
 		<!-- = Attempts = -->
 		<Replace Tag="LOC_GAME_BBM_MIN_ATTEMPTS_NAME" Language="en_US">
-			<Text>Minimum BBS attempts</Text>
+			<Text>Minimum BBM attempts</Text>
 		</Replace>
 		<Replace Tag="BBM_MIN_ATTEMPTS_ONE_NAME" Language="en_US">
 			<Text>1</Text>
