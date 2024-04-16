@@ -984,9 +984,9 @@ function CivilizationAssignSpawn:IsBiasRespected(hex, hexMap)
                     elseif IsHill(bias.Value) then
                         if i <= 2 and IsHill(hring.TerrainType) then
                             countHill = countHill + 1;
-                            -- 18 tiles total in ring 1+2, need at least 8
-                            -- For now this is the only bias of greece and korea
-                            if countHill >= 8 then
+                            -- 18 tiles total in ring 1+2, need at least 9
+                            -- For now this is the only bias of greece and korea and ethiopia
+                            if countHill >= 9 then
                                 isOneOfBiasRespected = true;
                             end
                         end

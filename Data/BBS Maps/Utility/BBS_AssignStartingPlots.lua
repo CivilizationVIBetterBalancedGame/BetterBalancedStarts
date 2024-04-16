@@ -201,7 +201,7 @@ function BBS_AssignStartingPlots.Create(args)
     local BBS_AssignTries = 0;
     local BBS_Success = false;
     local TriesMajorSpawnableLeft = {};
-    while BBS_Success == false and BBS_AssignTries <= bbs_game_config.BBM_MIN_ATTEMPTS do
+    while BBS_Success == false and BBS_AssignTries < bbs_game_config.BBM_MIN_ATTEMPTS do
         BBS_AssignTries = BBS_AssignTries + 1;
         -- Place all civs and fill BBS_HexMap.tempMajorSpawns
         local placementOK = instance:__PlaceMajorCivs(BBS_Civilisations, BBS_HexMap, BBS_AssignTries);
@@ -242,7 +242,7 @@ function BBS_AssignStartingPlots.Create(args)
             end
 
             _Debug("majorSpawnableScore = ", majorSpawnableScore);
-            
+
             meanScore = totalScore / #list
             if isTeamer and BBS_HexMap:IsTeamerValidContinentPlacement(index) == false then
                 _Debug("Malus try score because all team spawns in a single continent")
