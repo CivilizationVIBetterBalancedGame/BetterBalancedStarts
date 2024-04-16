@@ -1145,6 +1145,7 @@ function HexMap:ComputeMajorSpawnableTiles(hex)
     local nextTo3LakesInARow = hex:IsHexNextTo3ILakeMountainTilesInARow();
     local isNotInPeninsula = hex.PeninsulaScore >= self.PeninsulaScoreThreshold
     local isTooCloseToSnow = hex:IsHexCloseToSnow()
+    local hasEnoughWorkableRing2 = hex:HasEnoughWorkableRing2();
     hex.IsMajorSpawnable = hex:IsImpassable() == false
         and hex:IsSnowLand() == false
         and hex.FeatureType ~= g_FEATURE_OASIS
@@ -1156,6 +1157,7 @@ function HexMap:ComputeMajorSpawnableTiles(hex)
         and nextTo3LakesInARow == false
         and isTooCloseToNaturalWonder == false
         and coastalNextToRiver == false
+        and hasEnoughWorkableRing2 == true
         and isTooCloseToSnow == false;
 end
 
@@ -1235,6 +1237,23 @@ function Hex:IsHexNextTo3ILakeMountainTilesInARow()
     end
     return false;
 end
+
+-- Add a check to have at least have half of ring 2 tiles workable
+-- So mountains or coastal+lakes spawn have enough space to terraform tiles and expands
+function Hex:HasEnoughWorkableRing2()
+    local ring2 = self.AllRing6Map[2];
+    local impassableTiles = 0
+    for _, h in ipairs(ring2) do
+        if h:IsImpassable() then
+            impassableTiles = impassableTiles + 1;
+        end
+        if impassableTiles > 6 then
+            return false;
+        end
+    end
+    return true;
+end
+
 
 function Hex:IsHexCloseToSnow()
     local ring1 = self.AllRing6Map[1];
@@ -3814,6 +3833,10 @@ function SpawnBalancing:AddHighYieldFromStandard()
     AddToTable(innerRingStandard, self.RingTables[2].STANDARD_YIELD_TILES);
     innerRingStandard = GetShuffledCopyOfTable(innerRingStandard);
     for _, hex in ipairs(innerRingStandard) do
+        local ringHex = 2;
+        if Contains(self.RingTables[1].HexRings, hex) then
+            ringHex = 1;
+        end
         -- Temp change hex not tagged as minimum
         local wasTagged = false;
         if hex.IsTaggedAsMinimum then
@@ -3823,12 +3846,8 @@ function SpawnBalancing:AddHighYieldFromStandard()
         local canAddLux = false
         if self.InnerRingLuxCount < self.MaxLuxInnerRingThreshold then
             canAddLux = true;
-        end
+        end    
         -- Try to terraform a standard tagged tile
-        local ringHex = 2;
-        if Contains(self.RingTables[1].HexRings, hex) then
-            ringHex = 1;
-        end
         if self:TerraformHex(hex, ringHex, TerraformType[13], true, canAddLux) then
             _Debug("AddHighYieldFromStandard added high yield on ", hex:PrintXY());
             if wasTagged then
@@ -5282,7 +5301,7 @@ function SpawnBalancing:BalanceToMean(yieldMargin, standardMargin, unworkableYie
                 end
                 listWorkR1 = GetShuffledCopyOfTable(listWorkR1);
                 for _, h in ipairs(listWorkR1) do
-                    if IsHill(h.TerrainType) == false and self:TerraformHex(h, 2, TerraformType[8], 0, canRemoveFood, false) then
+                    if IsHill(h.TerrainType) == false and self:TerraformHex(h, 1, TerraformType[8], 0, canRemoveFood, false) then
                         _Debug("BalanceToMean - Added prod on flat tile with canRemoveFood ", canRemoveFood);
                         return true;
                     end
@@ -5298,7 +5317,7 @@ function SpawnBalancing:BalanceToMean(yieldMargin, standardMargin, unworkableYie
                 end
                 listWorkR1 = GetShuffledCopyOfTable(listWorkR1);
                 for _, h in ipairs(listWorkR1) do
-                    if IsHill(h.TerrainType) and self:TerraformHex(h, 2, TerraformType[8], 0, canRemoveFood, false) then
+                    if IsHill(h.TerrainType) and self:TerraformHex(h, 1, TerraformType[8], 0, canRemoveFood, false) then
                         _Debug("BalanceToMean - Added prod on empty hill ring 1 with canRemoveFood ", canRemoveFood);
                         return true;
                     end
@@ -5375,10 +5394,11 @@ function SpawnBalancing:BalanceToMean(yieldMargin, standardMargin, unworkableYie
         if self.InnerFoodDiff < -yieldMargin then
             _Debug("BalanceToMean - Try to add food with remove prod = ", canRemoveProd, rng);
             -- RNG 1 : Try to add food on a flot tile
+            
             if rng <= 33 or (rng <= 50 and canAddStandard == false) then
                 listWorkR1 = GetShuffledCopyOfTable(listWorkR1);
                 for _, h in ipairs(listWorkR1) do
-                    if IsHill(h.TerrainType) == false and self:TerraformHex(h, 2, TerraformType[6], 0, canRemoveProd, false) then
+                    if IsHill(h.TerrainType) == false and self:TerraformHex(h, 1, TerraformType[6], 0, canRemoveProd, false) then
                         _Debug("BalanceToMean - Added food on ring 1 tile with removeprod ", canRemoveProd);
                         return true;
                     end
@@ -5394,7 +5414,7 @@ function SpawnBalancing:BalanceToMean(yieldMargin, standardMargin, unworkableYie
             elseif rng <= 66 or (rng > 50 and canAddStandard == false) then
                 listWorkR2 = GetShuffledCopyOfTable(listWorkR2);
                 for _, h in ipairs(listWorkR2) do
-                    if IsHill(h.TerrainType) and self:TerraformHex(h, 2, TerraformType[6], 0, canRemoveProd, false) then
+                    if IsHill(h.TerrainType) and self:TerraformHex(h, 1, TerraformType[6], 0, canRemoveProd, false) then
                         _Debug("BalanceToMean - Added food on hill tile with removeprod ", canRemoveProd);
                         return true;
                     end

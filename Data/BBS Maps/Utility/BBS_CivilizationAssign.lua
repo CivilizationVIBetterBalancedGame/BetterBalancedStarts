@@ -576,12 +576,12 @@ function CivilizationAssignSpawn:ComputeHexScoreCiv(hex)
     local peninsulaScore = math.floor((hex.PeninsulaScore / 10) + 0.5) * 10
     if self.IsNoBias or self.IsKingNorthBias then
         score = score + math.min(70, peninsulaScore)
-        -- Slight adjustment for mountain civ to avoid being stuck inside mountains on standard ridges
-    elseif self.IsMountainBias then
-        score = score + math.min(60, peninsulaScore)
-    else
-        -- especially for river and coastal else 5 pt is not much when testing other biases
+        -- Less lmited for coastal civ to not be too restrictive in placement
+    elseif self.IsCoastalBias then
         score = score + math.min(50, peninsulaScore)
+    else
+        -- Default min value for max score is 55 (rounded to 60, so a bit more of half the tiles in ring 6)
+        score = score + math.min(60, peninsulaScore)
     end
 
     -------------------
