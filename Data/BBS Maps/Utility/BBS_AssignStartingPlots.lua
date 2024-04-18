@@ -437,7 +437,7 @@ function IsTeamerConfig()
         end
         fixedIndex = fixedIndex + 1;
     end
-    local isTeamerConfig = teamCount == 2 and team1Size >= 4 and team2Size >= 4;
+    local isTeamerConfig = teamCount == 2;
     _Debug("IsTeamerConfig : ", teamCount, team1Size, team2Size, isTeamerConfig);
     return isTeamerConfig;
 end

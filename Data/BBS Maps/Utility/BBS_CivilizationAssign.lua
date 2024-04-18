@@ -421,12 +421,8 @@ function CivilizationAssignSpawn:GetNonTundraTilesCountRing3(hex)
 end
 
 -- On top of peninisula score that goes up to ring 6, make sure we have enough tiles in ring 3 that are accessible to settle
--- especially for mountains spawns, exception for inca
 function CivilizationAssignSpawn:ValidWalkableTiles(hex)
-    if self.IsMountainLoverBias == false then
-        return hex:HasSpawnEnoughWalkableTiles()
-    end
-    return true;
+    return hex:HasSpawnEnoughWalkableTiles()
 end
 
 function CivilizationAssignSpawn:ValidTundraDensity(hex)
@@ -576,12 +572,12 @@ function CivilizationAssignSpawn:ComputeHexScoreCiv(hex)
     local peninsulaScore = math.floor((hex.PeninsulaScore / 10) + 0.5) * 10
     if self.IsNoBias or self.IsKingNorthBias then
         score = score + math.min(70, peninsulaScore)
-        -- Less lmited for coastal civ to not be too restrictive in placement
-    elseif self.IsCoastalBias then
-        score = score + math.min(50, peninsulaScore)
-    else
-        -- Default min value for max score is 55 (rounded to 60, so a bit more of half the tiles in ring 6)
+        -- Slight adjustment for mountain civ to avoid being stuck inside mountains on standard ridges
+    elseif self.IsMountainBias then
         score = score + math.min(60, peninsulaScore)
+    else
+        -- especially for river and coastal else 5 pt is not much when testing other biases
+        score = score + math.min(50, peninsulaScore)
     end
 
     -------------------
@@ -975,7 +971,7 @@ function CivilizationAssignSpawn:IsBiasRespected(hex, hexMap)
                             jungleFound = true;
                         end
                     end     
-                elseif (bias.Type == "TERRAINS" and bias.Value ~= g_TERRAIN_TYPE_COAST) or bias.Type == "CUSTOM_MOUNTAIN_LOVER" then
+                elseif (bias.Type == "TERRAINS" and bias.Value ~= g_TERRAIN_TYPE_COAST) then
                     if IsMountain(bias.Value) then
                         -- At least a mountain in ring 2, density score do the rest
                         if i == 2 and hring:IsMountain() then
