@@ -1219,13 +1219,15 @@ function Hex:IsHexNextTo3ILakeMountainTilesInARow()
     end
     local ring1 = self.AllRing6Map[1];
     local lakesOrMountains = 0
+    local firstHexRing = ring1[1];
     local lastHexRing = ring1[6];
     -- Not used in true coastal
     for i, r1 in ipairs(ring1) do
         if r1.Plot:IsLake() or r1:IsMountain() then
             lakesOrMountains = lakesOrMountains + 1;
-            -- Starting from west tile from Hex, so we need to add the last tile analysed in ring to check
-            if i ==1 and lastHexRing ~= nil and (lastHexRing.Plot:IsLake() or lastHexRing:IsMountain()) then
+            -- Starting from west tile from Hex, so we need to add the last tile analysed in ring to check (same for last tile, need to add first one)
+            if (i == 1 and lastHexRing ~= nil and (lastHexRing.Plot:IsLake() or lastHexRing:IsMountain())) 
+                or (i == 6 and firstHexRing ~= nil and (firstHexRing.Plot:IsLake() or firstHexRing:IsMountain())) then
                 lakesOrMountains = lakesOrMountains + 1;
             end
         else
@@ -2021,7 +2023,8 @@ function HexMap:TerraformDesert(hex)
     end
     _Debug("Enter TerraformDesert")
     if hex.ResourceType == g_RESOURCE_SILVER then
-        _Debug("TerraformDesert - Silver terraformed on ", hex:PrintXY())
+        _Debug("TerraformDesert deleted a silver that cannot exist outside of desert (seems to be deleted by firaxis at start while existing in further methods if not on desert)")
+        self:TerraformSetResource(hex, g_RESOURCE_NONE, true)
     end
     --50% plain/grass
     -- leave oasis as it is (cant be terraformed correctly to lakes)
