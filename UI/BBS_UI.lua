@@ -1,4 +1,4 @@
-local g_version = "0.26" --TODO fix get version from modinfo
+local g_version = "0.90" --TODO fix get version from modinfo
 -------------------------------------------------------------------------------
 print("-------------- BBM UI v"..g_version.." -D- Init --------------")
 -------------------------------------------------------------------------------

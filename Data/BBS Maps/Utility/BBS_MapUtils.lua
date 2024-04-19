@@ -5179,7 +5179,6 @@ function SpawnBalancing:BalanceToMean(yieldMargin, standardMargin, unworkableYie
         end
         local listLowR1 = self:GetAllOtherWorkableTiles(self.RingTables[1].HexRings);
         local listLowR2 = self:GetAllOtherWorkableTiles(self.RingTables[2].HexRings);
-        --if self.InnerFoodDiff > self.InnerProdDiff and canAddProd then
         if rngRing <= 50 then
             firstTryRingList = listLowR1;
             firstTryRing = 1;
@@ -5241,7 +5240,7 @@ function SpawnBalancing:BalanceToMean(yieldMargin, standardMargin, unworkableYie
         local listHighR2 = self:GetAllHighYieldsTiles(self.RingTables[2].HexRings);
         AddToTable(listStdR1, listHighR1);
         AddToTable(listStdR2, listHighR2);
-        if rngRing <= 50 then
+        if rngRing <= 33 then
             firstTryRingList = listStdR1;
             firstTryRing = 1;
             secondTryRingList = listStdR2;
@@ -5422,7 +5421,7 @@ function SpawnBalancing:BalanceToMean(yieldMargin, standardMargin, unworkableYie
                     end
                 end
             end
-            if rngRing <= 50 then
+            if rngRing <= 33 then
                 firstTryRingList = listWorkR1;
                 firstTryRing = 1;
                 secondTryRingList = listWorkR2;
@@ -5560,7 +5559,7 @@ function SpawnBalancing:BalanceToMean(yieldMargin, standardMargin, unworkableYie
                 local listHighR2 = self:GetAllHighYieldsTiles(self.RingTables[2].HexRings);
                 AddToTable(listStdR1, listHighR1);
                 AddToTable(listStdR2, listHighR2);
-                if rngRing <= 50 then
+                if rngRing <= 33 then
                     firstTryRingList = listStdR1;
                     firstTryRing = 1;
                     secondTryRingList = listStdR2;
