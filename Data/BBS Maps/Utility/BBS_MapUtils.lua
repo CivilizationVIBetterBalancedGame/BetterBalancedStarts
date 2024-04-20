@@ -5096,6 +5096,7 @@ function HighYieldsTeamerBalancing(spawns)
     local team1Civ = {};
     local team2Civ = {};
     local firstTeamIndex = spawns[1].Civ.CivilizationTeam;
+    spawns = GetShuffledCopyOfTable(spawns);
     for _, spawn in pairs(spawns) do
         spawn:GetInnerRingWorkable();
         local team = spawn.Civ.CivilizationTeam;

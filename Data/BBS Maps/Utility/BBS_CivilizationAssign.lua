@@ -750,16 +750,26 @@ end
 
 function CivilizationAssignSpawn:IsFloodplainsMalus(hex)
     local ring1 = hex.AllRing6Map[1]
-    local floodCount = 0;
+    local floodCountR1 = 0;
     for _, h in ipairs(ring1) do
         if h:IsFloodplains(true) then
-            floodCount = floodCount + 1;
+            floodCountR1 = floodCountR1 + 1;
         end
     end
     if hex:IsFloodplains(true) then
-        floodCount = floodCount + 2
+        floodCountR1 = floodCountR1 + 2
     end
-    return floodCount >= 2
+    local ring2 = hex.AllRing6Map[2]
+    local floodCountR2 = 0;
+    for _, h in ipairs(ring2) do
+        if h:IsFloodplains(true) then
+            floodCountR2 = floodCountR2 + 1;
+        end
+    end
+    if hex:IsFloodplains(true) then
+        floodCountR2 = floodCountR2 + 2
+    end
+    return floodCountR1 >= 2 or (floodCountR1 >= 1 and floodCountR2 >= 3 and hex.IsCoastal) 
 end
 
 -- TODO : determine weight 
