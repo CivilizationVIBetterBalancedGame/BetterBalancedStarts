@@ -2886,6 +2886,7 @@ TerraformType[10] = "MountainToHills";
 TerraformType[11] = "AddLux";
 TerraformType[12] = "ToStdHighFoodYield";
 TerraformType[13] = "StdTohighYield";
+TerraformType[14] = "ToHills";
 -- Call basic terraforming method depending on type
 function HexMap:TerraformHex(hex, type, id, forced, boolParam)
     if type == TerraformType[1] then
@@ -2914,6 +2915,8 @@ function HexMap:TerraformHex(hex, type, id, forced, boolParam)
         return self:TerraformToStandardHighFoodYields(hex, boolParam);
     elseif type == TerraformType[13] then
         return self:Terraform4YieldsToHighYields(hex, forced, boolParam);
+    elseif type == TerraformType[14] then
+        return self:TerraformToHill(hex, boolParam);
     elseif type == TerraformType[99] then
        return self:TerraformEmptyTile(hex);
     else
@@ -3658,6 +3661,26 @@ function SpawnBalancing:CleanSpawnTile()
         end
         self:PlaceRelocatedHexOnRing(3);
     end
+
+    -- Prevent spawning on fissure 
+    if self.Hex.FeatureType == g_FEATURE_GEOTHERMAL_FISSURE then
+        _Debug("CleanSpawnTile - Cleaned geothermal fissure on spawn")
+        self:TerraformHex(self.Hex, 0, TerraformType[2], g_FEATURE_NONE, false, false);
+    end
+    -- Every fissure ring 1 and 2 are set to hills to avoid settling on it turn 1
+    for _, h in pairs(self.RingTables[1].HexRings) do
+        if h.FeatureType == g_FEATURE_GEOTHERMAL_FISSURE then
+            _Debug("CleanSpawnTile - Geothermal fissure Ring 1 to hills", h:PrintXY())
+            self:TerraformHex(h, 1, TerraformType[14], 0, false, false);
+        end
+    end
+    for _, h in pairs(self.RingTables[2].HexRings) do
+        if h.FeatureType == g_FEATURE_GEOTHERMAL_FISSURE then
+            _Debug("CleanSpawnTile - Geothermal fissure Ring 2 to hills", h:PrintXY())
+            self:TerraformHex(h, 2, TerraformType[14], 0, false, false);
+        end
+    end
+
 end
 
 function SpawnBalancing:RemoveRing1MountainsOnRiver()
