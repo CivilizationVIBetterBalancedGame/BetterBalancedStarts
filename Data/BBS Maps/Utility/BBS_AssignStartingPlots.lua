@@ -180,7 +180,7 @@ function BBS_AssignStartingPlots.Create(args)
                 if a.TotalValidTiles == b.TotalValidTiles then
                     if a.TotalMapScore == b.TotalMapScore then
                         print("SortBBS_Civilisations same score ", a.RandomPlaceIdOrder, a.CivilizationLeader, b.RandomPlaceIdOrder, b.CivilizationLeader)
-                        return a.RandomPlaceIdOrder <= b.RandomPlaceIdOrder;
+                        return a.RandomPlaceIdOrder < b.RandomPlaceIdOrder;
                     else
                         print("SortBBS_Civilisations Same valid tiles")
                         return a.TotalMapScore < b.TotalMapScore

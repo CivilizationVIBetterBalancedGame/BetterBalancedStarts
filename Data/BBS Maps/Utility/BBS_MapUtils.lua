@@ -2798,18 +2798,23 @@ function HexMap:RemoveCoastalMountains()
     for y = 0, self.height - 1 do
         for x = 0, self.width - 1 do
             local hex = self:GetHexInMap(x, y);
-            if hex ~= nil and hex.IsCoastal and hex:IsMountain() then
-                -- Clear mountains around coastal volcano (can't terraform volcanoes)
-                if hex.FeatureType == g_FEATURE_VOLCANO then
-                    local ring1 = hex.AllRing6Map[1];
-                    for _, h in pairs(ring1) do
-                        if h:IsMountain() and h.FeatureType ~= g_FEATURE_VOLCANO then
-                            self:TerraformMountainToHill(h);
+            if hex ~= nil and hex:IsMountain() then
+                if hex.IsCoastal then
+                    -- Clear mountains around coastal volcano (can't terraform volcanoes)
+                    if hex.FeatureType == g_FEATURE_VOLCANO then
+                        local ring1 = hex.AllRing6Map[1];
+                        for _, h in pairs(ring1) do
+                            if h:IsMountain() and h.FeatureType ~= g_FEATURE_VOLCANO then
+                                self:TerraformMountainToHill(h);
+                            end
                         end
+                    else
+                        -- Clear coastal mountain to hill
+                        self:TerraformMountainToHill(hex);
                     end
-                else
-                    -- Clear coastal mountain to hill
-                    self:TerraformMountainToHill(hex);
+                elseif hex:IsWater() then
+                    _Debug("Found water mountain");
+                    self:TerraformSetTerrain(hex, g_TERRAIN_TYPE_PLAINS_MOUNTAIN);
                 end
             end
         end
@@ -5543,7 +5548,7 @@ function SpawnBalancing:BalanceToMean(yieldMargin, standardMargin, unworkableYie
                 end
                 for _, h in ipairs(secondTryRingList) do
                     if self:TerraformHex(h, secondTryRing, TerraformType[6], 0, canRemoveProd, false) then
-                        _Debug("BalanceToMean - Added ood on workable tile with canRemoveProd ", canRemoveProd);
+                        _Debug("BalanceToMean - Added food on workable tile with canRemoveProd ", canRemoveProd);
                         return true;
                     end
                 end
