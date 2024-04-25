@@ -2342,7 +2342,12 @@ function HexMap:Terraform4YieldsToHighYields(hex, canChangeResource, canAddLux)
                 self:TerraformTo22YieldsNoResource(hex)
             end
         end
-        if hex.FeatureType == g_FEATURE_JUNGLE then
+        if IsTundraLand(hex.TerrainType) then
+            _Debug("Terraform4YieldsToHighYields tundra Deer + hills + forests");
+            self:TerraformSetTerrain(hex, g_TERRAIN_TYPE_TUNDRA_HILLS);
+            self:TerraformSetFeature(hex, g_FEATURE_FOREST, true);
+            return self:TerraformSetResource(hex, g_RESOURCE_DEER, true);
+        elseif hex.FeatureType == g_FEATURE_JUNGLE then
             if hex.ResourceType ~= g_RESOURCE_BANANAS then
                 _Debug("Terraform4YieldsToHighYields Jungle 2/2 to Bananas 3/2");
                 return self:TerraformSetResource(hex, g_RESOURCE_BANANAS, true);
@@ -2360,9 +2365,6 @@ function HexMap:Terraform4YieldsToHighYields(hex, canChangeResource, canAddLux)
                 _Debug("Terraform4YieldsToHighYields To Deer 2/3");
                 return self:TerraformSetTerrain(hex, g_TERRAIN_TYPE_GRASS_HILLS);
             end
-        elseif hex.TerrainType == g_TERRAIN_TYPE_TUNDRA_HILLS and hex.ResourceType == g_RESOURCE_DEER and hex.FeatureType == g_FEATURE_NONE then
-            _Debug("Terraform4YieldsToHighYields Add forest to tundra Deer + hills");
-            return self:TerraformSetFeature(hex, g_FEATURE_FOREST, true);
         end
     end
 end

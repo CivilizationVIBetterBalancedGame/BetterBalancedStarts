@@ -183,11 +183,14 @@ function BBS_AssignStartingPlots.Create(args)
                         -- Random order when same number of valid tiles and scores (comparing 2 no bias or 2 purely coastal)
                         local rng1 = TerrainBuilder.GetRandomNumber(100, "Spawn A");
                         local rng2 = TerrainBuilder.GetRandomNumber(100, "Spawn B");
+                        print("SortBBS_Civilisations all same")
                         return rng1 >= rng2;
                     else
+                        print("SortBBS_Civilisations Same valid tiles")
                         return a.TotalMapScore < b.TotalMapScore
                     end
                 else
+                    print("SortBBS_Civilisations Less valid tiles")
                     -- less score = more constraints for bias respect
                     return a.TotalValidTiles < b.TotalValidTiles
                 end
