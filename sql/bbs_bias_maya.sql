@@ -11,3 +11,12 @@ INSERT OR IGNORE INTO StartBiasCustom
 		VALUES	
 		('CIVILIZATION_MAYA',							'CUSTOM_HYDROPHOBIC');			
 
+DELETE FROM StartBiasResources WHERE CivilizationType='CIVILIZATION_MAYA' AND ResourceType='RESOURCE_GYPSUM';
+DELETE FROM StartBiasResources WHERE CivilizationType='CIVILIZATION_MAYA' AND ResourceType='RESOURCE_JADE';
+DELETE FROM StartBiasResources WHERE CivilizationType='CIVILIZATION_MAYA' AND ResourceType='RESOURCE_MARBLE';
+DELETE FROM StartBiasResources WHERE CivilizationType='CIVILIZATION_MAYA' AND ResourceType='RESOURCE_MERCURY';
+DELETE FROM StartBiasResources WHERE CivilizationType='CIVILIZATION_MAYA' AND ResourceType='RESOURCE_SALT';
+DELETE FROM StartBiasResources WHERE CivilizationType='CIVILIZATION_MAYA' AND ResourceType='RESOURCE_IVORY';
+
+-- Delete StartBiasTerrain
+DELETE FROM StartBiasTerrains WHERE CivilizationType='CIVILIZATION_MAYA';

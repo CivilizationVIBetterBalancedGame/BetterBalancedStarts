@@ -667,9 +667,8 @@ function CivilizationAssignSpawn:GetBiasCategory(bias)
         end
     elseif bias.Type == "RIVERS" then
         return "RIVERS_T"..tostring(bias.Tier);
-    else
-        return "CUSTOM_T"..tostring(bias.Tier);
     end
+    return "CUSTOM_T"..tostring(bias.Tier);
 end
 
 

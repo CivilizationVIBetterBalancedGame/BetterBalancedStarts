@@ -29,3 +29,7 @@ INSERT OR IGNORE INTO StartBiasCustom
 		('CIVILIZATION_SWEDEN',						'CUSTOM_KING_OF_THE_NORTH'),
 		--('CIVILIZATION_INCA',						'CUSTOM_CONTINENT_SPLIT'),
 		('CIVILIZATION_INCA',						'CUSTOM_MOUNTAIN_LOVER');
+
+-- Spain got coastal bias again
+INSERT INTO StartBiasTerrains(CivilizationType, TerrainType, Tier) VALUES
+    ('CIVILIZATION_SPAIN', 'TERRAIN_COAST', 1);
