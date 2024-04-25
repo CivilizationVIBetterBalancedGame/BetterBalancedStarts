@@ -5359,6 +5359,19 @@ function SpawnBalancing:BalanceToMean(yieldMargin, standardMargin, unworkableYie
                         return true;
                     end
                 end
+                -- If can not add standard, change workables
+                for _, h in ipairs(firstTryRingList) do
+                    if self:TerraformHex(h, firstTryRing, TerraformType[8], 0, canRemoveFood, false) then
+                        _Debug("BalanceToMean - Added prod on workable tile with canRemoveProd ", canRemoveProd);
+                        return true;
+                    end
+                end
+                for _, h in ipairs(secondTryRingList) do
+                    if self:TerraformHex(h, secondTryRing, TerraformType[8], 0, canRemoveFood, false) then
+                        _Debug("BalanceToMean - Added prod on workable tile with canRemoveProd ", canRemoveProd);
+                        return true;
+                    end
+                end
             -- Randomly try either change any workable tile or 
             elseif canRemoveFood then
                 firstTryRingList = GetShuffledCopyOfTable(firstTryRingList);
@@ -5510,14 +5523,27 @@ function SpawnBalancing:BalanceToMean(yieldMargin, standardMargin, unworkableYie
                 firstTryRingList = GetShuffledCopyOfTable(firstTryRingList);
                 for _, h in ipairs(firstTryRingList) do
                     if self:GetHexBaseFood(h) + self:GetHexBaseProd(h) == 3 and self:TerraformHex(h, firstTryRing, TerraformType[6], 0, canRemoveProd, false) then
-                        _Debug("BalanceToMean - Added prod on flat tile with canRemoveProd ", canRemoveProd);
+                        _Debug("BalanceToMean - Added food on 3yields with canRemoveProd ", canRemoveProd);
                         return true;
                     end
                 end
                 secondTryRingList = GetShuffledCopyOfTable(secondTryRingList);
                 for _, h in ipairs(secondTryRingList) do
                     if self:GetHexBaseFood(h) + self:GetHexBaseProd(h) == 3 and self:TerraformHex(h, secondTryRing, TerraformType[6], 0, canRemoveProd, false) then
-                        _Debug("BalanceToMean - Added prod on flat tile with canRemoveProd ", canRemoveProd);
+                        _Debug("BalanceToMean - Added food on 3yields tile with canRemoveProd ", canRemoveProd);
+                        return true;
+                    end
+                end
+                -- If can not add standard, change workables
+                for _, h in ipairs(firstTryRingList) do
+                    if self:TerraformHex(h, firstTryRing, TerraformType[6], 0, canRemoveProd, false) then
+                        _Debug("BalanceToMean - Added food on workable tile with canRemoveProd ", canRemoveProd);
+                        return true;
+                    end
+                end
+                for _, h in ipairs(secondTryRingList) do
+                    if self:TerraformHex(h, secondTryRing, TerraformType[6], 0, canRemoveProd, false) then
+                        _Debug("BalanceToMean - Added ood on workable tile with canRemoveProd ", canRemoveProd);
                         return true;
                     end
                 end
