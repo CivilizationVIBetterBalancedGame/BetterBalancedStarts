@@ -273,10 +273,12 @@ function CivilizationAssignSpawn:CalculateTotalScores(BBS_HexMap)
         end
         self.TotalMapScore = totalScore / maxCentScore
         self.TotalValidTiles = totalValidTiles
+        self.RandomPlaceIdOrder = TerrainBuilder.GetRandomNumber(100, "Spawn A"); -- Used to determine in what order will be placed civ with same score and valid tiles (typically no bias)
         print("CalculateTotalScores "..self.CivilizationLeader.." "..tostring(totalValidTiles))
     else 
         self.TotalMapScore = 100;
-        self.TotalValidTiles = 0
+        self.TotalValidTiles = 0;
+        self.RandomPlaceIdOrder = TerrainBuilder.GetRandomNumber(100, "Spawn Spec");
     end
 
 end
@@ -991,7 +993,7 @@ function CivilizationAssignSpawn:IsBiasRespected(hex, hexMap)
                             countHill = countHill + 1;
                             -- 18 tiles total in ring 1+2, need at least 9
                             -- For now this is the only bias of greece and korea and ethiopia
-                            if countHill >= 9 then
+                            if countHill >= 8 then
                                 isOneOfBiasRespected = true;
                             end
                         end

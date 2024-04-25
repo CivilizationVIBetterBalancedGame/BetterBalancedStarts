@@ -171,20 +171,16 @@ function BBS_AssignStartingPlots.Create(args)
     print("Start Assign spawn order",  os.date("%c"))
     -- Define spawn order 
     -- Comparing first the number of valid tiles, placing first 
+    for _, civ in pairs(BBS_Civilisations) do
+        print(tostring(civ.CivilizationLeader).." - ScoreTotal = "..tostring(civ.TotalMapScore).." -  Valid tiles = "..tostring(civ.TotalValidTiles))
+    end
+
     table.sort(BBS_Civilisations,
             function(a, b)
-                -- Avoid bug where a or b is nil for unknown reasons
-                if a == nil then
-                    return false
-                elseif b == nil then
-                    return true
-                elseif a.TotalValidTiles == b.TotalValidTiles then
+                if a.TotalValidTiles == b.TotalValidTiles then
                     if a.TotalMapScore == b.TotalMapScore then
-                        -- Random order when same number of valid tiles and scores (comparing 2 no bias or 2 purely coastal)
-                        local rng1 = TerrainBuilder.GetRandomNumber(100, "Spawn A");
-                        local rng2 = TerrainBuilder.GetRandomNumber(100, "Spawn B");
-                        print("SortBBS_Civilisations all same")
-                        return rng1 >= rng2;
+                        print("SortBBS_Civilisations same score ", a.RandomPlaceIdOrder, a.CivilizationLeader, b.RandomPlaceIdOrder, b.CivilizationLeader)
+                        return a.RandomPlaceIdOrder <= b.RandomPlaceIdOrder;
                     else
                         print("SortBBS_Civilisations Same valid tiles")
                         return a.TotalMapScore < b.TotalMapScore
