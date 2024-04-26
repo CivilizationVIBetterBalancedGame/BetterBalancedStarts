@@ -4030,7 +4030,7 @@ function SpawnBalancing:ApplyMinimalCoastalTiles()
         local rng = TerrainBuilder.GetRandomNumber(100, "Ring2 Turtle or Fish");
         local isTurtlesOnMap = Contains(self.HexMap.LuxTable[-1], g_RESOURCE_TURTLES);
         _Debug("Detected turtles available = ", isTurtlesOnMap, rng);
-        if isTurtlesOnMap and rng <= 50 then
+        if isTurtlesOnMap and rng <= 50 and self.InnerRingLuxCount < self.MaxLuxInnerRingThreshold then
             _Debug("Added turtle reef to ", hex:PrintXY())
             self:TerraformHex(hex, 2, TerraformType[3], g_RESOURCE_TURTLES, true, false);
         else
