@@ -3501,8 +3501,8 @@ function InitSpawnBalancing(hexMap, civ)
     balancing:CleanSpawnTile();
     balancing:CheckLuxThreshold();
     balancing:ApplyMinimalCoastalTiles();
-    balancing:GaranteedStandardHighFoodInnerRing();
     balancing:CheckInnerRingHighYieldsThreshold();
+    balancing:GaranteedStandardHighFoodInnerRing();
     balancing:ApplyMinimalLandTiles(1, 6);
     balancing:ApplyGaranteedStrategics();
     --balancing:AddHighYieldFromStandard();
