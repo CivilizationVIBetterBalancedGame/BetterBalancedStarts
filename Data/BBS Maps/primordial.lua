@@ -90,10 +90,14 @@ function GenerateMap()
 	local iContinentBoundaryPlots = GetContinentBoundaryPlotCount(g_iW, g_iH);
 	local biggest_area = Areas.FindBiggestArea(false);
 	print("After Adding Hills: ", biggest_area:GetPlotCount());
-		if (MapConfiguration.GetValue("BBSRidge") ~= 1) then
+	
+	print("Adding Ridges");
+	if (MapConfiguration.GetValue("BBSRidge") ~= 1) then
 		print("Adding Ridges");
-	AddTerrainFromContinents(plotTypes, terrainTypes, world_age, g_iW, g_iH, iContinentBoundaryPlots);
+		AddTerrainFromContinents(plotTypes, terrainTypes, world_age, g_iW, g_iH, iContinentBoundaryPlots);
 	end
+	--AddTerrainFromContinents(plotTypes, terrainTypes, world_age, g_iW, g_iH, iContinentBoundaryPlots);
+	
 	AreaBuilder.Recalculate();
 
 	-- River generation is affected by plot types, originating from highlands and preferring to traverse lowlands.
@@ -129,6 +133,10 @@ function GenerateMap()
 		START_CONFIG = startConfig,
 	};
 	local resGen = BBS_ResourceGenerator.Create(args);
+
+	if (MapConfiguration.GetValue("BBSRidge") == 1) then
+		AddVolcanos(plotTypes,world_age,g_iW, g_iH)
+	end
 
 	print("Creating start plot database.");
 
