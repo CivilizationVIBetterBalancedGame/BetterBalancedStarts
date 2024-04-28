@@ -770,7 +770,7 @@ function CivilizationAssignSpawn:IsFloodplainsMalus(hex)
     if hex:IsFloodplains(true) then
         floodCountR2 = floodCountR2 + 2
     end
-    return floodCountR1 >= 2 or (floodCountR1 >= 1 and floodCountR2 >= 3 and hex.IsCoastal) 
+    return floodCountR1 >= 2 or (floodCountR1 + floodCountR2 >= 4 and hex.IsCoastal) 
 end
 
 -- TODO : determine weight 

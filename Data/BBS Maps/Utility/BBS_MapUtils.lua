@@ -2480,6 +2480,10 @@ end
 
 
 function HexMap:TerraformRemove1Food(hex, canAddProd)
+    -- Do not change fissures
+    if hex.FeatureType == g_FEATURE_GEOTHERMAL_FISSURE then
+        return false;
+    end
     -- Allow to convert food to prod by changing from grass to plains
     _Debug("TerraformRemove1Food enter ", hex:PrintXY(), canAddProd, hex.TerrainType, hex.FeatureType, hex.ResourceType)
     if canAddProd and IsGrassLand(hex.TerrainType) and hex.ResourceType == g_RESOURCE_NONE and (hex.FeatureType == g_FEATURE_FOREST or hex.FeatureType == g_FEATURE_NONE) then
@@ -2527,6 +2531,10 @@ end
 
 
 function HexMap:TerraformRemove1Prod(hex, canAddFood)
+     -- Do not change fissures
+    if hex.FeatureType == g_FEATURE_GEOTHERMAL_FISSURE then
+        return false;
+    end
     -- Allow to convert prod to food by changing from plains to grass
     if canAddFood then
         if hex.ResourceType == g_RESOURCE_NONE and (hex.FeatureType == g_FEATURE_FOREST or hex.FeatureType == g_FEATURE_NONE) then
@@ -4323,6 +4331,7 @@ function SpawnBalancing:CheckInnerRingHighYieldsThreshold()
     AddToTable(ring2HighYields, self.RingTables[2].HIGH_YIELD_TILES);
     AddToTable(ring2HighYields, self.RingTables[2].HIGH_EXTRA_YIELDS);
     local highYieldsCount = #ring1HighYields + #ring2HighYields;
+    _Debug("CheckInnerRingHighYieldsThreshold highYieldsCount = ", highYieldsCount);
     if highYieldsCount >= self.MinHighYieldInnerRingThreshold and highYieldsCount <= self.MaxHighYieldInnerRingThreshold then
         _Debug("CheckInnerRingHighYieldsThreshold OK : highYieldsCount = ", highYieldsCount, self.MaxHighYieldInnerRingThreshold);
         return true;
@@ -4332,7 +4341,7 @@ function SpawnBalancing:CheckInnerRingHighYieldsThreshold()
         if highYieldsCount > self.MaxHighYieldInnerRingThreshold and h.IsTaggedAsMinimum == false then
             self:TerraformHex(h, 1, TerraformType[3], g_RESOURCE_NONE, false, false);
             highYieldsCount = highYieldsCount - 1;
-            _Debug("CheckHighYieldsThreshold deleted a high yields on ", h:PrintXY(), " Ring 1")
+            _Debug("CheckInnerRingHighYieldsThreshold deleted a high yields on ", h:PrintXY(), " Ring 1")
         end
     end
     ring2HighYields = GetShuffledCopyOfTable(ring2HighYields);
@@ -4340,14 +4349,15 @@ function SpawnBalancing:CheckInnerRingHighYieldsThreshold()
         if highYieldsCount > self.MaxHighYieldInnerRingThreshold and h.IsTaggedAsMinimum == false then
             self:TerraformHex(h, 2, TerraformType[3], g_RESOURCE_NONE, false, false);
             highYieldsCount = highYieldsCount - 1;
-            _Debug("CheckHighYieldsThreshold deleted a high yields on ", h:PrintXY(), " Ring 2")
+            _Debug("CheckInnerRingHighYieldsThreshold deleted a high yields on ", h:PrintXY(), " Ring 2")
         end
     end
     -- If still over maximum, it means the lux or guaranteed 2/2+ were tagged as minimum
     -- Try relocating a lux on ring 3 then replace by a standard 2/2
     if highYieldsCount > self.MaxHighYieldInnerRingThreshold then
-        _Debug("CheckHighYieldsThreshold : over maximum of highyields")
+        _Debug("CheckInnerRingHighYieldsThreshold : over maximum of highyields")
         local relocateLeft = highYieldsCount - self.MaxHighYieldInnerRingThreshold;
+        _Debug("CheckInnerRingHighYieldsThreshold relocateLeft = ", relocateLeft);
         for _, h1 in ipairs(ring1HighYields) do
             if relocateLeft > 0 then
                 local wasTagged = false;
@@ -4356,7 +4366,7 @@ function SpawnBalancing:CheckInnerRingHighYieldsThreshold()
                     h1:SetTaggedAsMinimum(false);
                 end
                 if self:RelocateHex(1, 3, h1) then
-                    _Debug("CheckHighYieldsThreshold : ring 1 high yield replaced with 2/2 ", h1:PrintXY())
+                    _Debug("CheckInnerRingHighYieldsThreshold : ring 1 high yield replaced with 2/2 ", h1:PrintXY())
                     self:PlaceRelocatedHexOnRing(3);
                     self:TerraformHex(h1, 1, TerraformType[4], 0, false, false)
                     relocateLeft = relocateLeft - 1;
@@ -4366,6 +4376,7 @@ function SpawnBalancing:CheckInnerRingHighYieldsThreshold()
                 end                
             end
         end
+        _Debug("CheckInnerRingHighYieldsThreshold relocateLeft after r1 = ", relocateLeft);
         for _, h2 in ipairs(ring2HighYields) do
             if relocateLeft > 0 then
                 local wasTagged = false;
@@ -4882,7 +4893,7 @@ function SpawnBalancing:UpdateTableDataRing(h, i)
     if  h.ResourceType == g_RESOURCE_NONE and h.FeatureType == g_FEATURE_NONE then
         table.insert(self.RingTables[i].EMPTY_TILES, h)
         -- 1/3 considered low yield in ring 1-2 because lack of food
-    elseif h.Food + h.Prod < 4 or (i <= 2 and h.Food == 1 and h.Prod == 3) then
+    elseif h.Food + h.Prod < 4 or (i <= 2 and h.Food == 1 and h.Prod == 3 and h.ExtraYield == false) then
         table.insert(self.RingTables[i].LOW_YIELD_TILES, h)
     elseif h.Food + h.Prod >= 4 and h.ExtraYield then
         table.insert(self.RingTables[i].HIGH_EXTRA_YIELDS, h)
@@ -5208,7 +5219,7 @@ function SpawnBalancing:BalanceToMean(yieldMargin, standardMargin, unworkableYie
     local firstTryRing;
     local secondTryRing;
     local rngRing = TerrainBuilder.GetRandomNumber(100, "Ring tried");
-    -- Need to add standard tiles - deficit of either food or prod
+    -- ADD STANDARD tiles - deficit of either food or prod
     _Debug("BalanceToMean status : self.StandardDiff = ", self.StandardDiff, " self.InnerFoodDiff = ", self.InnerFoodDiff, " self.InnerProdDiff = ", self.InnerProdDiff);
     --if self.StandardDiff + standardMargin < 0 then
     if self.StandardDiff < 0 then
