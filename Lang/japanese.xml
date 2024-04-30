@@ -120,133 +120,133 @@
 		</Replace>
 	
 		<!-- == Min distance == -->
-		<Replace Tag="LOC_GAME_BBS_MIN_DISTANCE_NAME" Language="ja_JP">
+		<Replace Tag="LOC_GAME_BBM_MIN_DISTANCE_NAME" Language="ja_JP">
 			<Text>プレイヤー同士の最小距離</Text>
 		</Replace>
-		<Replace Tag="BBS_MIN_DISTANCE_AUTO_NAME" Language="ja_JP">
+		<Replace Tag="BBM_MIN_DISTANCE_AUTO_NAME" Language="ja_JP">
 			<Text>標準</Text>
 		</Replace>
-		<Replace Tag="BBS_MIN_DISTANCE_AUTO_DESC" Language="ja_JP">
+		<Replace Tag="BBM_MIN_DISTANCE_AUTO_DESC" Language="ja_JP">
 			<Text>マップサイズに依存する標準距離</Text>
 		</Replace>
-		<Replace Tag="BBS_MIN_DISTANCE_SIX_NAME" Language="ja_JP">
+		<Replace Tag="BBM_MIN_DISTANCE_SIX_NAME" Language="ja_JP">
 			<Text>6</Text>
 		</Replace>
-		<Replace Tag="BBS_MIN_DISTANCE_SIX_DESC" Language="ja_JP">
+		<Replace Tag="BBM_MIN_DISTANCE_SIX_DESC" Language="ja_JP">
 			<Text>6タイル</Text>
 		</Replace>
-		<Replace Tag="BBS_MIN_DISTANCE_SEVEN_NAME" Language="ja_JP">
+		<Replace Tag="BBM_MIN_DISTANCE_SEVEN_NAME" Language="ja_JP">
 			<Text>7</Text>
 		</Replace>
-		<Replace Tag="BBS_MIN_DISTANCE_SEVEN_DESC" Language="ja_JP">
+		<Replace Tag="BBM_MIN_DISTANCE_SEVEN_DESC" Language="ja_JP">
 			<Text>7タイル</Text>
 		</Replace>
-		<Replace Tag="BBS_MIN_DISTANCE_EIGHT_NAME" Language="ja_JP">
+		<Replace Tag="BBM_MIN_DISTANCE_EIGHT_NAME" Language="ja_JP">
 			<Text>8</Text>
 		</Replace>
-		<Replace Tag="BBS_MIN_DISTANCE_EIGHT_DESC" Language="ja_JP">
+		<Replace Tag="BBM_MIN_DISTANCE_EIGHT_DESC" Language="ja_JP">
 			<Text>8タイル</Text>
 		</Replace>
-		<Replace Tag="BBS_MIN_DISTANCE_NINE_NAME" Language="ja_JP">
+		<Replace Tag="BBM_MIN_DISTANCE_NINE_NAME" Language="ja_JP">
 			<Text>9</Text>
 		</Replace>
-		<Replace Tag="BBS_MIN_DISTANCE_NINE_DESC" Language="ja_JP">
+		<Replace Tag="BBM_MIN_DISTANCE_NINE_DESC" Language="ja_JP">
 			<Text>9タイル</Text>
 		</Replace>
-		<Replace Tag="BBS_MIN_DISTANCE_TEN_NAME" Language="ja_JP">
+		<Replace Tag="BBM_MIN_DISTANCE_TEN_NAME" Language="ja_JP">
 			<Text>10</Text>
 		</Replace>
-		<Replace Tag="BBS_MIN_DISTANCE_TEN_DESC" Language="ja_JP">
+		<Replace Tag="BBM_MIN_DISTANCE_TEN_DESC" Language="ja_JP">
 			<Text>10タイル</Text>
 		</Replace>
-		<Replace Tag="BBS_MIN_DISTANCE_ELEVEN_NAME" Language="ja_JP">
+		<Replace Tag="BBM_MIN_DISTANCE_ELEVEN_NAME" Language="ja_JP">
 			<Text>11</Text>
 		</Replace>
-		<Replace Tag="BBS_MIN_DISTANCE_ELEVEN_DESC" Language="ja_JP">
+		<Replace Tag="BBM_MIN_DISTANCE_ELEVEN_DESC" Language="ja_JP">
 			<Text>11タイル</Text>
 		</Replace>
-		<Replace Tag="BBS_MIN_DISTANCE_TWELVE_NAME" Language="ja_JP">
+		<Replace Tag="BBM_MIN_DISTANCE_TWELVE_NAME" Language="ja_JP">
 			<Text>12</Text>
 		</Replace>
-		<Replace Tag="BBS_MIN_DISTANCE_TWELVE_DESC" Language="ja_JP">
+		<Replace Tag="BBM_MIN_DISTANCE_TWELVE_DESC" Language="ja_JP">
 			<Text>12タイル</Text>
 		</Replace>
-		<Replace Tag="BBS_MIN_DISTANCE_THIRTEEN_NAME" Language="ja_JP">
+		<Replace Tag="BBM_MIN_DISTANCE_THIRTEEN_NAME" Language="ja_JP">
 			<Text>13</Text>
 		</Replace>
-		<Replace Tag="BBS_MIN_DISTANCE_THIRTEEN_DESC" Language="ja_JP">
+		<Replace Tag="BBM_MIN_DISTANCE_THIRTEEN_DESC" Language="ja_JP">
 			<Text>13タイル</Text>
 		</Replace>
-		<Replace Tag="BBS_MIN_DISTANCE_FOURTEEN_NAME" Language="ja_JP">
+		<Replace Tag="BBM_MIN_DISTANCE_FOURTEEN_NAME" Language="ja_JP">
 			<Text>14</Text>
 		</Replace>
-		<Replace Tag="BBS_MIN_DISTANCE_FOURTEEN_DESC" Language="ja_JP">
+		<Replace Tag="BBM_MIN_DISTANCE_FOURTEEN_DESC" Language="ja_JP">
 			<Text>14タイル</Text>
 		</Replace>
-		<Replace Tag="BBS_MIN_DISTANCE_FIFTEEN_NAME" Language="ja_JP">
+		<Replace Tag="BBM_MIN_DISTANCE_FIFTEEN_NAME" Language="ja_JP">
 			<Text>15</Text>
 		</Replace>
-		<Replace Tag="BBS_MIN_DISTANCE_FIFTEEN_DESC" Language="ja_JP">
+		<Replace Tag="BBM_MIN_DISTANCE_FIFTEEN_DESC" Language="ja_JP">
 			<Text>15タイル</Text>
 		</Replace>
-		<Replace Tag="BBS_MIN_DISTANCE_SIXTEEN_NAME" Language="ja_JP">
+		<Replace Tag="BBM_MIN_DISTANCE_SIXTEEN_NAME" Language="ja_JP">
 			<Text>16</Text>
 		</Replace>
-		<Replace Tag="BBS_MIN_DISTANCE_SIXTEEN_DESC" Language="ja_JP">
+		<Replace Tag="BBM_MIN_DISTANCE_SIXTEEN_DESC" Language="ja_JP">
 			<Text>16タイル</Text>
 		</Replace>
-		<Replace Tag="BBS_MIN_DISTANCE_SEVENTEEN_NAME" Language="ja_JP">
+		<Replace Tag="BBM_MIN_DISTANCE_SEVENTEEN_NAME" Language="ja_JP">
 			<Text>17</Text>
 		</Replace>
-		<Replace Tag="BBS_MIN_DISTANCE_SEVENTEEN_DESC" Language="ja_JP">
+		<Replace Tag="BBM_MIN_DISTANCE_SEVENTEEN_DESC" Language="ja_JP">
 			<Text>17タイル</Text>
 		</Replace>
-		<Replace Tag="BBS_MIN_DISTANCE_EIGHTEEN_NAME" Language="ja_JP">
+		<Replace Tag="BBM_MIN_DISTANCE_EIGHTEEN_NAME" Language="ja_JP">
 			<Text>18</Text>
 		</Replace>
-		<Replace Tag="BBS_MIN_DISTANCE_EIGHTEEN_DESC" Language="ja_JP">
+		<Replace Tag="BBM_MIN_DISTANCE_EIGHTEEN_DESC" Language="ja_JP">
 			<Text>18タイル</Text>
 		</Replace>
-		<Replace Tag="BBS_MIN_DISTANCE_NINETEEN_NAME" Language="ja_JP">
+		<Replace Tag="BBM_MIN_DISTANCE_NINETEEN_NAME" Language="ja_JP">
 			<Text>19</Text>
 		</Replace>
-		<Replace Tag="BBS_MIN_DISTANCE_NINETEEN_DESC" Language="ja_JP">
+		<Replace Tag="BBM_MIN_DISTANCE_NINETEEN_DESC" Language="ja_JP">
 			<Text>19タイル</Text>
 		</Replace>
-		<Replace Tag="BBS_MIN_DISTANCE_TWENTY_NAME" Language="ja_JP">
+		<Replace Tag="BBM_MIN_DISTANCE_TWENTY_NAME" Language="ja_JP">
 			<Text>20</Text>
 		</Replace>
-		<Replace Tag="BBS_MIN_DISTANCE_TWENTY_DESC" Language="ja_JP">
+		<Replace Tag="BBM_MIN_DISTANCE_TWENTY_DESC" Language="ja_JP">
 			<Text>20タイル</Text>
 		</Replace>
-		<Replace Tag="BBS_MIN_DISTANCE_TWENTYONE_NAME" Language="ja_JP">
+		<Replace Tag="BBM_MIN_DISTANCE_TWENTYONE_NAME" Language="ja_JP">
 			<Text>21</Text>
 		</Replace>
-		<Replace Tag="BBS_MIN_DISTANCE_TWENTYONE_DESC" Language="ja_JP">
+		<Replace Tag="BBM_MIN_DISTANCE_TWENTYONE_DESC" Language="ja_JP">
 			<Text>21タイル</Text>
 		</Replace>
-		<Replace Tag="BBS_MIN_DISTANCE_TWENTYTWO_NAME" Language="ja_JP">
+		<Replace Tag="BBM_MIN_DISTANCE_TWENTYTWO_NAME" Language="ja_JP">
 			<Text>22</Text>
 		</Replace>
-		<Replace Tag="BBS_MIN_DISTANCE_TWENTYTWO_DESC" Language="ja_JP">
+		<Replace Tag="BBM_MIN_DISTANCE_TWENTYTWO_DESC" Language="ja_JP">
 			<Text>22タイル</Text>
 		</Replace>
-		<Replace Tag="BBS_MIN_DISTANCE_TWENTYTHREE_NAME" Language="ja_JP">
+		<Replace Tag="BBM_MIN_DISTANCE_TWENTYTHREE_NAME" Language="ja_JP">
 			<Text>23</Text>
 		</Replace>
-		<Replace Tag="BBS_MIN_DISTANCE_TWENTYTHREE_DESC" Language="ja_JP">
+		<Replace Tag="BBM_MIN_DISTANCE_TWENTYTHREE_DESC" Language="ja_JP">
 			<Text>23タイル</Text>
 		</Replace>
-		<Replace Tag="BBS_MIN_DISTANCE_TWENTYFOUR_NAME" Language="ja_JP">
+		<Replace Tag="BBM_MIN_DISTANCE_TWENTYFOUR_NAME" Language="ja_JP">
 			<Text>24</Text>
 		</Replace>
-		<Replace Tag="BBS_MIN_DISTANCE_TWENTYFOUR_DESC" Language="ja_JP">
+		<Replace Tag="BBM_MIN_DISTANCE_TWENTYFOUR_DESC" Language="ja_JP">
 			<Text>24タイル</Text>
 		</Replace>
-		<Replace Tag="BBS_MIN_DISTANCE_TWENTYFIVE_NAME" Language="ja_JP">
+		<Replace Tag="BBM_MIN_DISTANCE_TWENTYFIVE_NAME" Language="ja_JP">
 			<Text>25</Text>
 		</Replace>
-		<Replace Tag="BBS_MIN_DISTANCE_TWENTYFIVE_DESC" Language="ja_JP">
+		<Replace Tag="BBM_MIN_DISTANCE_TWENTYFIVE_DESC" Language="ja_JP">
 			<Text>25タイル</Text>
 		</Replace>
 

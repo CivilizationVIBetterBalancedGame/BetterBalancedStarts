@@ -120,133 +120,133 @@
 		</Replace>
 	
 		<!-- == Min distance == -->
-		<Replace Tag="LOC_GAME_BBS_MIN_DISTANCE_NAME" Language="zh_Hans_CN">
+		<Replace Tag="LOC_GAME_BBM_MIN_DISTANCE_NAME" Language="zh_Hans_CN">
 			<Text>玩家之间的最小距离</Text>
 		</Replace>
-		<Replace Tag="BBS_MIN_DISTANCE_AUTO_NAME" Language="zh_Hans_CN">
+		<Replace Tag="BBM_MIN_DISTANCE_AUTO_NAME" Language="zh_Hans_CN">
 			<Text>标准</Text>
 		</Replace>
-		<Replace Tag="BBS_MIN_DISTANCE_AUTO_DESC" Language="zh_Hans_CN">
+		<Replace Tag="BBM_MIN_DISTANCE_AUTO_DESC" Language="zh_Hans_CN">
 			<Text>标准距离，取决于地图尺寸。</Text>
 		</Replace>
-		<Replace Tag="BBS_MIN_DISTANCE_SIX_NAME" Language="zh_Hans_CN">
+		<Replace Tag="BBM_MIN_DISTANCE_SIX_NAME" Language="zh_Hans_CN">
 			<Text>6</Text>
 		</Replace>
-		<Replace Tag="BBS_MIN_DISTANCE_SIX_DESC" Language="zh_Hans_CN">
+		<Replace Tag="BBM_MIN_DISTANCE_SIX_DESC" Language="zh_Hans_CN">
 			<Text>6单元格</Text>
 		</Replace>
-		<Replace Tag="BBS_MIN_DISTANCE_SEVEN_NAME" Language="zh_Hans_CN">
+		<Replace Tag="BBM_MIN_DISTANCE_SEVEN_NAME" Language="zh_Hans_CN">
 			<Text>7</Text>
 		</Replace>
-		<Replace Tag="BBS_MIN_DISTANCE_SEVEN_DESC" Language="zh_Hans_CN">
+		<Replace Tag="BBM_MIN_DISTANCE_SEVEN_DESC" Language="zh_Hans_CN">
 			<Text>7单元格</Text>
 		</Replace>
-		<Replace Tag="BBS_MIN_DISTANCE_EIGHT_NAME" Language="zh_Hans_CN">
+		<Replace Tag="BBM_MIN_DISTANCE_EIGHT_NAME" Language="zh_Hans_CN">
 			<Text>8</Text>
 		</Replace>
-		<Replace Tag="BBS_MIN_DISTANCE_EIGHT_DESC" Language="zh_Hans_CN">
+		<Replace Tag="BBM_MIN_DISTANCE_EIGHT_DESC" Language="zh_Hans_CN">
 			<Text>8单元格</Text>
 		</Replace>
-		<Replace Tag="BBS_MIN_DISTANCE_NINE_NAME" Language="zh_Hans_CN">
+		<Replace Tag="BBM_MIN_DISTANCE_NINE_NAME" Language="zh_Hans_CN">
 			<Text>9</Text>
 		</Replace>
-		<Replace Tag="BBS_MIN_DISTANCE_NINE_DESC" Language="zh_Hans_CN">
+		<Replace Tag="BBM_MIN_DISTANCE_NINE_DESC" Language="zh_Hans_CN">
 			<Text>9单元格</Text>
 		</Replace>
-		<Replace Tag="BBS_MIN_DISTANCE_TEN_NAME" Language="zh_Hans_CN">
+		<Replace Tag="BBM_MIN_DISTANCE_TEN_NAME" Language="zh_Hans_CN">
 			<Text>10</Text>
 		</Replace>
-		<Replace Tag="BBS_MIN_DISTANCE_TEN_DESC" Language="zh_Hans_CN">
+		<Replace Tag="BBM_MIN_DISTANCE_TEN_DESC" Language="zh_Hans_CN">
 			<Text>10单元格</Text>
 		</Replace>
-		<Replace Tag="BBS_MIN_DISTANCE_ELEVEN_NAME" Language="zh_Hans_CN">
+		<Replace Tag="BBM_MIN_DISTANCE_ELEVEN_NAME" Language="zh_Hans_CN">
 			<Text>11</Text>
 		</Replace>
-		<Replace Tag="BBS_MIN_DISTANCE_ELEVEN_DESC" Language="zh_Hans_CN">
+		<Replace Tag="BBM_MIN_DISTANCE_ELEVEN_DESC" Language="zh_Hans_CN">
 			<Text>11单元格</Text>
 		</Replace>
-		<Replace Tag="BBS_MIN_DISTANCE_TWELVE_NAME" Language="zh_Hans_CN">
+		<Replace Tag="BBM_MIN_DISTANCE_TWELVE_NAME" Language="zh_Hans_CN">
 			<Text>12</Text>
 		</Replace>
-		<Replace Tag="BBS_MIN_DISTANCE_TWELVE_DESC" Language="zh_Hans_CN">
+		<Replace Tag="BBM_MIN_DISTANCE_TWELVE_DESC" Language="zh_Hans_CN">
 			<Text>12单元格</Text>
 		</Replace>
-		<Replace Tag="BBS_MIN_DISTANCE_THIRTEEN_NAME" Language="zh_Hans_CN">
+		<Replace Tag="BBM_MIN_DISTANCE_THIRTEEN_NAME" Language="zh_Hans_CN">
 			<Text>13</Text>
 		</Replace>
-		<Replace Tag="BBS_MIN_DISTANCE_THIRTEEN_DESC" Language="zh_Hans_CN">
+		<Replace Tag="BBM_MIN_DISTANCE_THIRTEEN_DESC" Language="zh_Hans_CN">
 			<Text>13单元格</Text>
 		</Replace>
-		<Replace Tag="BBS_MIN_DISTANCE_FOURTEEN_NAME" Language="zh_Hans_CN">
+		<Replace Tag="BBM_MIN_DISTANCE_FOURTEEN_NAME" Language="zh_Hans_CN">
 			<Text>14</Text>
 		</Replace>
-		<Replace Tag="BBS_MIN_DISTANCE_FOURTEEN_DESC" Language="zh_Hans_CN">
+		<Replace Tag="BBM_MIN_DISTANCE_FOURTEEN_DESC" Language="zh_Hans_CN">
 			<Text>14单元格</Text>
 		</Replace>
-		<Replace Tag="BBS_MIN_DISTANCE_FIFTEEN_NAME" Language="zh_Hans_CN">
+		<Replace Tag="BBM_MIN_DISTANCE_FIFTEEN_NAME" Language="zh_Hans_CN">
 			<Text>15</Text>
 		</Replace>
-		<Replace Tag="BBS_MIN_DISTANCE_FIFTEEN_DESC" Language="zh_Hans_CN">
+		<Replace Tag="BBM_MIN_DISTANCE_FIFTEEN_DESC" Language="zh_Hans_CN">
 			<Text>15单元格</Text>
 		</Replace>
-		<Replace Tag="BBS_MIN_DISTANCE_SIXTEEN_NAME" Language="zh_Hans_CN">
+		<Replace Tag="BBM_MIN_DISTANCE_SIXTEEN_NAME" Language="zh_Hans_CN">
 			<Text>16</Text>
 		</Replace>
-		<Replace Tag="BBS_MIN_DISTANCE_SIXTEEN_DESC" Language="zh_Hans_CN">
+		<Replace Tag="BBM_MIN_DISTANCE_SIXTEEN_DESC" Language="zh_Hans_CN">
 			<Text>16单元格</Text>
 		</Replace>
-		<Replace Tag="BBS_MIN_DISTANCE_SEVENTEEN_NAME" Language="zh_Hans_CN">
+		<Replace Tag="BBM_MIN_DISTANCE_SEVENTEEN_NAME" Language="zh_Hans_CN">
 			<Text>17</Text>
 		</Replace>
-		<Replace Tag="BBS_MIN_DISTANCE_SEVENTEEN_DESC" Language="zh_Hans_CN">
+		<Replace Tag="BBM_MIN_DISTANCE_SEVENTEEN_DESC" Language="zh_Hans_CN">
 			<Text>17单元格</Text>
 		</Replace>
-		<Replace Tag="BBS_MIN_DISTANCE_EIGHTEEN_NAME" Language="zh_Hans_CN">
+		<Replace Tag="BBM_MIN_DISTANCE_EIGHTEEN_NAME" Language="zh_Hans_CN">
 			<Text>18</Text>
 		</Replace>
-		<Replace Tag="BBS_MIN_DISTANCE_EIGHTEEN_DESC" Language="zh_Hans_CN">
+		<Replace Tag="BBM_MIN_DISTANCE_EIGHTEEN_DESC" Language="zh_Hans_CN">
 			<Text>18单元格</Text>
 		</Replace>
-		<Replace Tag="BBS_MIN_DISTANCE_NINETEEN_NAME" Language="zh_Hans_CN">
+		<Replace Tag="BBM_MIN_DISTANCE_NINETEEN_NAME" Language="zh_Hans_CN">
 			<Text>19</Text>
 		</Replace>
-		<Replace Tag="BBS_MIN_DISTANCE_NINETEEN_DESC" Language="zh_Hans_CN">
+		<Replace Tag="BBM_MIN_DISTANCE_NINETEEN_DESC" Language="zh_Hans_CN">
 			<Text>19单元格</Text>
 		</Replace>
-		<Replace Tag="BBS_MIN_DISTANCE_TWENTY_NAME" Language="zh_Hans_CN">
+		<Replace Tag="BBM_MIN_DISTANCE_TWENTY_NAME" Language="zh_Hans_CN">
 			<Text>20</Text>
 		</Replace>
-		<Replace Tag="BBS_MIN_DISTANCE_TWENTY_DESC" Language="zh_Hans_CN">
+		<Replace Tag="BBM_MIN_DISTANCE_TWENTY_DESC" Language="zh_Hans_CN">
 			<Text>20单元格</Text>
 		</Replace>
-		<Replace Tag="BBS_MIN_DISTANCE_TWENTYONE_NAME" Language="zh_Hans_CN">
+		<Replace Tag="BBM_MIN_DISTANCE_TWENTYONE_NAME" Language="zh_Hans_CN">
 			<Text>21</Text>
 		</Replace>
-		<Replace Tag="BBS_MIN_DISTANCE_TWENTYONE_DESC" Language="zh_Hans_CN">
+		<Replace Tag="BBM_MIN_DISTANCE_TWENTYONE_DESC" Language="zh_Hans_CN">
 			<Text>21单元格</Text>
 		</Replace>
-		<Replace Tag="BBS_MIN_DISTANCE_TWENTYTWO_NAME" Language="zh_Hans_CN">
+		<Replace Tag="BBM_MIN_DISTANCE_TWENTYTWO_NAME" Language="zh_Hans_CN">
 			<Text>22</Text>
 		</Replace>
-		<Replace Tag="BBS_MIN_DISTANCE_TWENTYTWO_DESC" Language="zh_Hans_CN">
+		<Replace Tag="BBM_MIN_DISTANCE_TWENTYTWO_DESC" Language="zh_Hans_CN">
 			<Text>22单元格</Text>
 		</Replace>
-		<Replace Tag="BBS_MIN_DISTANCE_TWENTYTHREE_NAME" Language="zh_Hans_CN">
+		<Replace Tag="BBM_MIN_DISTANCE_TWENTYTHREE_NAME" Language="zh_Hans_CN">
 			<Text>23</Text>
 		</Replace>
-		<Replace Tag="BBS_MIN_DISTANCE_TWENTYTHREE_DESC" Language="zh_Hans_CN">
+		<Replace Tag="BBM_MIN_DISTANCE_TWENTYTHREE_DESC" Language="zh_Hans_CN">
 			<Text>23单元格</Text>
 		</Replace>
-		<Replace Tag="BBS_MIN_DISTANCE_TWENTYFOUR_NAME" Language="zh_Hans_CN">
+		<Replace Tag="BBM_MIN_DISTANCE_TWENTYFOUR_NAME" Language="zh_Hans_CN">
 			<Text>24</Text>
 		</Replace>
-		<Replace Tag="BBS_MIN_DISTANCE_TWENTYFOUR_DESC" Language="zh_Hans_CN">
+		<Replace Tag="BBM_MIN_DISTANCE_TWENTYFOUR_DESC" Language="zh_Hans_CN">
 			<Text>24单元格</Text>
 		</Replace>
-		<Replace Tag="BBS_MIN_DISTANCE_TWENTYFIVE_NAME" Language="zh_Hans_CN">
+		<Replace Tag="BBM_MIN_DISTANCE_TWENTYFIVE_NAME" Language="zh_Hans_CN">
 			<Text>25</Text>
 		</Replace>
-		<Replace Tag="BBS_MIN_DISTANCE_TWENTYFIVE_DESC" Language="zh_Hans_CN">
+		<Replace Tag="BBM_MIN_DISTANCE_TWENTYFIVE_DESC" Language="zh_Hans_CN">
 			<Text>25单元格</Text>
 		</Replace>
 

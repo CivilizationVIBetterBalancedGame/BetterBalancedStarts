@@ -130,10 +130,10 @@
 	<Replace Tag="BBS_SRESOURCES_GARANTEED_DESC" Language="en_US">
 		  <Text>Almost certain you will have all strategic resources within 5 tiles of your spawn</Text>
 	</Replace>
-   <Replace Tag="BBS_MIN_DISTANCE_AUTO_NAME" Language="en_US">
+   <Replace Tag="BBM_MIN_DISTANCE_AUTO_NAME" Language="en_US">
 		  <Text>Standard</Text>
 	</Replace>
-   <Replace Tag="BBS_MIN_DISTANCE_AUTO_DESC" Language="en_US">
+   <Replace Tag="BBM_MIN_DISTANCE_AUTO_DESC" Language="en_US">
 		  <Text>Standard distance, depending on map type</Text>
 	</Replace>
 

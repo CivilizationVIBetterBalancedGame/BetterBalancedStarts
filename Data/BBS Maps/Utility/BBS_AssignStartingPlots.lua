@@ -54,6 +54,7 @@ function BBS_AssignStartingPlots.Create(args)
         BBS_BASE_RESOURCES = MapConfiguration.GetValue("resources"),
         BBS_START = MapConfiguration.GetValue("start"),
         BBM_MIN_ATTEMPTS = MapConfiguration.GetValue("BBMMinAttempts"),
+        BBM_MIN_DISTANCE = MapConfiguration.GetValue("BBMMinDistance")
     }
 
     instance = {

@@ -741,6 +741,7 @@ function HexMap.new(_width, _height, mapScript)
     instance.mapScript = mapScript;
     instance.canCircumnavigate = instance:CanCircumnavigate();
     instance.minimumDistanceMajorToMajorCivs = instance:SetMinimumDistanceMajorToMajorCivs();
+    print("BBMDistance = ", instance.minimumDistanceMajorToMajorCivs)
     instance.minimumDistanceMinorToMajorCivs = GlobalParameters.START_DISTANCE_MINOR_MAJOR_CIVILIZATION or 8;
     instance.minimumDistanceMinorToMinorCivs = GlobalParameters.START_DISTANCE_MINOR_CIVILIZATION_START or 7;
     instance.map = {};
@@ -781,18 +782,23 @@ function HexMap:CanCircumnavigate()
 end
 
 function HexMap:SetMinimumDistanceMajorToMajorCivs()
-    if self.mapScript == MapScripts.MAP_HIGHLANDS or self.mapScript == MapScripts.MAP_LAKES or self.mapScript == MapScripts.MAP_RICH_HIGHLANDS then
-        return 15;
-    elseif self.mapScript == MapScripts.MAP_INLAND_SEA then
-        return 14;
-    elseif self.mapScript == MapScripts.MAP_SEVEN_SEAS then
-        return 13;
-    elseif self.mapScript == MapScripts.MAP_PANGAEA or self.mapScript == MapScripts.MAP_SHUFFLE or self.mapScript == MapScripts.MAP_TILTED_AXIS or self.mapScript == MapScripts.MAP_PRIMORDIAL then
-        return 12;
-    elseif self.mapScript == MapScripts.MAP_TERRA then
-        return 8;
+    local minDistanceConfig = MapConfiguration.GetValue("BBMMinDistance");
+    if minDistanceConfig == 0 then
+        if self.mapScript == MapScripts.MAP_HIGHLANDS or self.mapScript == MapScripts.MAP_LAKES or self.mapScript == MapScripts.MAP_RICH_HIGHLANDS then
+            return 15;
+        elseif self.mapScript == MapScripts.MAP_INLAND_SEA then
+            return 14;
+        elseif self.mapScript == MapScripts.MAP_SEVEN_SEAS then
+            return 13;
+        elseif self.mapScript == MapScripts.MAP_PANGAEA or self.mapScript == MapScripts.MAP_SHUFFLE or self.mapScript == MapScripts.MAP_TILTED_AXIS or self.mapScript == MapScripts.MAP_PRIMORDIAL then
+            return 12;
+        elseif self.mapScript == MapScripts.MAP_TERRA then
+            return 8;
+        else
+            return 10;
+        end
     else
-        return 10;
+        return minDistanceConfig;
     end
 end
 
@@ -3591,6 +3597,7 @@ function SpawnBalancing:FillTablesRings()
         print(self.Hex:PrintXY().." - LOW_YIELD_TILES "..tostring(i).. " = "..tostring(#self.RingTables[i].LOW_YIELD_TILES))
         print(self.Hex:PrintXY().." - STANDARD_YIELD_TILES "..tostring(i).. " = "..tostring(#self.RingTables[i].STANDARD_YIELD_TILES))
         print(self.Hex:PrintXY().." - HIGH_YIELD_TILES "..tostring(i).. " = "..tostring(#self.RingTables[i].HIGH_YIELD_TILES))
+        print(self.Hex:PrintXY().." - HIGH_EXTRA_YIELDS "..tostring(i).. " = "..tostring(#self.RingTables[i].HIGH_EXTRA_YIELDS))
         print(self.Hex:PrintXY().." - WORKABLE "..tostring(i).. " = "..tostring(#self.RingTables[i].WORKABLE))
     end
 end
@@ -3992,13 +3999,23 @@ function SpawnBalancing:ApplyMinimalCoastalTiles()
         self.HexMap:AddCoastalRiver(self.Hex)
     end
 
-    -- 3) Changing ocean to coast in all round 2 tiles
+    -- 3) Changing ocean to coast in all round 2 tiles and clean ice up to ring 2
     print("Number of water tiles R2 = "..tostring(#self.RingTables[2].WATER))
     for _, h in pairs(self.RingTables[2].WATER) do
         if h.TerrainType == g_TERRAIN_TYPE_OCEAN then
             self:TerraformHex(h, 2, TerraformType[1], g_TERRAIN_TYPE_COAST, false, false)
         end
+        if h.FeatureType == g_FEATURE_ICE then
+            self:TerraformHex(h, 2, TerraformType[2], g_FEATURE_NONE, true, false)
+        end
     end
+    for _, h in pairs(self.RingTables[1].WATER) do
+        if h.FeatureType == g_FEATURE_ICE then
+            self:TerraformHex(h, 1, TerraformType[2], g_FEATURE_NONE, true, false)
+        end
+    end
+
+
 
     -- 4) At least one fish reef or turtle ring 2
     local foundFishR2 = false;

@@ -89,152 +89,152 @@
 		  <Text>la présence de toutes les ressources stratégiques dans un rayon de 5 case autour du spawn est presque garantie.</Text>
 	</Replace>
    
-   <Replace Tag="LOC_GAME_BBS_MIN_DISTANCE_NAME" Language="fr_FR">
+   <Replace Tag="LOC_GAME_BBM_MIN_DISTANCE_NAME" Language="fr_FR">
 		  <Text>Distance minimum entre les joueurs</Text>
 	</Replace>
-   <Replace Tag="BBS_MIN_DISTANCE_AUTO_NAME" Language="fr_FR">
+   <Replace Tag="BBM_MIN_DISTANCE_AUTO_NAME" Language="fr_FR">
 		  <Text>Standard</Text>
 	</Replace>
-   <Replace Tag="BBS_MIN_DISTANCE_AUTO_DESC" Language="fr_FR">
+   <Replace Tag="BBM_MIN_DISTANCE_AUTO_DESC" Language="fr_FR">
 		  <Text>Distance standard, dépend du type de carte.</Text>
 	</Replace>
-   <Replace Tag="BBS_MIN_DISTANCE_SIX_NAME" Language="fr_FR">
+   <Replace Tag="BBM_MIN_DISTANCE_SIX_NAME" Language="fr_FR">
 		  <Text>6</Text>
 	</Replace>
-   <Replace Tag="BBS_MIN_DISTANCE_SIX_DESC" Language="fr_FR">
+   <Replace Tag="BBM_MIN_DISTANCE_SIX_DESC" Language="fr_FR">
 		  <Text>6 cases</Text>
 	</Replace>
    
-   <Replace Tag="BBS_MIN_DISTANCE_SEVEN_NAME" Language="fr_FR">
+   <Replace Tag="BBM_MIN_DISTANCE_SEVEN_NAME" Language="fr_FR">
 		  <Text>7</Text>
 	</Replace>
-   <Replace Tag="BBS_MIN_DISTANCE_SEVEN_DESC" Language="fr_FR">
+   <Replace Tag="BBM_MIN_DISTANCE_SEVEN_DESC" Language="fr_FR">
 		  <Text>7 cases</Text>
 	</Replace>
    
-   <Replace Tag="BBS_MIN_DISTANCE_EIGHT_NAME" Language="fr_FR">
+   <Replace Tag="BBM_MIN_DISTANCE_EIGHT_NAME" Language="fr_FR">
 		  <Text>8</Text>
 	</Replace>
-   <Replace Tag="BBS_MIN_DISTANCE_EIGHT_DESC" Language="fr_FR">
+   <Replace Tag="BBM_MIN_DISTANCE_EIGHT_DESC" Language="fr_FR">
 		  <Text>8 cases</Text>
 	</Replace>
    
-   <Replace Tag="BBS_MIN_DISTANCE_NINE_NAME" Language="fr_FR">
+   <Replace Tag="BBM_MIN_DISTANCE_NINE_NAME" Language="fr_FR">
 		  <Text>9</Text>
 	</Replace>
-   <Replace Tag="BBS_MIN_DISTANCE_NINE_DESC" Language="fr_FR">
+   <Replace Tag="BBM_MIN_DISTANCE_NINE_DESC" Language="fr_FR">
 		  <Text>9 cases</Text>
 	</Replace>
    
-   <Replace Tag="BBS_MIN_DISTANCE_TEN_NAME" Language="fr_FR">
+   <Replace Tag="BBM_MIN_DISTANCE_TEN_NAME" Language="fr_FR">
 		  <Text>10</Text>
 	</Replace>
-   <Replace Tag="BBS_MIN_DISTANCE_TEN_DESC" Language="fr_FR">
+   <Replace Tag="BBM_MIN_DISTANCE_TEN_DESC" Language="fr_FR">
 		  <Text>10 cases</Text>
 	</Replace>
    
-   <Replace Tag="BBS_MIN_DISTANCE_ELEVEN_NAME" Language="fr_FR">
+   <Replace Tag="BBM_MIN_DISTANCE_ELEVEN_NAME" Language="fr_FR">
 		  <Text>11</Text>
 	</Replace>
-   <Replace Tag="BBS_MIN_DISTANCE_ELEVEN_DESC" Language="fr_FR">
+   <Replace Tag="BBM_MIN_DISTANCE_ELEVEN_DESC" Language="fr_FR">
 		  <Text>11 cases</Text>
 	</Replace>
    
-   <Replace Tag="BBS_MIN_DISTANCE_TWELVE_NAME" Language="fr_FR">
+   <Replace Tag="BBM_MIN_DISTANCE_TWELVE_NAME" Language="fr_FR">
 		  <Text>12</Text>
 	</Replace>
-   <Replace Tag="BBS_MIN_DISTANCE_TWELVE_DESC" Language="fr_FR">
+   <Replace Tag="BBM_MIN_DISTANCE_TWELVE_DESC" Language="fr_FR">
 		  <Text>12 cases</Text>
 	</Replace>
    
-   <Replace Tag="BBS_MIN_DISTANCE_THIRTEEN_NAME" Language="fr_FR">
+   <Replace Tag="BBM_MIN_DISTANCE_THIRTEEN_NAME" Language="fr_FR">
 		  <Text>13</Text>
 	</Replace>
-   <Replace Tag="BBS_MIN_DISTANCE_THIRTEEN_DESC" Language="fr_FR">
+   <Replace Tag="BBM_MIN_DISTANCE_THIRTEEN_DESC" Language="fr_FR">
 		  <Text>13 cases</Text>
 	</Replace>
    
-   <Replace Tag="BBS_MIN_DISTANCE_FOURTEEN_NAME" Language="fr_FR">
+   <Replace Tag="BBM_MIN_DISTANCE_FOURTEEN_NAME" Language="fr_FR">
 		  <Text>14</Text>
 	</Replace>
-   <Replace Tag="BBS_MIN_DISTANCE_FOURTEEN_DESC" Language="fr_FR">
+   <Replace Tag="BBM_MIN_DISTANCE_FOURTEEN_DESC" Language="fr_FR">
 		  <Text>14 cases</Text>
 	</Replace>
    
-   <Replace Tag="BBS_MIN_DISTANCE_FIFTEEN_NAME" Language="fr_FR">
+   <Replace Tag="BBM_MIN_DISTANCE_FIFTEEN_NAME" Language="fr_FR">
 		  <Text>15</Text>
 	</Replace>
-   <Replace Tag="BBS_MIN_DISTANCE_FIFTEEN_DESC" Language="fr_FR">
+   <Replace Tag="BBM_MIN_DISTANCE_FIFTEEN_DESC" Language="fr_FR">
 		  <Text>15 cases</Text>
 	</Replace>
    
-   <Replace Tag="BBS_MIN_DISTANCE_SIXTEEN_NAME" Language="fr_FR">
+   <Replace Tag="BBM_MIN_DISTANCE_SIXTEEN_NAME" Language="fr_FR">
 		  <Text>16</Text>
 	</Replace>
-   <Replace Tag="BBS_MIN_DISTANCE_SIXTEEN_DESC" Language="fr_FR">
+   <Replace Tag="BBM_MIN_DISTANCE_SIXTEEN_DESC" Language="fr_FR">
 		  <Text>16 cases</Text>
 	</Replace>
    
-   <Replace Tag="BBS_MIN_DISTANCE_SEVENTEEN_NAME" Language="fr_FR">
+   <Replace Tag="BBM_MIN_DISTANCE_SEVENTEEN_NAME" Language="fr_FR">
 		  <Text>17</Text>
 	</Replace>
-   <Replace Tag="BBS_MIN_DISTANCE_SEVENTEEN_DESC" Language="fr_FR">
+   <Replace Tag="BBM_MIN_DISTANCE_SEVENTEEN_DESC" Language="fr_FR">
 		  <Text>17 cases</Text>
 	</Replace>
    
-   <Replace Tag="BBS_MIN_DISTANCE_EIGHTEEN_NAME" Language="fr_FR">
+   <Replace Tag="BBM_MIN_DISTANCE_EIGHTEEN_NAME" Language="fr_FR">
 		  <Text>18</Text>
 	</Replace>
-   <Replace Tag="BBS_MIN_DISTANCE_EIGHTEEN_DESC" Language="fr_FR">
+   <Replace Tag="BBM_MIN_DISTANCE_EIGHTEEN_DESC" Language="fr_FR">
 		  <Text>18 cases</Text>
 	</Replace>
    
-   <Replace Tag="BBS_MIN_DISTANCE_NINETEEN_NAME" Language="fr_FR">
+   <Replace Tag="BBM_MIN_DISTANCE_NINETEEN_NAME" Language="fr_FR">
 		  <Text>19</Text>
 	</Replace>
-   <Replace Tag="BBS_MIN_DISTANCE_NINETEEN_DESC" Language="fr_FR">
+   <Replace Tag="BBM_MIN_DISTANCE_NINETEEN_DESC" Language="fr_FR">
 		  <Text>19 cases</Text>
 	</Replace>
    
-   <Replace Tag="BBS_MIN_DISTANCE_TWENTY_NAME" Language="fr_FR">
+   <Replace Tag="BBM_MIN_DISTANCE_TWENTY_NAME" Language="fr_FR">
 		  <Text>20</Text>
 	</Replace>
-   <Replace Tag="BBS_MIN_DISTANCE_TWENTY_DESC" Language="fr_FR">
+   <Replace Tag="BBM_MIN_DISTANCE_TWENTY_DESC" Language="fr_FR">
 		  <Text>20 cases</Text>
 	</Replace>
    
-   <Replace Tag="BBS_MIN_DISTANCE_TWENTYONE_NAME" Language="fr_FR">
+   <Replace Tag="BBM_MIN_DISTANCE_TWENTYONE_NAME" Language="fr_FR">
 		  <Text>21</Text>
 	</Replace>
-   <Replace Tag="BBS_MIN_DISTANCE_TWENTYONE_DESC" Language="fr_FR">
+   <Replace Tag="BBM_MIN_DISTANCE_TWENTYONE_DESC" Language="fr_FR">
 		  <Text>21 cases</Text>
 	</Replace>
-   <Replace Tag="BBS_MIN_DISTANCE_TWENTYTWO_NAME" Language="fr_FR">
+   <Replace Tag="BBM_MIN_DISTANCE_TWENTYTWO_NAME" Language="fr_FR">
 		  <Text>22</Text>
 	</Replace>
-   <Replace Tag="BBS_MIN_DISTANCE_TWENTYTWO_DESC" Language="fr_FR">
+   <Replace Tag="BBM_MIN_DISTANCE_TWENTYTWO_DESC" Language="fr_FR">
 		  <Text>22 cases</Text>
 	</Replace>
    
-   <Replace Tag="BBS_MIN_DISTANCE_TWENTYTHREE_NAME" Language="fr_FR">
+   <Replace Tag="BBM_MIN_DISTANCE_TWENTYTHREE_NAME" Language="fr_FR">
 		  <Text>23</Text>
 	</Replace>
-   <Replace Tag="BBS_MIN_DISTANCE_TWENTYTHREE_DESC" Language="fr_FR">
+   <Replace Tag="BBM_MIN_DISTANCE_TWENTYTHREE_DESC" Language="fr_FR">
 		  <Text>23 cases</Text>
 	</Replace>
    
-   <Replace Tag="BBS_MIN_DISTANCE_TWENTYFOUR_NAME" Language="fr_FR">
+   <Replace Tag="BBM_MIN_DISTANCE_TWENTYFOUR_NAME" Language="fr_FR">
 		  <Text>24</Text>
 	</Replace>
-   <Replace Tag="BBS_MIN_DISTANCE_TWENTYFOUR_DESC" Language="fr_FR">
+   <Replace Tag="BBM_MIN_DISTANCE_TWENTYFOUR_DESC" Language="fr_FR">
 		  <Text>24 cases</Text>
 	</Replace>
    
-   <Replace Tag="BBS_MIN_DISTANCE_TWENTYFIVE_NAME" Language="fr_FR">
+   <Replace Tag="BBM_MIN_DISTANCE_TWENTYFIVE_NAME" Language="fr_FR">
 		  <Text>25</Text>
 	</Replace>
 	
-   <Replace Tag="BBS_MIN_DISTANCE_TWENTYFIVE_DESC" Language="fr_FR">
+   <Replace Tag="BBM_MIN_DISTANCE_TWENTYFIVE_DESC" Language="fr_FR">
 		  <Text>25 cases</Text>
 	</Replace>
 	<Replace Tag="LOC_GAME_BBM_MIN_ATTEMPTS_NAME" Language="fr_FR">

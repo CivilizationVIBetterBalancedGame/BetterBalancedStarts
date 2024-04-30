@@ -328,11 +328,11 @@
 	<File>Data/BBS Maps/DWMixedIslands.lua</File>
     </ImportFiles>
 
-        <AddUserInterfaces id="BBS_UI">
+        <AddUserInterfaces id="BBM_UI">
 		<Properties>
 			<Context>InGame</Context>
 		</Properties>
-		<File>UI/BBS_UI.xml</File>
+		<File>UI/BBM_UI.xml</File>
 	</AddUserInterfaces>
 
 
@@ -344,8 +344,8 @@
 
         
     <Files>
-	<File>UI/BBS_UI.lua</File>
-	<File>UI/BBS_UI.xml</File>
+	<File>UI/BBM_UI.lua</File>
+	<File>UI/BBM_UI.xml</File>
     <File>Data/BBS_D.lua</File>
     <File>Data/BBS Maps/continents.lua</File>
 	<File>Data/BBS Maps/continents_islands.lua</File>
