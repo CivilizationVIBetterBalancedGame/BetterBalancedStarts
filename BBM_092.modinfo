@@ -8,13 +8,13 @@
 		<Authors>BaNiPouZ, Talasta</Authors>
 		<SpecialThanks>Keride, Vodairo, BBG Team</SpecialThanks>
 		<CompatibleVersions>1.2,2.0</CompatibleVersions>
-		<Version>0.91</Version>
+		<Version>0.92</Version>
 	</Properties>
 	
 		<LocalizedText>
 		<Text id="LOC_BBS_TITLE">
-			<en_US>Better Balanced Map 0.91 BETA</en_US>
-			<fr_FR>Better Balanced Map 0.91 BETA</fr_FR>
+			<en_US>Better Balanced Map 0.92 BETA</en_US>
+			<fr_FR>Better Balanced Map 0.92 BETA</fr_FR>
 		</Text>
 		<Text id="LOC_BBS_TEASER">
 			<en_US>Balanced spawn placement location and yields.</en_US>
