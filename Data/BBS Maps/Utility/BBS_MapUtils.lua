@@ -1148,7 +1148,7 @@ function HexMap:ComputeMajorSpawnableTiles(hex)
     local isCloseToTooManyFlood = hex:IsHexNextTo5FloodTiles();
     local isNextToVolcano = hex:IsNextToVolcano();
     local coastalNextToRiver = hex.IsCoastal and hex.IsFreshWater == false and hex:IsNextToCoastalFreshWater();
-    local nextTo3LakesInARow = hex:IsHexNextTo3ILakeMountainTilesInARow();
+    local nextTo3LakesInARow = hex:IsHexNextTo2ILakeMountainTilesInARow();
     local isNotInPeninsula = hex.PeninsulaScore >= self.PeninsulaScoreThreshold
     local isTooCloseToSnow = hex:IsHexCloseToSnow()
     local hasEnoughWorkableRing2 = hex:HasEnoughWorkableRing2();
@@ -1219,7 +1219,7 @@ function Hex:LogWalkableTiles(testRing)
     return walkableInRing;
 end
 
-function Hex:IsHexNextTo3ILakeMountainTilesInARow()
+function Hex:IsHexNextTo2ILakeMountainTilesInARow()
     if self:IsWater() then
         return false
     end
@@ -1239,7 +1239,7 @@ function Hex:IsHexNextTo3ILakeMountainTilesInARow()
         else
             lakesOrMountains = 0;
         end
-        if lakesOrMountains >= 3 then
+        if lakesOrMountains >= 2 then
             return true;
         end
     end
@@ -4369,8 +4369,10 @@ function SpawnBalancing:CheckInnerRingHighYieldsThreshold()
             _Debug("CheckInnerRingHighYieldsThreshold deleted a high yields on ", h:PrintXY(), " Ring 2")
         end
     end
+    local relocatingRing = 3;
     -- If still over maximum, it means the lux or guaranteed 2/2+ were tagged as minimum
     -- Try relocating a lux on ring 3 then replace by a standard 2/2
+    -- First relocate ring 3 then further if needed     
     if highYieldsCount > self.MaxHighYieldInnerRingThreshold then
         _Debug("CheckInnerRingHighYieldsThreshold : over maximum of highyields")
         local relocateLeft = highYieldsCount - self.MaxHighYieldInnerRingThreshold;
@@ -4384,9 +4386,10 @@ function SpawnBalancing:CheckInnerRingHighYieldsThreshold()
                 end
                 if self:RelocateHex(1, 3, h1) then
                     _Debug("CheckInnerRingHighYieldsThreshold : ring 1 high yield replaced with 2/2 ", h1:PrintXY())
-                    self:PlaceRelocatedHexOnRing(3);
+                    self:PlaceRelocatedHexOnRing(relocatingRing);
                     self:TerraformHex(h1, 1, TerraformType[4], 0, false, false)
                     relocateLeft = relocateLeft - 1;
+                    relocatingRing = relocatingRing + 1;
                     if wasTagged then
                         h1:SetTaggedAsMinimum(true);
                     end
@@ -4403,9 +4406,10 @@ function SpawnBalancing:CheckInnerRingHighYieldsThreshold()
                 end
                 if self:RelocateHex(2, 3, h2) then
                     _Debug("CheckHighYieldsThreshold : ring 2 high yield replaced with 2/2 ", h2:PrintXY())
-                    self:PlaceRelocatedHexOnRing(3);
+                    self:PlaceRelocatedHexOnRing(relocatingRing);
                     self:TerraformHex(h2, 2, TerraformType[4], 0, false, false);
                     relocateLeft = relocateLeft - 1;
+                    relocatingRing = relocatingRing + 1;
                     if wasTagged then
                         h2:SetTaggedAsMinimum(true);
                     end
