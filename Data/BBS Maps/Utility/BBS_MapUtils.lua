@@ -1842,8 +1842,13 @@ function HexMap:TerraformSetResource(hex, resourceId, forced)
         -- For specifics resources, we can force a good tile to meet the right conditions
         if forced and (hex:IsSnowLand() == false and hex:IsDesertLand() == false) then
             ResourceBuilder.SetResourceType(hex.Plot, g_RESOURCE_NONE);
+            -- Only oil and niter strats can be on floods, and we do not remove them when forcing
+            if hex:IsFloodplains(true) and g_RESOURCES_STRATEGICS[resourceId] ~= nil 
+                and resourceId ~= g_RESOURCE_NITER and resourceId ~= g_RESOURCE_OIL then
+                return false;
+            end
             if resourceId == g_RESOURCE_HORSES then
-                if (IsPlainLand(hex.TerrainType) == false and IsGrassLand(hex.TerrainType) == false) or hex:IsFloodplains(true) then
+                if (IsPlainLand(hex.TerrainType) == false and IsGrassLand(hex.TerrainType) == false) then
                     return false;
                 end
                 self:TerraformToFlat(hex, true);
@@ -1855,12 +1860,7 @@ function HexMap:TerraformSetResource(hex, resourceId, forced)
                 if IsPlainLand(hex.TerrainType) == false and IsGrassLand(hex.TerrainType) == false then
                     return false;
                 end
-                local rng = TerrainBuilder.GetRandomNumber(100, "Coal terraform");
-                if rng <= 50 then
-                    self:TerraformSetFeature(hex, g_FEATURE_FOREST);
-                else
-                    self:TerraformToHill(hex, true);
-                end
+                self:TerraformToHill(hex, true);
             elseif resourceId == g_RESOURCE_ALUMINUM then
                 if self:CanHaveJungle(hex) then
                     self:TerraformSetTerrain(hex, g_TERRAIN_TYPE_PLAINS_HILLS);
