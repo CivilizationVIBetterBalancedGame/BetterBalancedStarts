@@ -520,7 +520,7 @@ function AddFeatures()
 	
 	-- First let's add Floodplains
 	local iMinFloodplainSize = 4;
-	local iMaxFloodplainSize = 10;
+	local iMaxFloodplainSize = MapConfiguration.GetValue("BBMMaxFloodplainsSize") or 10;
 	TerrainBuilder.GenerateFloodplains(bRiversStartInland, iMinFloodplainSize, iMaxFloodplainSize);
 
 	local flag = allow_mountains_on_coast or true;

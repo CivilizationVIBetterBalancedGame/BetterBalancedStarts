@@ -36,7 +36,7 @@ function BBM_FeatureGenerator.Create(args)
 	local iMarshPercent = args.iMarshPercent or 3;
 	local iOasisPercent = args.iOasisPercent or 1;
 	local iReefPercent = args.iReefPercent or 8;
-	local maxFloodplainSize = MapConfiguration.GetValue("BBMMaxFloodplainsSize") or 8;
+	local maxFloodplainSize = MapConfiguration.GetValue("BBMMaxFloodplainsSize") or 10;
 	iJunglePercent = iJunglePercent + (rainfall * 2);
 	iForestPercent = iForestPercent + rainfall;
 	iMarshPercent = iMarshPercent + rainfall / 2;
@@ -72,6 +72,7 @@ function BBM_FeatureGenerator.Create(args)
 		iOasisMaxPercent = iOasisPercent,
 		iReefMaxPercent = iReefPercent,
 		iMaxFloodplainSize = maxFloodplainSize,
+
 		iForestCount = 0,
 		iJungleCount = 0,
 		iMarshCount = 0,
@@ -116,8 +117,6 @@ function BBM_FeatureGenerator:AddFeatures(allow_mountains_on_coast, bRiversStart
 		-- This function needs to recalculate areas after operating. However, so does 
 		-- adding feature ice, so the recalc was removed from here and put in MapGenerator()
 	end
-
-	self:AddIceToMap();
 	
 	-- Main loop, adds features to all plots as appropriate based on the count and percentage of that type, but not ones that can't be adjacent to other features
 	for y = 0, self.iGridH - 1, 1 do
@@ -141,10 +140,10 @@ function BBM_FeatureGenerator:AddFeatures(allow_mountains_on_coast, bRiversStart
 					-- 705: Put old style floodplains on any riverside desert flat land that doesn't have
 					-- one of the new style floodplains.  In testing, non of these actually flood with the
 					-- new disasters but you can't tell them apart in game?
-					if((TerrainBuilder.CanHaveFeature(plot, g_FEATURE_FLOODPLAINS) == true) and featureType == g_FEATURE_NONE) then
+					--if((TerrainBuilder.CanHaveFeature(plot, g_FEATURE_FLOODPLAINS) == true) and featureType == g_FEATURE_NONE) then
 						-- All desert plots along river are set to flood plains.
-						TerrainBuilder.SetFeatureType(plot, g_FEATURE_FLOODPLAINS)
-					end
+					--	TerrainBuilder.SetFeatureType(plot, g_FEATURE_FLOODPLAINS)
+					--end
 
 					local bMarsh = false;
 					local bJungle = false;
@@ -167,6 +166,8 @@ function BBM_FeatureGenerator:AddFeatures(allow_mountains_on_coast, bRiversStart
 			end
 		end
 	end
+
+	self:AddIceToMap();
 	
 	print("Number of Tiles:      ", self.iNumLandPlots);
 	print("Number of Forests:    ", self.iForestCount);
@@ -264,8 +265,10 @@ function BBM_FeatureGenerator:AddFeaturesFromContinents()
 end
 ------------------------------------------------------------------------------
 function BBM_FeatureGenerator:AddIceToMap()
-
-	local iTargetIceTiles = (self.iGridH * self.iGridW * GlobalParameters.ICE_TILES_PERCENT) / 100;
+	local totalTiles =  self.iGridH * self.iGridW
+	local waterPercent = 1 - (self.iNumLandPlots / totalTiles);
+	print("AddIceToMap waterPercent % = ", waterPercent)
+	local iTargetIceTiles = (totalTiles * waterPercent * 2 * GlobalParameters.ICE_TILES_PERCENT) / 100;
 
 	local aPhases = {};
 	local iPhases = 0;
@@ -294,8 +297,8 @@ function BBM_FeatureGenerator:AddIceToMap()
 	------------------------------
 	local iIceLossThisLevel = aPhases[iPhases].IceLoss;
 	local iPermanentIcePercent = 100 - iIceLossThisLevel;
-	local iPermanentIceTiles = math.floor(self.iGridW * 2.2); --(iTargetIceTiles * iPermanentIcePercent) / 100;
-
+	--local iPermanentIceTiles = math.floor(self.iGridW * 2.2); --(iTargetIceTiles * iPermanentIcePercent) / 100;
+	local iPermanentIceTiles = (iTargetIceTiles * iPermanentIcePercent) / 100;
 	print ("Permanent Ice Tiles: " .. tostring(iPermanentIceTiles));
 	
 	-- 705: We don't need to count tiles, just brute force the map edges first and reduce the
