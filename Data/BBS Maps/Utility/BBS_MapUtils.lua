@@ -1842,7 +1842,7 @@ function HexMap:TerraformSetResource(hex, resourceId, forced)
         -- For specifics resources, we can force a good tile to meet the right conditions
         if forced and (hex:IsSnowLand() == false and hex:IsDesertLand() == false) then
             ResourceBuilder.SetResourceType(hex.Plot, g_RESOURCE_NONE);
-            -- Only oil and niter strats can be on floods, and we do not remove them when forcing
+            -- Only oil and niter strats can be on floods, and we do not remove floods when forcing strats
             if hex:IsFloodplains(true) and g_RESOURCES_STRATEGICS[resourceId] ~= nil 
                 and resourceId ~= g_RESOURCE_NITER and resourceId ~= g_RESOURCE_OIL then
                 return false;
@@ -3439,6 +3439,9 @@ function BalanceMap(hexMap)
                     and BalanceNearFloodplainsYields(hexMap, hex, iFloodplainsScore) then
                     iNearFloodsCounter = iNearFloodsCounter + 1;
                 end
+            elseif hex.FeatureType == g_FEATURE_VOLCANO and hex:IsWater() then
+                -- Additionnal check to avoid volcanoes on lakes (TODO : look why it is the case)
+                hexMap:TerraformSetTerrain(hex, g_TERRAIN_TYPE_GRASS_MOUNTAIN);
             end
         end
     end
