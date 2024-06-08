@@ -236,6 +236,9 @@ g_RESOURCES_HIGHPROD[g_RESOURCE_DEER] = true;
 g_RESOURCES_HIGHPROD[g_RESOURCE_IVORY] = true;
 g_RESOURCES_HIGHPROD[g_RESOURCE_GYPSUM] = true;
 
+g_HILLS = "Hills";
+g_PASSABLE_LAND = "PassableLand";
+
 function _Debug(...)
     print(...);
 end
@@ -1075,6 +1078,19 @@ function HexMap:ComputeTerrainsScore(hex)
             elseif h:IsDesertLand() and i < 4 then
                 hex.IsCloseToDesert = true
             end
+            local isCoastal = h.IsCoastal
+            
+            -- Hills score
+            if IsHill(h.TerrainType) then
+                local hillScore = hex.TerrainsScore[g_HILLS] or 0; --init
+                hillScore = hillScore + 1;
+                hex.TerrainsScore[g_HILLS] = hillScore
+            end
+            if h:IsImpassable() == false then
+                local totalLand = hex.TerrainsScore[g_PASSABLE_LAND] or 0; --init
+                totalLand = totalLand + 1;
+                hex.TerrainsScore[g_PASSABLE_LAND] = totalLand;
+            end
         end
 
     end
@@ -1696,6 +1712,37 @@ function HexMap:ContinentsInRange(hex, range)
     end
     return continentsInRange, listOfIdContinent;
 end
+
+function HexMap:GetGlobalHillPercent()
+    local countHills, _ = self:LookForHills();
+    local countLandTiles, _ = self:GetLandHexList();
+    print("GetGlobalHillPercent = ", countHills / countLandTiles)
+   return countHills / countLandTiles
+end
+
+-- Hills / Passable land - 0 to 1
+function HexMap:GetHillPercentInRange(hex, range)
+    local totalRingInRange = self:GetAllHexInRing(hex, range);
+    local passableLand = {};
+    local passableLandCount = 0;
+    local hillsTiles = {};
+    local hillsCount = 0;
+    for _, h in pairs(totalRingInRange) do
+        if h:IsImpassable() == false then
+            passableLandCount = passableLandCount + 1;
+            table.insert(passableLand, h)
+            if IsHill(h.TerrainType) then
+                hillsCount = hillsCount + 1;
+                table.insert(hillsTiles, h)
+            end
+        end
+    end
+    if hillsCount == 0 then
+        return passableLandCount, hillsCount, 0;
+    end
+   return passableLand, passableLandCount, hillsTiles, hillsCount, hillsCount / passableLandCount;
+end
+
 
 -- Return the list of hex in each ring that are accessible by walking, range is step, if no obstacle, range = ring
 function Hex:SetAllWalkableHexInRange(range)
@@ -3524,6 +3571,7 @@ function InitSpawnBalancing(hexMap, civ)
     balancing:ApplyGaranteedStrategics();
     --balancing:AddHighYieldFromStandard();
     balancing:CheckMinimumWorkable();
+    balancing:HillsMinimumCheck();
     return balancing;
 end
 
@@ -3576,6 +3624,10 @@ function SpawnBalancing.new(hex, hexMap, civ)
     instance.MaxHighYieldInnerRingThreshold = 1;
     instance.IsBCYActivated = isBCYActivated()
     print("Init SpawnBalancing")
+
+    print("Spawn hill score = ", hex.TerrainsScore[g_HILLS])
+    print("Spawn land score = ", hex.TerrainsScore[g_PASSABLE_LAND])
+    print("Land to hills ratio ", hex.TerrainsScore[g_HILLS] / hex.TerrainsScore[g_PASSABLE_LAND])
     return instance;
 end
 
@@ -4286,6 +4338,37 @@ function SpawnBalancing:CheckMinimumWorkable()
     _Debug("CheckMinimumWorkableERROR - Unable to make terraform, check tiles in ring 1")
     return false;
 end
+
+function SpawnBalancing:HillsMinimumCheck()
+    _Debug("HillsMinimumCheck enter ", self.Civ.CivilizationLeader)
+    local globalHillPercent = self.HexMap:GetGlobalHillPercent();
+    local passableLand, passableLandCount, hillsTiles, hillsCount, hillPercentRing6 = self.HexMap:GetHillPercentInRange(self.Hex, 6);
+    local hillsGoal = math.floor(globalHillPercent * passableLandCount);
+    
+    _Debug("HillsMinimumCheck - globalHillPercent = ", globalHillPercent, " hillPercentRing6= ", hillPercentRing6, " hillsCount= ",  hillsCount, " hillsGoal= ", hillsGoal)
+    local hillsToAdd = math.max(0, hillsGoal - hillsCount)
+    local ring6ValidTiles = {};
+    if hillsToAdd == 0 then
+        _Debug("HillsMinimumCheck - Nothing to add ", hillsToAdd)
+        return;
+    end
+    _Debug("HillsMinimumCheck - To add :", hillsToAdd)
+    for _, h in pairs(self.HexMap:GetAllHexInRing(self.Hex, 6)) do
+        if h:IsImpassable() == false and IsFlat(h.TerrainType) and h.ResourceType == g_RESOURCE_NONE 
+            and (h.FeatureType == g_FEATURE_NONE or h.FeatureType == g_FEATURE_FOREST or h.FeatureType == g_FEATURE_JUNGLE) then
+             table.insert(ring6ValidTiles, h);
+        end
+    end
+    ring6ValidTiles = GetShuffledCopyOfTable(ring6ValidTiles);
+    _Debug("HillsMinimumCheck nb of tiles with possible hills : ", #ring6ValidTiles)
+    for _ , h in pairs(ring6ValidTiles) do
+        if hillsToAdd > 0 and self.HexMap:TerraformHex(h, TerraformType[14], 0, false, false) then
+            _Debug("HillsMinimumCheck Added hills on : ", h:PrintXY())
+            hillsToAdd = hillsToAdd - 1;
+        end
+    end
+end
+
 
 
 function SpawnBalancing:CheckLuxThreshold()
