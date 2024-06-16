@@ -1184,7 +1184,8 @@ function HexMap:ComputeMajorSpawnableTiles(hex)
 end
 
 function HexMap:ComputeMinorSpawnableTiles(hex)
-    hex.IsMinorSpawnable = hex:IsWater() == false and hex:IsCloseToNaturalWonder() == false;
+    hex.IsMinorSpawnable = hex:IsImpassable() == false and hex:IsCloseToNaturalWonder() == false and hex:IsSurroundedByImpassable() == false
+        and hex:IsSnowLand() == false;
 end
 
 -- TODO : Testing score calculations depending on distance
@@ -1220,6 +1221,16 @@ function Hex:IsHexNextTo4ImpassableTiles()
         end
     end
     return false;
+end
+
+function Hex:IsSurroundedByImpassable()
+    local ring1 = self.AllRing6Map[1];
+    for _, r1 in pairs(ring1) do
+        if r1:IsImpassable() == false then
+            return false;
+        end
+    end
+    return true;
 end
 
 function Hex:HasSpawnEnoughWalkableTiles()
@@ -3176,7 +3187,7 @@ function HexMap:GetAnyMinorSpawnablesTiles()
             local hex = self:GetHexInMap(x, y)
             local isTerraMap = self.mapScript == MapScripts.MAP_TERRA;
             local terraCondition = isTerraMap == false or (isTerraMap and hex.Plot:GetArea():GetID() ~= self.BiggestIsland:GetID())
-            if hex:IsImpassable() == false and hex:IsSnowLand() == false and hex.IsMinorSpawnable then
+            if terraCondition and hex:IsImpassable() == false and hex:IsSnowLand() == false and hex.IsMinorSpawnable then
                 table.insert(valid, hex)
             end
         end
