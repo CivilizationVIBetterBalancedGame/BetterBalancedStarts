@@ -2964,6 +2964,7 @@ TerraformType[11] = "AddLux";
 TerraformType[12] = "ToStdHighFoodYield";
 TerraformType[13] = "StdTohighYield";
 TerraformType[14] = "ToHills";
+TerraformType[15] = "ToFlat";
 -- Call basic terraforming method depending on type
 function HexMap:TerraformHex(hex, type, id, forced, boolParam)
     if type == TerraformType[1] then
@@ -2994,6 +2995,8 @@ function HexMap:TerraformHex(hex, type, id, forced, boolParam)
         return self:Terraform4YieldsToHighYields(hex, forced, boolParam);
     elseif type == TerraformType[14] then
         return self:TerraformToHill(hex, boolParam);
+    elseif type == TerraformType[15] then
+        return self:TerraformToFlat(hex, boolParam);
     elseif type == TerraformType[99] then
        return self:TerraformEmptyTile(hex);
     else
@@ -4446,6 +4449,12 @@ function SpawnBalancing:CheckInnerRingHighYieldsThreshold()
     AddToTable(ring2HighYields, self.RingTables[2].HIGH_EXTRA_YIELDS);
     local highYieldsCount = #ring1HighYields + #ring2HighYields;
     _Debug("CheckInnerRingHighYieldsThreshold highYieldsCount = ", highYieldsCount);
+    for _, h in ipairs(ring1HighYields) do
+        _Debug(h:PrintXY());
+    end
+    for _, h in ipairs(ring2HighYields) do
+        _Debug(h:PrintXY());
+    end
     if highYieldsCount >= self.MinHighYieldInnerRingThreshold and highYieldsCount <= self.MaxHighYieldInnerRingThreshold then
         _Debug("CheckInnerRingHighYieldsThreshold OK : highYieldsCount = ", highYieldsCount, self.MaxHighYieldInnerRingThreshold);
         return true;
@@ -4466,7 +4475,6 @@ function SpawnBalancing:CheckInnerRingHighYieldsThreshold()
             _Debug("CheckInnerRingHighYieldsThreshold deleted a high yields on ", h:PrintXY(), " Ring 2")
         end
     end
-    local relocatingRing = 3;
     -- If still over maximum, it means the lux or guaranteed 2/2+ were tagged as minimum
     -- Try relocating a lux on ring 3 then replace by a standard 2/2
     -- First relocate ring 3 then further if needed     
@@ -4481,12 +4489,9 @@ function SpawnBalancing:CheckInnerRingHighYieldsThreshold()
                     wasTagged = true;
                     h1:SetTaggedAsMinimum(false);
                 end
-                if self:RelocateHex(1, 3, h1) then
-                    _Debug("CheckInnerRingHighYieldsThreshold : ring 1 high yield replaced with 2/2 ", h1:PrintXY())
-                    self:PlaceRelocatedHexOnRing(relocatingRing);
-                    self:TerraformHex(h1, 1, TerraformType[4], 0, false, false)
+                if self:TerraformHex(h1, 1, TerraformType[15], 0, false, false) then
+                    _Debug("CheckInnerRingHighYieldsThreshold : ring 1 flattened ", h1:PrintXY())
                     relocateLeft = relocateLeft - 1;
-                    relocatingRing = relocatingRing + 1;
                     if wasTagged then
                         h1:SetTaggedAsMinimum(true);
                     end
@@ -4501,16 +4506,13 @@ function SpawnBalancing:CheckInnerRingHighYieldsThreshold()
                     wasTagged = true;
                     h2:SetTaggedAsMinimum(false);
                 end
-                if self:RelocateHex(2, 3, h2) then
-                    _Debug("CheckHighYieldsThreshold : ring 2 high yield replaced with 2/2 ", h2:PrintXY())
-                    self:PlaceRelocatedHexOnRing(relocatingRing);
-                    self:TerraformHex(h2, 2, TerraformType[4], 0, false, false);
+                if self:TerraformHex(h2, 2, TerraformType[15], 0, false, false) then
+                    _Debug("CheckInnerRingHighYieldsThreshold : ring 2 flattened ", h2:PrintXY())
                     relocateLeft = relocateLeft - 1;
-                    relocatingRing = relocatingRing + 1;
                     if wasTagged then
                         h2:SetTaggedAsMinimum(true);
                     end
-                end
+                end  
             end
         end  
     end 
