@@ -316,28 +316,28 @@
 			<Text>10次</Text>
 		</Replace>
 		<!-- = Teamers start position = -->
-		<Replace Tag="LOC_BBS_Team_Spawn_NAME" Language="zh_Hans_CN">
+		<Replace Tag="LOC_BBM_Team_Spawn_NAME" Language="zh_Hans_CN">
 			<Text>团队战初始位置</Text>
 		</Replace>
-		<Replace Tag="LOC_BBS_Team_Spawn_DESC" Language="zh_Hans_CN">
+		<Replace Tag="LOC_BBM_Team_Spawn_DESC" Language="zh_Hans_CN">
 			<Text>控制团队战中主要文明在地图上的初始位置。</Text>
 		</Replace>
-		<Replace Tag="BBS_Team_Spawn_NORMAL_NAME" Language="zh_Hans_CN">
+		<Replace Tag="BBM_Team_Spawn_NORMAL_NAME" Language="zh_Hans_CN">
 			<Text>标准</Text>
 		</Replace>
-		<Replace Tag="BBS_Team_Spawn_NORMAL_DESC" Language="zh_Hans_CN">
+		<Replace Tag="BBM_Team_Spawn_NORMAL_DESC" Language="zh_Hans_CN">
 			<Text>原版设定：各文明位置随机分配</Text>
 		</Replace>
-		<Replace Tag="BBS_Team_Spawn_EW_NAME" Language="zh_Hans_CN">
+		<Replace Tag="BBM_Team_Spawn_EW_NAME" Language="zh_Hans_CN">
 			<Text>东西对战</Text>
 		</Replace>
-		<Replace Tag="BBS_Team_Spawn_EW_DESC" Language="zh_Hans_CN">
+		<Replace Tag="BBM_Team_Spawn_EW_DESC" Language="zh_Hans_CN">
 			<Text>2v2或4v4时：同一队伍的文明很大概率共同位于东侧或西侧。</Text>
 		</Replace>
-		<Replace Tag="BBS_Team_Spawn_NS_NAME" Language="zh_Hans_CN">
+		<Replace Tag="BBM_Team_Spawn_NS_NAME" Language="zh_Hans_CN">
 			<Text>南北对战</Text>
 		</Replace>
-		<Replace Tag="BBS_Team_Spawn_NS_DESC" Language="zh_Hans_CN">
+		<Replace Tag="BBM_Team_Spawn_NS_DESC" Language="zh_Hans_CN">
 			<Text>2v2或4v4时：同一队伍的文明很大概率共同位于南侧或北侧。</Text>
 		</Replace>
 		

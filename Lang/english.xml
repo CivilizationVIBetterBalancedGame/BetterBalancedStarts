@@ -347,28 +347,28 @@
 			<Text>10 attempts</Text>
 		</Replace>
 		<!-- = Teamers start position = -->
-		<Replace Tag="LOC_BBS_Team_Spawn_NAME" Language="en_US">
+		<Replace Tag="LOC_BBM_Team_Spawn_NAME" Language="en_US">
 			<Text>Teamers Start Position</Text>
 		</Replace>
-		<Replace Tag="LOC_BBS_Team_Spawn_DESC" Language="en_US">
+		<Replace Tag="LOC_BBM_Team_Spawn_DESC" Language="en_US">
 			<Text>Control how the Major Civilizations would be placed on the map in Team games</Text>
 		</Replace>
-		<Replace Tag="BBS_Team_Spawn_NORMAL_NAME" Language="en_US">
+		<Replace Tag="BBM_Team_Spawn_NORMAL_NAME" Language="en_US">
 			<Text>Standard</Text>
 		</Replace>
-		<Replace Tag="BBS_Team_Spawn_NORMAL_DESC" Language="en_US">
+		<Replace Tag="BBM_Team_Spawn_NORMAL_DESC" Language="en_US">
 			<Text>Original Firaxis settings: players are randomly placed</Text>
 		</Replace>
-		<Replace Tag="BBS_Team_Spawn_EW_NAME" Language="en_US">
+		<Replace Tag="BBM_Team_Spawn_EW_NAME" Language="en_US">
 			<Text>East vs. West</Text>
 		</Replace>
-		<Replace Tag="BBS_Team_Spawn_EW_DESC" Language="en_US">
+		<Replace Tag="BBM_Team_Spawn_EW_DESC" Language="en_US">
 			<Text>For 2v2 or 4v4: players of the same team are much more likely to spawn East or West.</Text>
 		</Replace>
-		<Replace Tag="BBS_Team_Spawn_NS_NAME" Language="en_US">
+		<Replace Tag="BBM_Team_Spawn_NS_NAME" Language="en_US">
 			<Text>North vs. South</Text>
 		</Replace>
-		<Replace Tag="BBS_Team_Spawn_NS_DESC" Language="en_US">
+		<Replace Tag="BBM_Team_Spawn_NS_DESC" Language="en_US">
 			<Text>For 2v2 or 4v4: players of the same team are much more likely to spawn North or South.</Text>
 		</Replace>
 		

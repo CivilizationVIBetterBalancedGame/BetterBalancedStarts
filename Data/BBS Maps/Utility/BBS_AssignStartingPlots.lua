@@ -38,7 +38,7 @@ end
 ------------------------------------------------------------- BBS ----------------------------
 function BBS_AssignStartingPlots.Create(args)
     bbs_game_config = {
-        BBS_TEAM_SPAWN = MapConfiguration.GetValue("BBS_Team_Spawn"),
+        BBM_Team_Spawn = MapConfiguration.GetValue("BBM_Team_Spawn"),
         BBS_MAP_SCRIPT = MapConfiguration.GetValue("MAP_SCRIPT"),
         BBS_MAP_SIZE = Map.GetMapSize(),
         BBS_GAME_SYNC_SEED = GameConfiguration.GetValue("GAME_SYNC_RANDOM_SEED"),
@@ -100,17 +100,20 @@ function BBS_AssignStartingPlots.Create(args)
 
     -- Get Players data
     local civilisationsIDs = PlayerManager.GetAliveMajorIDs();
+    local playerIndex = 1;
     for i = 1, PlayerManager.GetAliveMajorsCount() do
         local player = Players[civilisationsIDs[i]];
         local leader = PlayerConfigurations[civilisationsIDs[i]]:GetLeaderTypeName();
         local name = PlayerConfigurations[civilisationsIDs[i]]:GetCivilizationTypeName();
         local team = Players[civilisationsIDs[i]]:GetTeam();
-        local newCivilization = CivilizationAssignSpawn.new(player, leader, name, team)
+        local newCivilization = CivilizationAssignSpawn.new(player, leader, name, team, playerIndex)
         if leader ~= BBS_LEADER_TYPE_SPECTATOR then
-            BBS_Teams[team] = BBS_Teams[team] or 0
+            playerIndex = playerIndex + 1;
+            BBS_Teams[team] = BBS_Teams[team] or {}
             _Debug("IsTeamerConfig - Added in team ", team)
-            BBS_Teams[team] = BBS_Teams[team] + 1;
+            table.insert(BBS_Teams[team], newCivilization)
         end
+        _Debug("Leader added ", i, player, leader, name, team)
         table.insert(BBS_Civilisations, newCivilization);
     end
 
@@ -139,8 +142,8 @@ function BBS_AssignStartingPlots.Create(args)
 
     GlobalNumberOfRegions = total_players + PlayerManager.GetAliveMinorsCount();
 
-    if MapConfiguration.GetValue("BBS_Team_Spawn") ~= nil then
-        Teamers_Config = MapConfiguration.GetValue("BBS_Team_Spawn")
+    if MapConfiguration.GetValue("BBM_Team_Spawn") ~= nil then
+        Teamers_Config = MapConfiguration.GetValue("BBM_Team_Spawn")
     end
 
     instance:__InitStartingData()
@@ -160,7 +163,7 @@ function BBS_AssignStartingPlots.Create(args)
 
     print("Start Assign Score Centroid",  os.date("%c"))
 
-    local isTeamer = IsTeamerConfig();
+    local isTeamer = Is1v1OrTeamerConfig();
 
     -- Define scores for centroids
     for _, civ in pairs(BBS_Civilisations) do
@@ -395,14 +398,32 @@ end
 function BBS_AssignStartingPlots:__PlaceMajorCivs(civs, BBS_HexMap, index) 
 -- TODO : manage cases when unable to place a civ => rollback and try again
     BBS_HexMap.tempMajorSpawns[index] = {};
+
     for ind, civ in pairs(civs) do
         if civ.CivilizationLeader ~= BBS_LEADER_TYPE_SPECTATOR then
+            -- On RTS East vs West mod, define position by index (spectator excluded)
+            if BBS_HexMap.TeamerConfig == TeamerConfigEastVsWest then
+                civ.TeamerSim = (Is4v4Teamer() and civ.PlayerIndex <= 4) or (Is2v2Teamer() and civ.PlayerIndex <= 2);
+                civ.TeamerWar = (Is4v4Teamer() and civ.PlayerIndex > 4) or (Is2v2Teamer() and civ.PlayerIndex > 2);
+            end
             local placed, spawnHex, score = civ:AssignSpawnByCentroid(BBS_HexMap);
             if placed == false then
                 print("Failed to place civ "..tostring(civ.CivilizationLeader))
                 return false;
             end
             table.insert(BBS_HexMap.tempMajorSpawns[index], {Civ = civ, Spawn = spawnHex, Score = score});
+            if BBS_HexMap.TeamerConfig == TeamerConfigEastVsWest then
+                if spawnHex:GetX() > BBS_HexMap.MiddleX then
+                    civ.TeamerSide = EastTeam;
+                else
+                    civ.TeamerSide = WestTeam;
+                end
+                for _, teamCiv in pairs(BBS_Teams[civ.CivilizationTeam]) do
+                    _Debug("Going through same team civ ", teamCiv.CivilizationLeader, teamCiv.CivilizationTeam, civ.TeamerSide);
+                    teamCiv.TeamerSide = civ.TeamerSide;
+                    teamCiv.TeamerContinentId = spawnHex.IslandId;
+                end
+            end
             _Debug("Civ ", ind, " in team ", civ.CivilizationTeam, " - Continent ID = ", spawnHex.IdContinent)
         end
     end
@@ -415,15 +436,16 @@ function BBS_AssignStartingPlots:__ResetMajorsSpawns(civs, BBS_HexMap)
     for _, civ in pairs(civs) do
         if civ.AttributedCentroid ~= nil then
             civ.AttributedCentroid.PlacedCiv = false;
+            civ.TeamerSide = "";
         end
         civ.AttributedCentroid = nil;
         civ.StartingHex = {};
     end
 end
 
--- At least 4v4 and 2 teams
+-- 1v1 or 2 teams 
 -- Fixed index is used here in case team number is not the usual 1 and 2
-function IsTeamerConfig()
+function Is1v1OrTeamerConfig()
     local teamCount = 0
     local team1Size = 0
     local team2Size = 0
@@ -431,9 +453,9 @@ function IsTeamerConfig()
     for team, _ in pairs(BBS_Teams) do
         teamCount = teamCount + 1;
         if fixedIndex == 1 then
-            team1Size = BBS_Teams[team]
+            team1Size = #BBS_Teams[team]
         elseif fixedIndex == 2 then
-            team2Size = BBS_Teams[team]
+            team2Size = #BBS_Teams[team]
         end
         fixedIndex = fixedIndex + 1;
     end
@@ -442,6 +464,43 @@ function IsTeamerConfig()
     return isTeamerConfig;
 end
 
+function Is4v4Teamer() 
+    local teamCount = 0
+    local team1Size = 0
+    local team2Size = 0
+    local fixedIndex = 1
+    for team, _ in pairs(BBS_Teams) do
+        teamCount = teamCount + 1;
+        if fixedIndex == 1 then
+            team1Size = #BBS_Teams[team]
+        elseif fixedIndex == 2 then
+            team2Size = #BBS_Teams[team]
+        end
+        fixedIndex = fixedIndex + 1;
+    end
+    local isTeamerConfig = teamCount == 2;
+    _Debug("IsTeamerConfig : ", teamCount, team1Size, team2Size, isTeamerConfig);
+    return teamCount == 2 and (team1Size == 4 and team2Size == 4);
+end
+
+function Is2v2Teamer() 
+    local teamCount = 0
+    local team1Size = 0
+    local team2Size = 0
+    local fixedIndex = 1
+    for team, _ in pairs(BBS_Teams) do
+        teamCount = teamCount + 1;
+        if fixedIndex == 1 then
+            team1Size = #BBS_Teams[team]
+        elseif fixedIndex == 2 then
+            team2Size = #BBS_Teams[team]
+        end
+        fixedIndex = fixedIndex + 1;
+    end
+    local isTeamerConfig = teamCount == 2;
+    _Debug("IsTeamerConfig : ", teamCount, team1Size, team2Size, isTeamerConfig);
+    return teamCount == 2 and (team1Size == 2 and team2Size == 2);
+end
 
 function CallFiraxisPlacement(args)
     Game:SetProperty("BBM_RESPAWN", false)

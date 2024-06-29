@@ -24,7 +24,7 @@
 		<!--  Mutually Exclusive -->
 		<Row ParameterId="MapSize" Name="LOC_MAP_SIZE" Description="" Domain="StandardMapSizes" DefaultValue="MAPSIZE_SMALL" ConfigurationGroup="Map" ConfigurationId="MAP_SIZE" Hash="1" ChangeableAfterPlayByCloudMatchCreate="0" SupportsSinglePlayer="0" SupportsLANMultiplayer="0" SupportsInternetMultiplayer="0" SupportsHotSeat="0"  SupportsPlayByCloud="1" GroupId="MapOptions" SortIndex="220"/>
 		<Row ParameterId="MapSize" Name="LOC_MAP_SIZE" Description="" Domain="ExtraStandardMapSizes" DefaultValue="MAPSIZE_SMALL" ConfigurationGroup="Map" ConfigurationId="MAP_SIZE" Hash="1" ChangeableAfterPlayByCloudMatchCreate="0" SupportsSinglePlayer="1" SupportsLANMultiplayer="1" SupportsInternetMultiplayer="1" SupportsHotSeat="1"  SupportsPlayByCloud="0"  GroupId="MapOptions" SortIndex="220"/>
-
+		<Row ParameterId="BBM_Team_Spawn" Name="LOC_BBM_Team_Spawn_NAME" Description="LOC_BBM_Team_Spawn_DESC" Domain="TeamersDomain" DefaultValue="0" ConfigurationGroup="Map" ConfigurationId="BBM_Team_Spawn" GroupId="MapOptions" Visible="1" SupportsSinglePlayer="0" SortIndex="233"/>
 
 
 
@@ -34,26 +34,18 @@
 		<Row Key1="Map" Key2="Archipelago_XP2.lua" ParameterId="SpawnRecalculation" Name="LOC_GAME_SPAWN_RECALCULATION" Description="LOC_GAME_SPAWN_RECALCULATION_DESC" Domain="bool" DefaultValue="1" ConfigurationGroup="Game" ConfigurationId="SpawnRecalculation" GroupId="BBSOptions" SortIndex="2050"/>
 		<Row Key1="Map" Key2="Archipelago_XP2.lua" ParameterId="AutoRemap" Name="LOC_GAME_SPAWN_REMAP" Description="LOC_GAME_SPAWN_REMAP_DESC" Domain="bool" DefaultValue="0" ConfigurationGroup="Game" ConfigurationId="AutoRemap" GroupId="AdvancedOptions" Visible="0" SortIndex="2051"/>
 		<Row Key1="Map" Key2="Archipelago_XP2.lua" ParameterId="BBStemp" Name="LOC_GAME_BBS_TEMP" Description="LOC_GAME_BBS_TEMP_DESC" Domain="bool" DefaultValue="1" ConfigurationGroup="Game" ConfigurationId="BBStemp" GroupId="AdvancedOptions" Visible="0" SortIndex="2052"/>
-		<Row Key1="Map" Key2="Archipelago_XP2.lua" ParameterId="BBS_Team_Spawn" Name="LOC_BBS_Team_Spawn_NAME" Description="LOC_BBS_Team_Spawn_DESC" Domain="bool" DefaultValue="1" ConfigurationGroup="Game" ConfigurationId="BBS_Team_Spawn" GroupId="AdvancedOptions" Visible="1" SortIndex="2052"/>
+		
 		
 		<Row Key1="Map" Key2="Continents.lua" ParameterId="ContinentsMapName" 		Name="MapName" Description="" Domain="text" DefaultValue="Continents" 		ConfigurationGroup="Map" ConfigurationId="MapName" GroupId="MapOptions" Visible="0" SortIndex="2010"/>
 		<Row Key1="Map" Key2="Continents.lua" ParameterId="SpawnRecalculation" Name="LOC_GAME_SPAWN_RECALCULATION" Description="LOC_GAME_SPAWN_RECALCULATION_DESC" Domain="bool" DefaultValue="1" ConfigurationGroup="Game" ConfigurationId="SpawnRecalculation" GroupId="BBSOptions" SortIndex="2050"/>
 		<Row Key1="Map" Key2="Continents.lua" ParameterId="AutoRemap" Name="LOC_GAME_SPAWN_REMAP" Description="LOC_GAME_SPAWN_REMAP_DESC" Domain="bool" DefaultValue="0" ConfigurationGroup="Game" ConfigurationId="AutoRemap" GroupId="AdvancedOptions" Visible="0" SortIndex="2051"/>
 		<Row Key1="Map" Key2="Continents.lua" ParameterId="BBStemp" Name="LOC_GAME_BBS_TEMP" Description="LOC_GAME_BBS_TEMP_DESC" Domain="bool" DefaultValue="1" ConfigurationGroup="Game" ConfigurationId="BBStemp" GroupId="AdvancedOptions" Visible="0" SortIndex="2052"/>
-		
-		<Row Key1="Map" Key2="PerfectWorld6.lua" ParameterId="PerfectMapName" 		Name="MapName" Description="" Domain="text" DefaultValue="PerfectWorld6" 		ConfigurationGroup="Map" ConfigurationId="MapName" GroupId="MapOptions" Visible="0" SortIndex="2010"/>
-		<Row Key1="Map" Key2="PerfectWorld6.lua" ParameterId="SpawnRecalculation" Name="LOC_GAME_SPAWN_RECALCULATION" Description="LOC_GAME_SPAWN_RECALCULATION_DESC" Domain="bool" DefaultValue="1" ConfigurationGroup="Game" ConfigurationId="SpawnRecalculation" GroupId="BBSOptions" SortIndex="2050"/>
-		<Row Key1="Map" Key2="PerfectWorld6.lua" ParameterId="AutoRemap" Name="LOC_GAME_SPAWN_REMAP" Description="LOC_GAME_SPAWN_REMAP_DESC" Domain="bool" DefaultValue="0" ConfigurationGroup="Game" ConfigurationId="AutoRemap" GroupId="AdvancedOptions" Visible="0" SortIndex="2051"/>
-		<Row Key1="Map" Key2="PerfectWorld6.lua" ParameterId="BBStemp" Name="LOC_GAME_BBS_TEMP" Description="LOC_GAME_BBS_TEMP_DESC" Domain="bool" DefaultValue="1" ConfigurationGroup="Game" ConfigurationId="BBStemp" GroupId="AdvancedOptions" Visible="0" SortIndex="2052"/>
-		
-
 
 		<Row Key1="Map" Key2="Continents_Islands.lua" ParameterId="Continents_IslandsMapName" 		Name="MapName" Description="" Domain="text" DefaultValue="Continents_Islands" 		ConfigurationGroup="Map" ConfigurationId="MapName" GroupId="MapOptions" Visible="0" SortIndex="2010"/>
 		<Row Key1="Map" Key2="Continents_Islands.lua" ParameterId="SpawnRecalculation" Name="LOC_GAME_SPAWN_RECALCULATION" Description="LOC_GAME_SPAWN_RECALCULATION_DESC" Domain="bool" DefaultValue="1" ConfigurationGroup="Game" ConfigurationId="SpawnRecalculation" GroupId="BBSOptions" SortIndex="2050"/>
 		<Row Key1="Map" Key2="Continents_Islands.lua" ParameterId="AutoRemap" Name="LOC_GAME_SPAWN_REMAP" Description="LOC_GAME_SPAWN_REMAP_DESC" Domain="bool" DefaultValue="0" ConfigurationGroup="Game" ConfigurationId="AutoRemap" GroupId="AdvancedOptions" Visible="0" SortIndex="2051"/>
 		<Row Key1="Map" Key2="Continents_Islands.lua" ParameterId="BBStemp" Name="LOC_GAME_BBS_TEMP" Description="LOC_GAME_BBS_TEMP_DESC" Domain="bool" DefaultValue="1" ConfigurationGroup="Game" ConfigurationId="BBStemp" GroupId="AdvancedOptions" Visible="0" SortIndex="2052"/>
 		
-
 		<Row Key1="Map" Key2="Fractal.lua" ParameterId="FractalMapName" 		Name="MapName" Description="" Domain="text" DefaultValue="Fractal" 		ConfigurationGroup="Map" ConfigurationId="MapName" GroupId="MapOptions" Visible="0" SortIndex="2010"/>
 		<Row Key1="Map" Key2="Fractal.lua" ParameterId="SpawnRecalculation" Name="LOC_GAME_SPAWN_RECALCULATION" Description="LOC_GAME_SPAWN_RECALCULATION_DESC" Domain="bool" DefaultValue="1" ConfigurationGroup="Game" ConfigurationId="SpawnRecalculation" GroupId="BBSOptions" SortIndex="2050"/>
 		<Row Key1="Map" Key2="Fractal.lua" ParameterId="AutoRemap" Name="LOC_GAME_SPAWN_REMAP" Description="LOC_GAME_SPAWN_REMAP_DESC" Domain="bool" DefaultValue="0" ConfigurationGroup="Game" ConfigurationId="AutoRemap" GroupId="AdvancedOptions" Visible="0" SortIndex="2051"/>
@@ -72,12 +64,10 @@
         <Row Key1="Map" Key2="rich_highlands_xp2.lua" ParameterId="Temperature" Name="LOC_MAP_TEMPERATURE_NAME" Description="LOC_MAP_TEMPERATURE_DESCRIPTION" Domain="Temperature" DefaultValue="2" ConfigurationGroup="Map" ConfigurationId="temperature" GroupId="MapOptions" Hash="0" SortIndex="240"/>
 		<Row Key1="Map" Key2="rich_highlands_xp2.lua" ParameterId="Rainfall" Name="LOC_MAP_RAINFALL_NAME" Description="LOC_MAP_RAINFALL_DESCRIPTION" Domain="Rainfall" DefaultValue="2" ConfigurationGroup="Map" ConfigurationId="rainfall" GroupId="MapOptions" Hash="0" SortIndex="250"/>
 
-
 		<Row Key1="Map" Key2="Wetlands_XP2.lua" ParameterId="Wetlands_XP2MapName" 		Name="MapName" Description="" Domain="text" DefaultValue="Wetlands_XP2" 		ConfigurationGroup="Map" ConfigurationId="MapName" GroupId="MapOptions" Visible="0" SortIndex="2010"/>
 		<Row Key1="Map" Key2="Wetlands_XP2.lua" ParameterId="SpawnRecalculation" Name="LOC_GAME_SPAWN_RECALCULATION" Description="LOC_GAME_SPAWN_RECALCULATION_DESC" Domain="bool" DefaultValue="1" ConfigurationGroup="Game" ConfigurationId="SpawnRecalculation" GroupId="BBSOptions" SortIndex="2050"/>
 		<Row Key1="Map" Key2="Wetlands_XP2.lua" ParameterId="AutoRemap" Name="LOC_GAME_SPAWN_REMAP" Description="LOC_GAME_SPAWN_REMAP_DESC" Domain="bool" DefaultValue="0" ConfigurationGroup="Game" ConfigurationId="AutoRemap" GroupId="AdvancedOptions" Visible="0" SortIndex="2051"/>
 		<Row Key1="Map" Key2="Wetlands_XP2.lua" ParameterId="BBStemp" Name="LOC_GAME_BBS_TEMP" Description="LOC_GAME_BBS_TEMP_DESC" Domain="bool" DefaultValue="1" ConfigurationGroup="Game" ConfigurationId="BBStemp" GroupId="AdvancedOptions" Visible="0" SortIndex="2052"/>
-
 
 		<Row Key1="Map" Key2="Lakes.lua" ParameterId="LakesMapName" 		Name="MapName" Description="" Domain="text" DefaultValue="Lakes" 		ConfigurationGroup="Map" ConfigurationId="MapName" GroupId="MapOptions" Visible="0" SortIndex="2010"/>
 		<Row Key1="Map" Key2="Lakes.lua" ParameterId="SpawnRecalculation" Name="LOC_GAME_SPAWN_RECALCULATION" Description="LOC_GAME_SPAWN_RECALCULATION_DESC" Domain="bool" DefaultValue="1" ConfigurationGroup="Game" ConfigurationId="SpawnRecalculation" GroupId="BBSOptions" SortIndex="2050"/>
@@ -96,11 +86,11 @@
 		<Row Key1="Map" Key2="Island_Plates.lua" ParameterId="BBStemp" Name="LOC_GAME_BBS_TEMP" Description="LOC_GAME_BBS_TEMP_DESC" Domain="bool" DefaultValue="1" ConfigurationGroup="Game" ConfigurationId="BBStemp" GroupId="AdvancedOptions" Visible="0" SortIndex="2052"/>
 		
 		
-		<Row Key1="Map" Key2="Pangaea.lua" ParameterId="PangaeaMapName" 		Name="MapName" Description="" Domain="text" DefaultValue="Pangaea" 		ConfigurationGroup="Map" ConfigurationId="MapName" GroupId="MapOptions" Visible="0" SortIndex="2010"/>
+		<Row Key1="Map" Key2="Pangaea.lua" ParameterId="PangaeaMapName" Name="MapName" Description="" Domain="text" DefaultValue="Pangaea" ConfigurationGroup="Map" ConfigurationId="MapName" GroupId="MapOptions" Visible="0" SortIndex="2010"/>
 		<Row Key1="Map" Key2="Pangaea.lua" ParameterId="SpawnRecalculation" Name="LOC_GAME_SPAWN_RECALCULATION" Description="LOC_GAME_SPAWN_RECALCULATION_DESC" Domain="bool" DefaultValue="1" ConfigurationGroup="Game" ConfigurationId="SpawnRecalculation" GroupId="BBSOptions" SortIndex="2050"/>
 		<Row Key1="Map" Key2="Pangaea.lua" ParameterId="AutoRemap" Name="LOC_GAME_SPAWN_REMAP" Description="LOC_GAME_SPAWN_REMAP_DESC" Domain="bool" DefaultValue="0" ConfigurationGroup="Game" ConfigurationId="AutoRemap" GroupId="AdvancedOptions" Visible="0" SortIndex="2051"/>
 		<Row Key1="Map" Key2="Pangaea.lua" ParameterId="BBStemp" Name="LOC_GAME_BBS_TEMP" Description="LOC_GAME_BBS_TEMP_DESC" Domain="bool" DefaultValue="1" ConfigurationGroup="Game" ConfigurationId="BBStemp" GroupId="AdvancedOptions" Visible="0" SortIndex="2052"/>
-		
+		<Row Key1="Map" Key2="Pangaea.lua" ParameterId="BBMTeamSpawn" Name="LOC_BBM_Team_Spawn_NAME" Description="LOC_BBM_Team_Spawn_DESC" Domain="bool" DefaultValue="1" ConfigurationGroup="Game" ConfigurationId="BBM_Team_Spawn" GroupId="AdvancedOptions" Visible="0" SortIndex="231"/>
 
 		<Row Key1="Map" Key2="Primordial.lua" ParameterId="PrimordialMapName" 		Name="MapName" Description="" Domain="text" DefaultValue="Primordial" 		ConfigurationGroup="Map" ConfigurationId="MapName" GroupId="MapOptions" Visible="0" SortIndex="2010"/>
 		<Row Key1="Map" Key2="Primordial.lua" ParameterId="SpawnRecalculation" Name="LOC_GAME_SPAWN_RECALCULATION" Description="LOC_GAME_SPAWN_RECALCULATION_DESC" Domain="bool" DefaultValue="1" ConfigurationGroup="Game" ConfigurationId="SpawnRecalculation" GroupId="BBSOptions" SortIndex="2050"/>
@@ -157,9 +147,9 @@
 		<Row Domain="OldWorldStart" Value="OLD_WORLD" 	Name="Old World Only" 			Description="All civs start in 'old world'." 			SortIndex="10"/>
 		<Row Domain="OldWorldStart" Value="ANYWHERE" 	Name="Start Anywhere" 			Description="Civs start anywhere in the world." 		SortIndex="20"/>
 
-		<!--<Row Domain="TeamersDomain" Value="0" Name="BBS_Team_Spawn_NORMAL_NAME" Description="BBS_Team_Spawn_NORMAL_DESC" SortIndex="10"/>
-		<Row Domain="TeamersDomain" Value="1" Name="BBS_Team_Spawn_EW_NAME" Description="BBS_Team_Spawn_EW_DESC" SortIndex="20"/>
-		<Row Domain="TeamersDomain" Value="2" Name="BBS_Team_Spawn_NS_NAME" Description="BBS_Team_Spawn_NS_DESC" SortIndex="30"/>-->
+		<Row Domain="TeamersDomain" Value="0" Name="BBM_Team_Spawn_NORMAL_NAME" Description="BBM_Team_Spawn_NORMAL_DESC" SortIndex="10"/>
+		<Row Domain="TeamersDomain" Value="1" Name="BBM_Team_Spawn_EW_NAME" Description="BBM_Team_Spawn_EW_DESC" SortIndex="20"/>
+		<!--<Row Domain="TeamersDomain" Value="2" Name="BBM_Team_Spawn_NS_NAME" Description="BBM_Team_Spawn_NS_DESC" SortIndex="30"/>-->
 
 		<Row Domain="StratResDomain" Value="0" Name="BBS_SRESOURCES_NORMAL_NAME" Description="BBS_SRESOURCES_NORMAL_DESC" SortIndex="10"/>
 		<Row Domain="StratResDomain" Value="1" Name="BBS_SRESOURCES_MORE_NAME" Description="BBS_SRESOURCES_MORE_DESC" SortIndex="20"/>

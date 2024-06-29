@@ -4,9 +4,10 @@
 
 CivilizationAssignSpawn = {}
 
-function CivilizationAssignSpawn.new(player, leader, name, team)
+function CivilizationAssignSpawn.new(player, leader, name, team, index)
     local instance = {}
     setmetatable(instance, {__index = CivilizationAssignSpawn});
+    instance.PlayerIndex = index;
     instance.Player = player;
     instance.CivilizationLeader = leader;
     instance.CivilizationName = name;
@@ -32,6 +33,10 @@ function CivilizationAssignSpawn.new(player, leader, name, team)
     instance.CentroidsScore = {}
     instance.AttributedCentroid = nil;
     instance.StartingHex = nil;
+    instance.TeamerSim = false;
+    instance.TeamerWar = false;
+    instance.TeamerSide = "";
+    instance.TeamerContinentId = nil;
     _Debug("Init CivilizationAssignSpawn ", player, leader, name, team);
     return instance;
 end
@@ -355,7 +360,8 @@ function CivilizationAssignSpawn:GetValidSpawnsInHexList(BBS_HexMap, listHex)
     for _, hex in pairs(listHex) do
         -- In Terra, major civ spawn on the biggest island
         local terraCondition = isTerraMap == false or (isTerraMap and hex.Plot:GetArea():GetID() == BBS_HexMap.BiggestIsland:GetID())
-        if terraCondition and hex.IsMajorSpawnable and self:ValidWalkableTiles(hex) and self:ValidTundraDensity(hex) then --pre calculation of technical spawns
+        local RTScondition = self:GetXPlacementCondition(BBS_HexMap, hex);
+        if RTScondition and terraCondition and hex.IsMajorSpawnable and self:ValidWalkableTiles(hex) and self:ValidTundraDensity(hex) then --pre calculation of technical spawns
             if self.IsTundraBias == false and self.IsDesertBias == false and hex:IsNextToOasis() == false then
                 -- If Maya ignore fresh water, it will be placed last because there is too much valid tiles
                 if self.IsCoastalBias and hex.IsCoastal and hex:IsTundraLand() == false then
@@ -372,7 +378,51 @@ function CivilizationAssignSpawn:GetValidSpawnsInHexList(BBS_HexMap, listHex)
             end
         end
     end
+
     return validTiles;
+end
+
+function CivilizationAssignSpawn:GetXPlacementCondition(BBS_HexMap, hex)
+    if  BBS_HexMap.TeamerConfig == TeamerConfigStandard then
+        return true;
+    end
+    if BBS_HexMap.mapScript == MapScripts.MAP_PANGAEA then
+        if self.TeamerWar then
+            local warSizeMax = BBS_HexMap.RTSPangaeaTeamerConfigWarMax
+            if self.IsTundraBias then
+                warSizeMax = BBS_HexMap.RTSPangaeaTeamerConfigWarMaxTundra;
+            end
+            if self.TeamerSide == EastTeam then
+                return hex:GetX() > BBS_HexMap.MiddleX + BBS_HexMap.RTSPangaeaTeamerEvWBuffer and hex:GetX() <= BBS_HexMap.MiddleX + warSizeMax;
+            elseif self.TeamerSide == WestTeam then
+                return hex:GetX() < BBS_HexMap.MiddleX - BBS_HexMap.RTSPangaeaTeamerEvWBuffer and hex:GetX() >= BBS_HexMap.MiddleX - warSizeMax;
+            else -- Side not attributed yet
+                return (hex:GetX() > BBS_HexMap.MiddleX + BBS_HexMap.RTSPangaeaTeamerEvWBuffer and hex:GetX() <= BBS_HexMap.MiddleX + warSizeMax)
+                    or (hex:GetX() < BBS_HexMap.MiddleX - BBS_HexMap.RTSPangaeaTeamerEvWBuffer and hex:GetX() >= BBS_HexMap.MiddleX - warSizeMax)
+            end 
+        elseif self.TeamerSim then
+            if self.TeamerSide == EastTeam then
+                return hex:GetX() > BBS_HexMap.MiddleX + BBS_HexMap.RTSPangaeaTeamerConfigSimMin;
+            elseif self.TeamerSide == WestTeam then
+                return hex:GetX() < BBS_HexMap.MiddleX - BBS_HexMap.RTSPangaeaTeamerConfigSimMin;
+            else -- Side not attributed yet
+                return (hex:GetX() > BBS_HexMap.MiddleX + BBS_HexMap.RTSPangaeaTeamerConfigSimMin) or (hex:GetX() < BBS_HexMap.MiddleX - BBS_HexMap.RTSPangaeaTeamerConfigSimMin);
+            end 
+        end
+        return true;
+    end
+    if BBS_HexMap.mapScript == MapScripts.MAP_CONTINENTS or BBS_HexMap.mapScript == MapScripts.MAP_CONTINENTS_ISLANDS then
+        if self.TeamerSide == EastTeam then
+            return hex:GetX() >= BBS_HexMap.MiddleX
+        elseif self.TeamerSide == WestTeam then
+            return hex:GetX() < BBS_HexMap.MiddleX;        
+        end
+        --if self.TeamerContinentId ~= nil and Contains(BBS_HexMap.RTSContinentsAreaOccupied, hex.IslandId) == false then
+        --    return self.TeamerContinentId == hex.IslandId;
+        --end
+        return true;
+    end
+    return true;
 end
 
 -- Test for Mali : at least 2 desert tiles and 2 non desert

@@ -14,7 +14,6 @@ MapScripts.MAP_TILTED_AXIS = "Tilted_Axis.lua"
 MapScripts.MAP_FRACTAL = "Fractal.lua"
 MapScripts.MAP_ISLAND_PLATES = "Island_Plates.lua"
 MapScripts.MAP_SMALL_CONTINENTS = "Small_Continents.lua"
-MapScripts.MAP_ARCHIPELAGO = "Archipelago_XP2.lua"
 MapScripts.MAP_CONTINENTS = "Continents.lua"
 MapScripts.MAP_WETLANDS = "Wetlands_XP2.lua"
 MapScripts.MAP_CONTINENTS_ISLANDS = "Continents_Islands.lua"
@@ -238,6 +237,12 @@ g_RESOURCES_HIGHPROD[g_RESOURCE_GYPSUM] = true;
 
 g_HILLS = "Hills";
 g_PASSABLE_LAND = "PassableLand";
+
+TeamerConfigStandard = "Standard";
+TeamerConfigEastVsWest = "EastVsWest";
+EastTeam = "East";
+WestTeam = "West";
+
 
 function _Debug(...)
     print(...);
@@ -775,7 +780,13 @@ function HexMap.new(_width, _height, mapScript)
     instance.majorSpawns = {};
     instance.minorSpawns = {};
     instance.BiggestIsland = Areas.FindBiggestArea(false);
-    -- instance:InitSetSpawnableWater -- too close to border, non fresh or coast, peninsula score
+    instance.TeamerConfig = instance:GetTeamerPositionConfig();
+    instance.MiddleX = _width / 2;
+    -- Starting from middle of the map, East vs West setup allows that much space for war civ spawn, rest is for simmers
+    instance.RTSPangaeaTeamerEvWBuffer = math.floor(_width * 0.05 + 0.5); --% from middle of map +-4
+    instance.RTSPangaeaTeamerConfigWarMax = math.floor(_width * 0.13 + 0.5); -- on 4v4 = +-11 from middle
+    instance.RTSPangaeaTeamerConfigWarMaxTundra = math.floor(_width * 0.18 + 0.5); -- on 4v4 = +-15 from middle
+    instance.RTSPangaeaTeamerConfigSimMin = math.floor(_width * 0.2 + 0.5); -- on 4v4 = +-17 from middle
     -- Put maps parameters here ? (world age, temperature, rainfall etc)
     return instance;
 end
@@ -3451,6 +3462,17 @@ function even(test)
     end
 end
 
+function HexMap:GetTeamerPositionConfig() 
+    if MapConfiguration.GetValue("BBM_Team_Spawn") ~= nil then
+        local Teamers_Config = MapConfiguration.GetValue("BBM_Team_Spawn");
+        _Debug("GetTeamerPositionConfig : ", Teamers_Config)
+        if Teamers_Config == 1 then
+            return TeamerConfigEastVsWest;
+        end
+    end 
+    return TeamerConfigStandard;
+end
+
 function printAllStartYields(hexMap)
     print("PrintAllStartYields")
     local meanFoodR1 = 0;
@@ -5234,7 +5256,7 @@ function BalanceAllCivYields(spawns)
     ----------------------------
     -- Step 3 (Teamer) - High yields between teams
     ----------------------------
-    if (IsTeamerConfig()) then
+    if (Is1v1OrTeamerConfig()) then
         HighYieldsTeamerBalancing(spawns);
     end
 

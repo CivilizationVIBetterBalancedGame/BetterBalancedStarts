@@ -366,28 +366,28 @@
 	<Replace Tag="LOC_GAME_BBS_NATURAL_DESC" Language="fr_FR">
 		  <Text>Contrôle le nombre maximum de merveilles naturelles qui peuvent apparaître sur la carte.</Text>
 	</Replace>		
-	<Replace Tag="LOC_BBS_Team_Spawn_NAME" Language="fr_FR">
+	<Replace Tag="LOC_BBM_Team_Spawn_NAME" Language="fr_FR">
 		<Text>Positions Teamer</Text>
 	</Replace>
-	<Replace Tag="LOC_BBS_Team_Spawn_DESC" Language="fr_FR">
+	<Replace Tag="LOC_BBM_Team_Spawn_DESC" Language="fr_FR">
 		<Text>Contrôlez la position des civilisations sur la carte dans un teamer</Text>
 	</Replace>
-	<Replace Tag="BBS_Team_Spawn_NORMAL_NAME" Language="fr_FR">
+	<Replace Tag="BBM_Team_Spawn_NORMAL_NAME" Language="fr_FR">
 		<Text>Standard</Text>
 	</Replace>
-	<Replace Tag="BBS_Team_Spawn_NORMAL_DESC" Language="fr_FR">
+	<Replace Tag="BBM_Team_Spawn_NORMAL_DESC" Language="fr_FR">
 		<Text>Paramètres d'origine : les joueurs sont placés aléatoirement</Text>
 	</Replace>
-	<Replace Tag="BBS_Team_Spawn_EW_NAME" Language="fr_FR">
+	<Replace Tag="BBM_Team_Spawn_EW_NAME" Language="fr_FR">
 		<Text>Est contre Ouest</Text>
 	</Replace>
-	<Replace Tag="BBS_Team_Spawn_EW_DESC" Language="fr_FR">
+	<Replace Tag="BBM_Team_Spawn_EW_DESC" Language="fr_FR">
 		<Text>Pour les 2v2 et 4v4 : les joueurs de la même équipe sont beaucoup plus susceptibles d'apparaître à l'Est ou à l'Ouest.</Text>
 	</Replace>
-	<Replace Tag="BBS_Team_Spawn_NS_NAME" Language="fr_FR">
+	<Replace Tag="BBM_Team_Spawn_NS_NAME" Language="fr_FR">
 		<Text>Nord contre Sud</Text>
 	</Replace>
-	<Replace Tag="BBS_Team_Spawn_NS_DESC" Language="fr_FR">
+	<Replace Tag="BBM_Team_Spawn_NS_DESC" Language="fr_FR">
 		<Text>Pour les 2v2 et 4v4 : les joueurs de la même équipe sont beaucoup plus susceptibles d'apparaître au Nord ou au Sud.</Text>
 	</Replace>
 	

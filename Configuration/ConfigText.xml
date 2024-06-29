@@ -21,28 +21,28 @@
 	<Replace Tag="LOC_GAME_BBS_RIDGE_DESC" language="en">
 		<Text>Control how formidable the mountain ranges are in the game</Text>
 	</Replace>
-	<Replace Tag="LOC_BBS_Team_Spawn_NAME" language="en">
+	<Replace Tag="LOC_BBM_Team_Spawn_NAME" language="en">
 		<Text>Teamers Start Position</Text>
 	</Replace>
-	<Replace Tag="LOC_BBS_Team_Spawn_DESC" language="en">
+	<Replace Tag="LOC_BBM_Team_Spawn_DESC" language="en">
 		<Text>Control how the Major Civilizations would be placed on the map in Team games</Text>
 	</Replace>
-	<Replace Tag="BBS_Team_Spawn_NORMAL_NAME" language="en">
+	<Replace Tag="BBM_Team_Spawn_NORMAL_NAME" language="en">
 		<Text>Standard</Text>
 	</Replace>
-	<Replace Tag="BBS_Team_Spawn_NORMAL_DESC" language="en">
+	<Replace Tag="BBM_Team_Spawn_NORMAL_DESC" language="en">
 		<Text>Original Firaxis settings: players are randomly placed</Text>
 	</Replace>
-	<Replace Tag="BBS_Team_Spawn_EW_NAME" language="en">
+	<Replace Tag="BBM_Team_Spawn_EW_NAME" language="en">
 		<Text>East vs. West</Text>
 	</Replace>
-	<Replace Tag="BBS_Team_Spawn_EW_DESC" language="en">
+	<Replace Tag="BBM_Team_Spawn_EW_DESC" language="en">
 		<Text>For 2v2 or 4v4: players of the same team are much more likely to spawn East or West.</Text>
 	</Replace>
-	<Replace Tag="BBS_Team_Spawn_NS_NAME" language="en">
+	<Replace Tag="BBM_Team_Spawn_NS_NAME" language="en">
 		<Text>North vs. South</Text>
 	</Replace>
-	<Replace Tag="BBS_Team_Spawn_NS_DESC" language="en">
+	<Replace Tag="BBM_Team_Spawn_NS_DESC" language="en">
 		<Text>For 2v2 or 4v4: players of the same team are much more likely to spawn North or South.</Text>
 	</Replace>
 	<Replace Tag="BBS_RIDGE_NORMAL_NAME" language="en">

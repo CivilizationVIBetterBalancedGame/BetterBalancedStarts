@@ -115,28 +115,28 @@
 	</Replace>		
 	
 	
-	<Replace Tag="LOC_BBS_Team_Spawn_NAME" language="ru_RU">
+	<Replace Tag="LOC_BBM_Team_Spawn_NAME" language="ru_RU">
 		<Text>Командный старт</Text>
 	</Replace>
-	<Replace Tag="LOC_BBS_Team_Spawn_DESC" language="ru_RU">
+	<Replace Tag="LOC_BBM_Team_Spawn_DESC" language="ru_RU">
 		<Text>Контролирует расположение цивилизаций в командных играх. </Text>
 	</Replace>
-	<Replace Tag="BBS_Team_Spawn_NORMAL_NAME" language="ru_RU">
+	<Replace Tag="BBM_Team_Spawn_NORMAL_NAME" language="ru_RU">
 		<Text>Стандартный</Text>
 	</Replace>
-	<Replace Tag="BBS_Team_Spawn_NORMAL_DESC" language="ru_RU">
+	<Replace Tag="BBM_Team_Spawn_NORMAL_DESC" language="ru_RU">
 		<Text>Оригинальная настройка Firaxis: случайное расположение.</Text>
 	</Replace>
-	<Replace Tag="BBS_Team_Spawn_EW_NAME" language="ru_RU">
+	<Replace Tag="BBM_Team_Spawn_EW_NAME" language="ru_RU">
 		<Text>Запад-Восток</Text>
 	</Replace>
-	<Replace Tag="BBS_Team_Spawn_EW_DESC" language="ru_RU">
+	<Replace Tag="BBM_Team_Spawn_EW_DESC" language="ru_RU">
 		<Text>Для 2x2 или 4x4: игроки одной команды будут с большей вероятностью расположены на Западе или Востоке.</Text>
 	</Replace>
-	<Replace Tag="BBS_Team_Spawn_NS_NAME" language="ru_RU">
+	<Replace Tag="BBM_Team_Spawn_NS_NAME" language="ru_RU">
 		<Text>Север-Юг</Text>
 	</Replace>
-	<Replace Tag="BBS_Team_Spawn_NS_DESC" language="ru_RU">
+	<Replace Tag="BBM_Team_Spawn_NS_DESC" language="ru_RU">
 		<Text>Для 2x2 или 4x4: игроки одной команды будут с большей вероятностью расположены на Севере или Юге.</Text>
 	</Replace>
 	

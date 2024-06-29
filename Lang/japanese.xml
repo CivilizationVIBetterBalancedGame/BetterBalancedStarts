@@ -316,28 +316,28 @@
 			<Text>10回</Text>
 		</Replace>
 		<!-- = Teamers start position = -->
-		<Replace Tag="LOC_BBS_Team_Spawn_NAME" Language="ja_JP">
+		<Replace Tag="LOC_BBM_Team_Spawn_NAME" Language="ja_JP">
 			<Text>チームの開始位置</Text>
 		</Replace>
-		<Replace Tag="LOC_BBS_Team_Spawn_DESC" Language="ja_JP">
+		<Replace Tag="LOC_BBM_Team_Spawn_DESC" Language="ja_JP">
 			<Text>チーム戦における文明の配置を調整する。</Text>
 		</Replace>
-		<Replace Tag="BBS_Team_Spawn_NORMAL_NAME" Language="ja_JP">
+		<Replace Tag="BBM_Team_Spawn_NORMAL_NAME" Language="ja_JP">
 			<Text>標準</Text>
 		</Replace>
-		<Replace Tag="BBS_Team_Spawn_NORMAL_DESC" Language="ja_JP">
+		<Replace Tag="BBM_Team_Spawn_NORMAL_DESC" Language="ja_JP">
 			<Text>Firaxisによる標準設定。文明はランダムに配置される。</Text>
 		</Replace>
-		<Replace Tag="BBS_Team_Spawn_EW_NAME" Language="ja_JP">
+		<Replace Tag="BBM_Team_Spawn_EW_NAME" Language="ja_JP">
 			<Text>東西</Text>
 		</Replace>
-		<Replace Tag="BBS_Team_Spawn_EW_DESC" Language="ja_JP">
+		<Replace Tag="BBM_Team_Spawn_EW_DESC" Language="ja_JP">
 			<Text>2対2または4対4向け。同じチームの文明が東西いずれかの同じ側にスポーンしやすくなる。</Text>
 		</Replace>
-		<Replace Tag="BBS_Team_Spawn_NS_NAME" Language="ja_JP">
+		<Replace Tag="BBM_Team_Spawn_NS_NAME" Language="ja_JP">
 			<Text>南北</Text>
 		</Replace>
-		<Replace Tag="BBS_Team_Spawn_NS_DESC" Language="ja_JP">
+		<Replace Tag="BBM_Team_Spawn_NS_DESC" Language="ja_JP">
 			<Text>2対2または4対4向け。同じチームの文明が南北いずれかの同じ側にスポーンしやすくなる。</Text>
 		</Replace>
 		
