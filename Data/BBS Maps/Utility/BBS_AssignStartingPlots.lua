@@ -413,6 +413,8 @@ function BBS_AssignStartingPlots:__PlaceMajorCivs(civs, BBS_HexMap, index)
             end
             table.insert(BBS_HexMap.tempMajorSpawns[index], {Civ = civ, Spawn = spawnHex, Score = score});
             if BBS_HexMap.TeamerConfig == TeamerConfigEastVsWest then
+                BBS_HexMap.RTSContinentSetup = BBS_HexMap.RTSContinentSetup or {}
+                BBS_HexMap.RTSContinentSetup[civ.CivilizationTeam] = spawnHex.IslandId;
                 if spawnHex:GetX() > BBS_HexMap.MiddleX then
                     civ.TeamerSide = EastTeam;
                 else

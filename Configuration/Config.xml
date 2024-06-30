@@ -11,20 +11,18 @@
 		<Row ParameterId="Debug_No_Balancing" Name="DEBUG_NAME" Description="DEBUG_DESC" Domain="bool" DefaultValue="0" ConfigurationGroup="Game" ConfigurationId="DEBUG_BALANCING" GroupId="AdvancedOptions" Visible="0" Hash="0" SortIndex="2900" />
 		<Row ParameterId="Resources" Name="LOC_MAP_RESOURCES_NAME" Description="LOC_MAP_RESOURCES_DESCRIPTION" Domain="Resources" DefaultValue="2" ConfigurationGroup="Map" ConfigurationId="resources" GroupId="MapOptions" Hash="0" SupportsLANMultiplayer="0" SupportsInternetMultiplayer="0" SupportsHotSeat="0" SortIndex="225"/>
 		<Row ParameterId="Resources" Name="LOC_MAP_RESOURCES_NAME" Description="LOC_MAP_RESOURCES_DESCRIPTION" Domain="Resources" DefaultValue="2" ConfigurationGroup="Map" ConfigurationId="resources" GroupId="MapOptions" Hash="0" SupportsSinglePlayer="0" SortIndex="225"/>
-		
 		<Row ParameterId="BBS_RIDGES" Name="LOC_GAME_BBS_RIDGE_NAME" Description="LOC_GAME_BBS_RIDGE_DESC" Domain="RidgeDomain" DefaultValue="0" ConfigurationGroup="Map" ConfigurationId="BBSRidge" GroupId="MapOptions" SortIndex="231" />
 		<Row ParameterId="BBS_SRESOURCES" Name="LOC_GAME_BBS_SRESOURCES_NAME" Description="LOC_GAME_BBS_SRESOURCES_DESC" Domain="StratResDomain" DefaultValue="0" ConfigurationGroup="Map" ConfigurationId="BBSStratRes" GroupId="MapOptions" SupportsSinglePlayer="1" SortIndex="226" />
-		
 		<Row ParameterId="BBM_MaxFloodplainsSize" Name="LOC_BBM_MAXFLOODPLAINS_SIZE" Description="LOC_BBM_MAXFLOODPLAINS_SIZE_DESCRIPTION" Domain="BBMMaxFloodplainsSizeRange" DefaultValue="8" ConfigurationGroup="Map" ConfigurationId="BBMMaxFloodplainsSize" Hash="0" GroupId="MapOptions" SortIndex="232"/>
-    	
-		
     	<Row ParameterId="BBM_MIN_ATTEMPTS" Name="LOC_GAME_BBM_MIN_ATTEMPTS_NAME" Description="LOC_GAME_BBM_MIN_ATTEMPTS_NAME" Domain="BBMMinAttempts" DefaultValue="5" ConfigurationGroup="Map" ConfigurationId="BBMMinAttempts" GroupId="MapOptions" SupportsSinglePlayer="1" SortIndex="235" />
-		<Row ParameterId="BBM_MIN_DISTANCE" Name="LOC_GAME_BBM_MIN_DISTANCE_NAME" Description="LOC_GAME_BBM_MIN_DISTANCE_DESC" Domain="MinDistance" DefaultValue="0" ConfigurationGroup="Map" ConfigurationId="BBMMinDistance" GroupId="MapOptions" SupportsSinglePlayer="1" SortIndex="236" />
+		<Row ParameterId="BBM_Team_Spawn" Name="LOC_BBM_Team_Spawn_NAME" Description="LOC_BBM_Team_Spawn_DESC" Domain="TeamersDomain" DefaultValue="0" ConfigurationGroup="Map" ConfigurationId="BBM_Team_Spawn" GroupId="MapOptions" Visible="1" SupportsSinglePlayer="0" SortIndex="236"/>
+		<Row ParameterId="BBM_MIN_DISTANCE" Name="LOC_GAME_BBM_MIN_DISTANCE_NAME" Description="LOC_GAME_BBM_MIN_DISTANCE_DESC" Domain="MinDistance" DefaultValue="0" ConfigurationGroup="Map" ConfigurationId="BBMMinDistance" GroupId="MapOptions" SupportsSinglePlayer="1" SortIndex="237" />
 		<Row ParameterId="BBS_NATURAL" Name="LOC_GAME_BBS_NATURAL_NAME" Description="LOC_GAME_BBS_NATURAL_DESC" Domain="NaturalDomain" DefaultValue="1" ConfigurationGroup="Map" ConfigurationId="BBSNatural" GroupId="MapOptions" SortIndex="229" />
+
 		<!--  Mutually Exclusive -->
 		<Row ParameterId="MapSize" Name="LOC_MAP_SIZE" Description="" Domain="StandardMapSizes" DefaultValue="MAPSIZE_SMALL" ConfigurationGroup="Map" ConfigurationId="MAP_SIZE" Hash="1" ChangeableAfterPlayByCloudMatchCreate="0" SupportsSinglePlayer="0" SupportsLANMultiplayer="0" SupportsInternetMultiplayer="0" SupportsHotSeat="0"  SupportsPlayByCloud="1" GroupId="MapOptions" SortIndex="220"/>
 		<Row ParameterId="MapSize" Name="LOC_MAP_SIZE" Description="" Domain="ExtraStandardMapSizes" DefaultValue="MAPSIZE_SMALL" ConfigurationGroup="Map" ConfigurationId="MAP_SIZE" Hash="1" ChangeableAfterPlayByCloudMatchCreate="0" SupportsSinglePlayer="1" SupportsLANMultiplayer="1" SupportsInternetMultiplayer="1" SupportsHotSeat="1"  SupportsPlayByCloud="0"  GroupId="MapOptions" SortIndex="220"/>
-		<Row ParameterId="BBM_Team_Spawn" Name="LOC_BBM_Team_Spawn_NAME" Description="LOC_BBM_Team_Spawn_DESC" Domain="TeamersDomain" DefaultValue="0" ConfigurationGroup="Map" ConfigurationId="BBM_Team_Spawn" GroupId="MapOptions" Visible="1" SupportsSinglePlayer="0" SortIndex="233"/>
+		
 
 
 
@@ -90,7 +88,6 @@
 		<Row Key1="Map" Key2="Pangaea.lua" ParameterId="SpawnRecalculation" Name="LOC_GAME_SPAWN_RECALCULATION" Description="LOC_GAME_SPAWN_RECALCULATION_DESC" Domain="bool" DefaultValue="1" ConfigurationGroup="Game" ConfigurationId="SpawnRecalculation" GroupId="BBSOptions" SortIndex="2050"/>
 		<Row Key1="Map" Key2="Pangaea.lua" ParameterId="AutoRemap" Name="LOC_GAME_SPAWN_REMAP" Description="LOC_GAME_SPAWN_REMAP_DESC" Domain="bool" DefaultValue="0" ConfigurationGroup="Game" ConfigurationId="AutoRemap" GroupId="AdvancedOptions" Visible="0" SortIndex="2051"/>
 		<Row Key1="Map" Key2="Pangaea.lua" ParameterId="BBStemp" Name="LOC_GAME_BBS_TEMP" Description="LOC_GAME_BBS_TEMP_DESC" Domain="bool" DefaultValue="1" ConfigurationGroup="Game" ConfigurationId="BBStemp" GroupId="AdvancedOptions" Visible="0" SortIndex="2052"/>
-		<Row Key1="Map" Key2="Pangaea.lua" ParameterId="BBMTeamSpawn" Name="LOC_BBM_Team_Spawn_NAME" Description="LOC_BBM_Team_Spawn_DESC" Domain="bool" DefaultValue="1" ConfigurationGroup="Game" ConfigurationId="BBM_Team_Spawn" GroupId="AdvancedOptions" Visible="0" SortIndex="231"/>
 
 		<Row Key1="Map" Key2="Primordial.lua" ParameterId="PrimordialMapName" 		Name="MapName" Description="" Domain="text" DefaultValue="Primordial" 		ConfigurationGroup="Map" ConfigurationId="MapName" GroupId="MapOptions" Visible="0" SortIndex="2010"/>
 		<Row Key1="Map" Key2="Primordial.lua" ParameterId="SpawnRecalculation" Name="LOC_GAME_SPAWN_RECALCULATION" Description="LOC_GAME_SPAWN_RECALCULATION_DESC" Domain="bool" DefaultValue="1" ConfigurationGroup="Game" ConfigurationId="SpawnRecalculation" GroupId="BBSOptions" SortIndex="2050"/>

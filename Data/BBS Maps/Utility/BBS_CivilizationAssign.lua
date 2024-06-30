@@ -386,6 +386,7 @@ function CivilizationAssignSpawn:GetXPlacementCondition(BBS_HexMap, hex)
     if  BBS_HexMap.TeamerConfig == TeamerConfigStandard then
         return true;
     end
+    BBS_HexMap.RTSContinentSetup = BBS_HexMap.RTSContinentSetup or {}
     if BBS_HexMap.mapScript == MapScripts.MAP_PANGAEA then
         if self.TeamerWar then
             local warSizeMax = BBS_HexMap.RTSPangaeaTeamerConfigWarMax
@@ -412,14 +413,16 @@ function CivilizationAssignSpawn:GetXPlacementCondition(BBS_HexMap, hex)
         return true;
     end
     if BBS_HexMap.mapScript == MapScripts.MAP_CONTINENTS or BBS_HexMap.mapScript == MapScripts.MAP_CONTINENTS_ISLANDS then
-        if self.TeamerSide == EastTeam then
-            return hex:GetX() >= BBS_HexMap.MiddleX
-        elseif self.TeamerSide == WestTeam then
-            return hex:GetX() < BBS_HexMap.MiddleX;        
+        local continentTeam = BBS_HexMap.RTSContinentSetup[self.CivilizationTeam];
+        if continentTeam == nil or continentTeam == hex.IslandId then
+            if self.TeamerSide == EastTeam then
+                return hex:GetX() >= BBS_HexMap.MiddleX;
+            elseif self.TeamerSide == WestTeam then
+                return hex:GetX() < BBS_HexMap.MiddleX;
+            end
+        else 
+            return false;
         end
-        --if self.TeamerContinentId ~= nil and Contains(BBS_HexMap.RTSContinentsAreaOccupied, hex.IslandId) == false then
-        --    return self.TeamerContinentId == hex.IslandId;
-        --end
         return true;
     end
     return true;
