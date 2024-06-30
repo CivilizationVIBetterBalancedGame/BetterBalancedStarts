@@ -258,12 +258,12 @@ function BBS_NaturalWonderGenerator:__ScorePlots(NWIndex)
 			end
 		end
 
-		-- Score is based on distance (high distance is better, but once we get over 10 hexes away it is pretty flat) plus a random element
+		-- Score is based on distance (high distance is better, but once we get over 15 hexes away it is pretty flat) plus a random element
 		local iDistanceScore;
-		if (iClosestConflictingDist <= 10) then
-			iDistanceScore = iClosestConflictingDist * 100;
+		if (iClosestConflictingDist <= 15) then
+			iDistanceScore = iClosestConflictingDist * 150;
 		else
-			iDistanceScore = 1000 + (iClosestConflictingDist - 10);
+			iDistanceScore = 1500 + (iClosestConflictingDist - 10);
 		end
 
 		row.Score = iDistanceScore + TerrainBuilder.GetRandomNumber(100, "Natural Wonder Placement Score Adjust");
