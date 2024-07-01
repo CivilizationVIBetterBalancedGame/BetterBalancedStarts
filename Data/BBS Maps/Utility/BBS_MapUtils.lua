@@ -4465,18 +4465,13 @@ function SpawnBalancing:CheckInnerRingHighYieldsThreshold()
     _Debug("CheckInnerRingHighYieldsThreshold enter");
     local ring1HighYields = {};
     local ring2HighYields = {};
+    local ringModifiedTiles = {};
     AddToTable(ring1HighYields, self.RingTables[1].HIGH_YIELD_TILES);
     AddToTable(ring1HighYields, self.RingTables[1].HIGH_EXTRA_YIELDS);
     AddToTable(ring2HighYields, self.RingTables[2].HIGH_YIELD_TILES);
     AddToTable(ring2HighYields, self.RingTables[2].HIGH_EXTRA_YIELDS);
     local highYieldsCount = #ring1HighYields + #ring2HighYields;
     _Debug("CheckInnerRingHighYieldsThreshold highYieldsCount = ", highYieldsCount);
-    for _, h in ipairs(ring1HighYields) do
-        _Debug(h:PrintXY());
-    end
-    for _, h in ipairs(ring2HighYields) do
-        _Debug(h:PrintXY());
-    end
     if highYieldsCount >= self.MinHighYieldInnerRingThreshold and highYieldsCount <= self.MaxHighYieldInnerRingThreshold then
         _Debug("CheckInnerRingHighYieldsThreshold OK : highYieldsCount = ", highYieldsCount, self.MaxHighYieldInnerRingThreshold);
         return true;
@@ -4486,6 +4481,7 @@ function SpawnBalancing:CheckInnerRingHighYieldsThreshold()
         if highYieldsCount > self.MaxHighYieldInnerRingThreshold and h.IsTaggedAsMinimum == false then
             self:TerraformHex(h, 1, TerraformType[3], g_RESOURCE_NONE, false, false);
             highYieldsCount = highYieldsCount - 1;
+            table.insert(ringModifiedTiles, h);
             _Debug("CheckInnerRingHighYieldsThreshold deleted a high yields on ", h:PrintXY(), " Ring 1")
         end
     end
@@ -4494,6 +4490,7 @@ function SpawnBalancing:CheckInnerRingHighYieldsThreshold()
         if highYieldsCount > self.MaxHighYieldInnerRingThreshold and h.IsTaggedAsMinimum == false then
             self:TerraformHex(h, 2, TerraformType[3], g_RESOURCE_NONE, false, false);
             highYieldsCount = highYieldsCount - 1;
+            table.insert(ringModifiedTiles, h);
             _Debug("CheckInnerRingHighYieldsThreshold deleted a high yields on ", h:PrintXY(), " Ring 2")
         end
     end
@@ -4505,7 +4502,7 @@ function SpawnBalancing:CheckInnerRingHighYieldsThreshold()
         local relocateLeft = highYieldsCount - self.MaxHighYieldInnerRingThreshold;
         _Debug("CheckInnerRingHighYieldsThreshold relocateLeft = ", relocateLeft);
         for _, h1 in ipairs(ring1HighYields) do
-            if relocateLeft > 0 then
+            if relocateLeft > 0 and Contains(ringModifiedTiles, h1) == false then
                 local wasTagged = false;
                 if h1.IsTaggedAsMinimum then
                     wasTagged = true;
@@ -4514,6 +4511,7 @@ function SpawnBalancing:CheckInnerRingHighYieldsThreshold()
                 if self:TerraformHex(h1, 1, TerraformType[15], 0, false, false) then
                     _Debug("CheckInnerRingHighYieldsThreshold : ring 1 flattened ", h1:PrintXY())
                     relocateLeft = relocateLeft - 1;
+                    table.insert(ringModifiedTiles, h1);
                     if wasTagged then
                         h1:SetTaggedAsMinimum(true);
                     end
@@ -4522,7 +4520,7 @@ function SpawnBalancing:CheckInnerRingHighYieldsThreshold()
         end
         _Debug("CheckInnerRingHighYieldsThreshold relocateLeft after r1 = ", relocateLeft);
         for _, h2 in ipairs(ring2HighYields) do
-            if relocateLeft > 0 then
+            if relocateLeft > 0 and Contains(ringModifiedTiles, h2) == false then
                 local wasTagged = false;
                 if h2.IsTaggedAsMinimum then
                     wasTagged = true;
@@ -4531,6 +4529,7 @@ function SpawnBalancing:CheckInnerRingHighYieldsThreshold()
                 if self:TerraformHex(h2, 2, TerraformType[15], 0, false, false) then
                     _Debug("CheckInnerRingHighYieldsThreshold : ring 2 flattened ", h2:PrintXY())
                     relocateLeft = relocateLeft - 1;
+                    table.insert(ringModifiedTiles, h2);
                     if wasTagged then
                         h2:SetTaggedAsMinimum(true);
                     end
