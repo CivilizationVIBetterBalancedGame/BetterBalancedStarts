@@ -7,7 +7,7 @@
 ------------------------------------------------------------------------------
 
 include "MapEnums"
-include "MapUtilities"
+include "DW_MapUtilities"
 include "BBS_MountainsCliffs"
 include "RiversLakes"
 include "BBM_FeatureGenerator"
@@ -144,7 +144,7 @@ function GenerateMap()
 	local start_plot_database = BBS_Assign(args)
 	local Balance = BBS_Script()						 
 
-	local GoodyGen = AddGoodies(g_iW, g_iH);
+	local GoodyGen = AddGoodiesBBM(g_iW, g_iH);
 	AreaBuilder.Recalculate();					   
 	TerrainBuilder.AnalyzeChokepoints();									  
 end

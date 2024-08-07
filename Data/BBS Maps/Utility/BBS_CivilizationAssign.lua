@@ -988,6 +988,7 @@ function CivilizationAssignSpawn:IsBiasRespected(hex, hexMap)
     local isOneOfBiasRespected = false;
     for _, bias in pairs(self.CivilizationBiases) do
         local countHill = 0
+        local countMountains = 0;
         -- Mandatory biases
         if bias.Type == "TERRAINS" and IsTundraLand(bias.Value) and hex:IsTundraLand() == false then
             return false;
@@ -1035,11 +1036,14 @@ function CivilizationAssignSpawn:IsBiasRespected(hex, hexMap)
                             jungleFound = true;
                         end
                     end     
-                elseif (bias.Type == "TERRAINS" and bias.Value ~= g_TERRAIN_TYPE_COAST) then
-                    if IsMountain(bias.Value) then
-                        -- At least a mountain in ring 2, density score do the rest
-                        if i == 2 and hring:IsMountain() then
-                            isOneOfBiasRespected = true;
+                elseif (bias.Type == "TERRAINS" and bias.Value ~= g_TERRAIN_TYPE_COAST) or self.IsMountainLoverBias then
+                    if IsMountain(bias.Value) or self.IsMountainLoverBias then
+                        -- At least 2 mountains in ring 3, density score do the rest
+                        if i <= 3 and hring:IsMountain() then
+                            countMountains = countMountains + 1;
+                            if countMountains >= 2 then
+                                isOneOfBiasRespected = true;
+                            end
                         end
                     elseif IsHill(bias.Value) then
                         if i <= 2 and IsHill(hring.TerrainType) then

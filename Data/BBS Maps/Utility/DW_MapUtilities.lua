@@ -719,11 +719,11 @@ function CanPlaceGoodyAt(improvement, plot)
 	-- end
 
 	-- Check for being too close to another of this goody type.
-	local uniqueRange = improvement.GoodyRange;
+	local uniqueRange = 5;
 	local plotX = plot:GetX();
 	local plotY = plot:GetY();
-	for dx = -uniqueRange, uniqueRange - 1, 1 do
-		for dy = -uniqueRange, uniqueRange - 1, 1 do
+	for dx = -uniqueRange, uniqueRange, 1 do
+		for dy = -uniqueRange, uniqueRange, 1 do
 			local otherPlot = Map.GetPlotXYWithRangeCheck(plotX, plotY, dx, dy, uniqueRange);
 			if(otherPlot and otherPlot:GetImprovementType() == improvementID) then
 				return false;
@@ -755,10 +755,10 @@ function CanPlaceGoodyAt(improvement, plot)
 	return true;
 end
 
-function AddGoodies(iW, iH)
+function AddGoodiesBBM(iW, iH)
 	local NO_PLAYER = -1;
 	print("-------------------------------");
-	print("Map Generation - Adding Goodies");
+	print("Map Generation - Adding Goodies BBM");
 	
 	--If advanced setting wants no goodies, don't place any.
 	local bNoGoodies = GameConfiguration.GetValue("GAME_NO_GOODY_HUTS");
@@ -773,22 +773,26 @@ function AddGoodies(iW, iH)
 	for improvement in GameInfo.Improvements() do
 		local improvementID = improvement.RowId - 1;
 		if(improvement.Goody and not (improvement.TilesPerGoody == nil)) then
+			local tilesPerGoody = iH * 2.2;
 			for x = 0, iW - 1 do
 				for y = 0, iH - 1 do
 					local i = y * iW + x;
 					local pPlot = Map.GetPlotByIndex(i);
 					local bGoody = CanPlaceGoodyAt(improvement, pPlot);
-					if (bGoody) then
-						if (iImprovements == 0 or (improvement.TilesPerGoody < iTiles / iImprovements)) then
-							local goody_dice = TerrainBuilder.GetRandomNumber(2, "Goody Hut - LUA Goody Hut");
+					local result = 0;
+					local goodyDensity = iTiles / iImprovements
+					if (bGoody) then	
+						if (iImprovements == 0 or (tilesPerGoody <= goodyDensity)) then
+							local goody_dice = TerrainBuilder.GetRandomNumber(3, "Goody Hut - LUA Goody Hut");
 							if(goody_dice ==  1) then
 								ImprovementBuilder.SetImprovementType(pPlot, improvementID, NO_PLAYER);
 								iImprovements = iImprovements + 1;
 							end
 						end
 					end
-
-					iTiles = iTiles + 1;
+					if goodyDensity < tilesPerGoody then
+						iTiles = iTiles + 1;
+					end
 				end
 			end
 		end
