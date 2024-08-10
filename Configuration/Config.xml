@@ -37,7 +37,7 @@
 		<Row Key1="Map" Key2="Continents.lua" ParameterId="SpawnRecalculation" Name="LOC_GAME_SPAWN_RECALCULATION" Description="LOC_GAME_SPAWN_RECALCULATION_DESC" Domain="bool" DefaultValue="1" ConfigurationGroup="Game" ConfigurationId="SpawnRecalculation" GroupId="BBSOptions" SortIndex="2050"/>
 		<Row Key1="Map" Key2="Continents.lua" ParameterId="AutoRemap" Name="LOC_GAME_SPAWN_REMAP" Description="LOC_GAME_SPAWN_REMAP_DESC" Domain="bool" DefaultValue="0" ConfigurationGroup="Game" ConfigurationId="AutoRemap" GroupId="AdvancedOptions" Visible="0" SortIndex="2051"/>
 		<Row Key1="Map" Key2="Continents.lua" ParameterId="BBStemp" Name="LOC_GAME_BBS_TEMP" Description="LOC_GAME_BBS_TEMP_DESC" Domain="bool" DefaultValue="1" ConfigurationGroup="Game" ConfigurationId="BBStemp" GroupId="AdvancedOptions" Visible="0" SortIndex="2052"/>
-		<Row Key1="Map" Key2="Continents.lua" ParameterId="TeamersDomain" Name="LOC_BBM_Team_Spawn_NAME" Description="LOC_BBM_Team_Spawn_DESC" Domain="TeamersDomain" DefaultValue="0" ConfigurationGroup="Map" ConfigurationId="teamersDomain" GroupId="MapOptions" Visible="1" SortIndex="2053"/>
+		<Row Key1="Map" Key2="Continents.lua" ParameterId="BBM_Team_Spawn" Name="LOC_BBM_Team_Spawn_NAME" Description="LOC_BBM_Team_Spawn_DESC" Domain="BBM_Team_Spawn" DefaultValue="0" ConfigurationGroup="Map" ConfigurationId="BBM_Team_Spawn" GroupId="MapOptions" Visible="1" SortIndex="2053"/>
 
 		<Row Key1="Map" Key2="Continents_Islands.lua" ParameterId="Continents_IslandsMapName" 		Name="MapName" Description="" Domain="text" DefaultValue="Continents_Islands" 		ConfigurationGroup="Map" ConfigurationId="MapName" GroupId="MapOptions" Visible="0" SortIndex="2010"/>
 		<Row Key1="Map" Key2="Continents_Islands.lua" ParameterId="SpawnRecalculation" Name="LOC_GAME_SPAWN_RECALCULATION" Description="LOC_GAME_SPAWN_RECALCULATION_DESC" Domain="bool" DefaultValue="1" ConfigurationGroup="Game" ConfigurationId="SpawnRecalculation" GroupId="BBSOptions" SortIndex="2050"/>
@@ -88,7 +88,7 @@
 		<Row Key1="Map" Key2="Pangaea.lua" ParameterId="SpawnRecalculation" Name="LOC_GAME_SPAWN_RECALCULATION" Description="LOC_GAME_SPAWN_RECALCULATION_DESC" Domain="bool" DefaultValue="1" ConfigurationGroup="Game" ConfigurationId="SpawnRecalculation" GroupId="BBSOptions" SortIndex="2050"/>
 		<Row Key1="Map" Key2="Pangaea.lua" ParameterId="AutoRemap" Name="LOC_GAME_SPAWN_REMAP" Description="LOC_GAME_SPAWN_REMAP_DESC" Domain="bool" DefaultValue="0" ConfigurationGroup="Game" ConfigurationId="AutoRemap" GroupId="AdvancedOptions" Visible="0" SortIndex="2051"/>
 		<Row Key1="Map" Key2="Pangaea.lua" ParameterId="BBStemp" Name="LOC_GAME_BBS_TEMP" Description="LOC_GAME_BBS_TEMP_DESC" Domain="bool" DefaultValue="1" ConfigurationGroup="Game" ConfigurationId="BBStemp" GroupId="AdvancedOptions" Visible="0" SortIndex="2052"/>
-		<Row Key1="Map" Key2="Pangaea.lua" ParameterId="TeamersDomain" Name="LOC_BBM_Team_Spawn_NAME" Description="LOC_BBM_Team_Spawn_DESC" Domain="TeamersDomain" DefaultValue="0" ConfigurationGroup="Map" ConfigurationId="teamersDomain" GroupId="MapOptions" Visible="1" Hash="0" SortIndex="2053"/>
+		<Row Key1="Map" Key2="Pangaea.lua" ParameterId="BBM_Team_Spawn" Name="LOC_BBM_Team_Spawn_NAME" Description="LOC_BBM_Team_Spawn_DESC" Domain="BBM_Team_Spawn" DefaultValue="0" ConfigurationGroup="Map" ConfigurationId="BBM_Team_Spawn" GroupId="MapOptions" Visible="1" Hash="0" SortIndex="2053"/>
 
 
 		<Row Key1="Map" Key2="Primordial.lua" ParameterId="PrimordialMapName" 		Name="MapName" Description="" Domain="text" DefaultValue="Primordial" 		ConfigurationGroup="Map" ConfigurationId="MapName" GroupId="MapOptions" Visible="0" SortIndex="2010"/>
@@ -146,8 +146,8 @@
 		<Row Domain="OldWorldStart" Value="OLD_WORLD" 	Name="Old World Only" 			Description="All civs start in 'old world'." 			SortIndex="10"/>
 		<Row Domain="OldWorldStart" Value="ANYWHERE" 	Name="Start Anywhere" 			Description="Civs start anywhere in the world." 		SortIndex="20"/>
 
-		<Row Domain="TeamersDomain" Value="0" Name="BBM_Team_Spawn_NORMAL_NAME" Description="BBM_Team_Spawn_NORMAL_DESC" SortIndex="10"/>
-		<Row Domain="TeamersDomain" Value="1" Name="BBM_Team_Spawn_EW_NAME" Description="BBM_Team_Spawn_EW_DESC" SortIndex="20"/>
+		<Row Domain="BBM_Team_Spawn" Value="0" Name="BBM_Team_Spawn_NORMAL_NAME" Description="BBM_Team_Spawn_NORMAL_DESC" SortIndex="10"/>
+		<Row Domain="BBM_Team_Spawn" Value="1" Name="BBM_Team_Spawn_EW_NAME" Description="BBM_Team_Spawn_EW_DESC" SortIndex="20"/>
 
 		<Row Domain="StratResDomain" Value="0" Name="BBS_SRESOURCES_NORMAL_NAME" Description="BBS_SRESOURCES_NORMAL_DESC" SortIndex="10"/>
 		<Row Domain="StratResDomain" Value="1" Name="BBS_SRESOURCES_MORE_NAME" Description="BBS_SRESOURCES_MORE_DESC" SortIndex="20"/>

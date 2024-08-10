@@ -719,11 +719,11 @@ function CanPlaceGoodyAt(improvement, plot)
 	-- end
 
 	-- Check for being too close to another of this goody type.
-	local uniqueRange = 5;
+	local uniqueRange = improvement.GoodyRange;
 	local plotX = plot:GetX();
 	local plotY = plot:GetY();
-	for dx = -uniqueRange, uniqueRange, 1 do
-		for dy = -uniqueRange, uniqueRange, 1 do
+	for dx = -uniqueRange, uniqueRange - 1, 1 do
+		for dy = -uniqueRange, uniqueRange - 1, 1 do
 			local otherPlot = Map.GetPlotXYWithRangeCheck(plotX, plotY, dx, dy, uniqueRange);
 			if(otherPlot and otherPlot:GetImprovementType() == improvementID) then
 				return false;
@@ -773,7 +773,7 @@ function AddGoodiesBBM(iW, iH)
 	for improvement in GameInfo.Improvements() do
 		local improvementID = improvement.RowId - 1;
 		if(improvement.Goody and not (improvement.TilesPerGoody == nil)) then
-			local tilesPerGoody = iH * 2.2;
+			local tilesPerGoody = improvement.TilesPerGoody;
 			for x = 0, iW - 1 do
 				for y = 0, iH - 1 do
 					local i = y * iW + x;
@@ -782,15 +782,15 @@ function AddGoodiesBBM(iW, iH)
 					local result = 0;
 					local goodyDensity = iTiles / iImprovements
 					if (bGoody) then	
-						if (iImprovements == 0 or (tilesPerGoody <= goodyDensity)) then
-							local goody_dice = TerrainBuilder.GetRandomNumber(3, "Goody Hut - LUA Goody Hut");
+						if (iImprovements == 0 or (tilesPerGoody < iTiles / iImprovements)) then
+							local goody_dice = TerrainBuilder.GetRandomNumber(2, "Goody Hut - LUA Goody Hut");
 							if(goody_dice ==  1) then
 								ImprovementBuilder.SetImprovementType(pPlot, improvementID, NO_PLAYER);
 								iImprovements = iImprovements + 1;
 							end
 						end
 					end
-					if goodyDensity < tilesPerGoody then
+					if goodyDensity < improvement.TilesPerGoody then
 						iTiles = iTiles + 1;
 					end
 				end
