@@ -112,7 +112,7 @@ function CivilizationAssignSpawn:GetBiases()
             bias.Value = nil;
             _Debug("BBS_AssignStartingPlots: Add Bias : Civilization",self.CivilizationName,"Bias Type:", bias.Type, "Tier :", bias.Tier, "Type :", bias.Value);
             table.insert(biases, bias);
-            print("BBS_AssignStartingPlots - Civilization ",self.CivilizationName)
+            _Debug("BBS_AssignStartingPlots - Civilization ",self.CivilizationName)
             self.IsRiverBias = true;
         end
     end
@@ -158,12 +158,12 @@ function CivilizationAssignSpawn:GetBiases()
                 elseif (bias.Type == "CUSTOM_CONTINENT_SPLIT") then
                     self.IsContSplitBias = true;
                 elseif (bias.Type == "CUSTOM_NO_LUXURY_LIMIT") then
-                    print("Calculate no lux limit score "..tostring(bias.Value))
+                    _Debug("Calculate no lux limit score "..tostring(bias.Value))
                 elseif (bias.Type == "CUSTOM_MOUNTAIN_LOVER") then
-                    print("self.IsMountainLoverBias = true")
+                    _Debug("self.IsMountainLoverBias = true")
                     self.IsMountainLoverBias = true;
                 elseif (bias.Type == "CUSTOM_KING_OF_THE_NORTH") then	
-                    print("King of the North Bias found")
+                    _Debug("King of the North Bias found")
                     self.IsKingNorthBias = true;
                 elseif (bias.Type == "CUSTOM_I_AM_SALTY")  then	
                     self.IsSaltyBias = true;
@@ -279,7 +279,7 @@ function CivilizationAssignSpawn:CalculateTotalScores(BBS_HexMap)
         self.TotalMapScore = totalScore / maxCentScore
         self.TotalValidTiles = totalValidTiles
         self.RandomPlaceIdOrder = TerrainBuilder.GetRandomNumber(100, "Spawn A"); -- Used to determine in what order will be placed civ with same score and valid tiles (typically no bias)
-        print("CalculateTotalScores "..self.CivilizationLeader.." "..tostring(totalValidTiles))
+        _Debug("CalculateTotalScores "..self.CivilizationLeader.." "..tostring(totalValidTiles))
     else 
         self.TotalMapScore = 100;
         self.TotalValidTiles = 0;
@@ -293,7 +293,7 @@ end
 -- Complete function of assigning spawn to a major civ 
 -- Add more random to calculations for non coastal and non bias ? 
 function CivilizationAssignSpawn:AssignSpawnByCentroid(BBS_HexMap)
-    -- print("AssignSpawnByCentroid for "..self.CivilizationLeader);
+    -- _Debug("AssignSpawnByCentroid for "..self.CivilizationLeader);
     if self.CivilizationLeader == BBS_LEADER_TYPE_SPECTATOR then
         return true;
     end
@@ -308,7 +308,7 @@ function CivilizationAssignSpawn:AssignSpawnByCentroid(BBS_HexMap)
         return true, hexSpawnFound, score;
     else 
          -- Try again or go to firaxis placement
-        print("Unable to find a valid tile for this civ on this map")
+         print("Unable to find a valid tile for this civ on this map", self.CivilizationLeader)
         return false, nil, nil;
     end
 end
@@ -344,10 +344,9 @@ function CivilizationAssignSpawn:CalculateOrderCentroidsScore(BBS_HexMap)
         end
     end)
 
-    -- DEBUG PRINT
-    print("Civilization : "..self.CivilizationLeader)
+    _Debug("Civilization : "..self.CivilizationLeader)
     for _, c in pairs(self.CentroidsScore) do
-        print("AssignSpawnByCentroid - Score for centroid "..tostring(c.Centroid.id).." = "..tostring(c.Score).." Valid = "..tostring(#c.ValidTiles).." ValidBias = "..tostring(#c.ValidTilesBias).." TundraScoring = "..tostring(c.TundraScoring).." PeninsulaScore = "..tostring(c.MeanPeninsulaScore));
+        _Debug("AssignSpawnByCentroid - Score for centroid "..tostring(c.Centroid.id).." = "..tostring(c.Score).." Valid = "..tostring(#c.ValidTiles).." ValidBias = "..tostring(#c.ValidTilesBias).." TundraScoring = "..tostring(c.TundraScoring).." PeninsulaScore = "..tostring(c.MeanPeninsulaScore));
     end
 
     return self.CentroidsScore;
@@ -945,7 +944,7 @@ function CivilizationAssignSpawn:AssignMajorCivSpawn(BBS_HexMap, startingHex)
         
     end
     --BBS_HexMap:PrintHexSpawnableMap()
-    print("Assigned spawn "..startingHex:PrintXY().." for civ "..tostring(self.CivilizationLeader))
+    _Debug("Assigned spawn "..startingHex:PrintXY().." for civ "..tostring(self.CivilizationLeader))
     return;
 end
 

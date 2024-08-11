@@ -67,7 +67,9 @@ function BBS_AssignStartingPlots.Create(args)
         __PlaceMajorCivs        = BBS_AssignStartingPlots.__PlaceMajorCivs,
         __ResetMajorsSpawns     = BBS_AssignStartingPlots.__ResetMajorsSpawns,
     }
-    _Debug("START BBS WORK",  os.date("%c"))
+    print("-----------------------")
+    print("Starting BBM Placement",  os.date("%c"))
+    print("-----------------------")
     -- Get Bias all
     bbs_negative_bias = {}
     bbs_custom_bias = {}
@@ -75,7 +77,7 @@ function BBS_AssignStartingPlots.Create(args)
     local ret = DB.Query("SELECT * from StartBiasNegatives");
     for key, value in pairs(ret) do
         if value.CivilizationType ~= nil then
-            print("StartBiasNegatives", value.CivilizationType, value.TerrainType,  value.FeatureType, value.Tier, value.Extra);
+            _Debug("StartBiasNegatives", value.CivilizationType, value.TerrainType,  value.FeatureType, value.Tier, value.Extra);
             table.insert(bbs_negative_bias, {
                 CivilizationType = value.CivilizationType,
                 TerrainType = value.TerrainType,
@@ -90,7 +92,7 @@ function BBS_AssignStartingPlots.Create(args)
     local ret = DB.Query("SELECT * from StartBiasCustom");
     for key, value in pairs(ret) do
         if value.CivilizationType ~= nil then
-            print("StartBiasCustom", value.CivilizationType, value.CustomPlacement);
+            _Debug("StartBiasCustom", value.CivilizationType, value.CustomPlacement);
             table.insert(bbs_custom_bias, {
                 CivilizationType = value.CivilizationType,
                 CustomPlacement = value.CustomPlacement
@@ -161,7 +163,7 @@ function BBS_AssignStartingPlots.Create(args)
     -- Set game properties
     Game:SetProperty("BBM_MAJOR_DISTANCE", BBS_HexMap.minimumDistanceMajorToMajorCivs);
 
-    print("Start Assign Score Centroid",  os.date("%c"))
+    _Debug("Start Assign Score Centroid",  os.date("%c"))
 
     local isTeamer = Is1v1OrTeamerConfig();
 
@@ -170,34 +172,34 @@ function BBS_AssignStartingPlots.Create(args)
         civ:CalculateTotalScores(BBS_HexMap);
     end
 
-    print("End Assign Score Centroid",  os.date("%c"))
+    _Debug("End Assign Score Centroid",  os.date("%c"))
 
-    print("Start Assign spawn order",  os.date("%c"))
+    _Debug("Start Assign spawn order",  os.date("%c"))
     -- Define spawn order 
     -- Comparing first the number of valid tiles, placing first 
     for _, civ in pairs(BBS_Civilisations) do
-        print(tostring(civ.CivilizationLeader).." - ScoreTotal = "..tostring(civ.TotalMapScore).." -  Valid tiles = "..tostring(civ.TotalValidTiles))
+        _Debug(tostring(civ.CivilizationLeader).." - ScoreTotal = "..tostring(civ.TotalMapScore).." -  Valid tiles = "..tostring(civ.TotalValidTiles))
     end
 
     table.sort(BBS_Civilisations,
             function(a, b)
                 if a.TotalValidTiles == b.TotalValidTiles then
                     if a.TotalMapScore == b.TotalMapScore then
-                        print("SortBBS_Civilisations same score ", a.RandomPlaceIdOrder, a.CivilizationLeader, b.RandomPlaceIdOrder, b.CivilizationLeader)
+                        _Debug("SortBBS_Civilisations same score ", a.RandomPlaceIdOrder, a.CivilizationLeader, b.RandomPlaceIdOrder, b.CivilizationLeader)
                         return a.RandomPlaceIdOrder < b.RandomPlaceIdOrder;
                     else
-                        print("SortBBS_Civilisations Same valid tiles")
+                        _Debug("SortBBS_Civilisations Same valid tiles")
                         return a.TotalMapScore < b.TotalMapScore
                     end
                 else
-                    print("SortBBS_Civilisations Less valid tiles")
+                    _Debug("SortBBS_Civilisations Less valid tiles")
                     -- less score = more constraints for bias respect
                     return a.TotalValidTiles < b.TotalValidTiles
                 end
             end)
 
     for _, civ in pairs(BBS_Civilisations) do
-        print(tostring(civ.CivilizationLeader).." - ScoreTotal = "..tostring(civ.TotalMapScore).." -  Valid tiles = "..tostring(civ.TotalValidTiles))
+        _Debug(tostring(civ.CivilizationLeader).." - ScoreTotal = "..tostring(civ.TotalMapScore).." -  Valid tiles = "..tostring(civ.TotalValidTiles))
     end
 
     -- Recursive call 
@@ -263,18 +265,18 @@ function BBS_AssignStartingPlots.Create(args)
                 maxMeanScoreIndex = index;
             end
         end
-        print("Assign mean score for try "..tostring(index).." = "..meanScore.." with minimum score of "..tostring(minLocalScore).." and maximum of "..tostring(maxLocalScore))
+        _Debug("Assign mean score for try "..tostring(index).." = "..meanScore.." with minimum score of "..tostring(minLocalScore).." and maximum of "..tostring(maxLocalScore))
     end
 
-    print("End Assign spawn order",  os.date("%c"))
+    _Debug("End Assign spawn order",  os.date("%c"))
     print("BBS_AssignTries = "..tostring(BBS_AssignTries).." - BBS_Success = "..tostring(BBS_Success))
     if BBS_Success then
-        print("Selected try max score = "..tostring(maxMeanScoreIndex))
+        _Debug("Selected try max score = "..tostring(maxMeanScoreIndex))
         if isTeamer then
             Game:SetProperty("BBS_TEAMERCONTINENTCHECK", BBS_HexMap:IsTeamerValidContinentPlacement(maxMeanScoreIndex))
         end
         for _, c in pairs(BBS_HexMap.tempMajorSpawns[maxMeanScoreIndex]) do
-            print("tempMajorSpawns AssignMajorCivSpawn for "..c.Civ.CivilizationLeader.." "..c.Spawn:PrintXY())
+            _Debug("tempMajorSpawns AssignMajorCivSpawn for "..c.Civ.CivilizationLeader.." "..c.Spawn:PrintXY())
             c.Civ:AssignMajorCivSpawn(BBS_HexMap, c.Spawn);
         end
          -- Firaxis methods for attribution of spawns 
@@ -283,7 +285,7 @@ function BBS_AssignStartingPlots.Create(args)
                 civ.Player:SetStartingPlot(civ.StartingHex.Plot)
                 table.insert(BBS_HexMap.majorSpawns, civ.StartingHex);
                 local bW, nbW = civ.StartingHex:HasSpawnEnoughWalkableTiles()
-                print(civ.CivilizationLeader.." spawn = "..tostring(civ.StartingHex:PrintXY()).." - HasWalkableRequirements = "..tostring(bW).." "..tostring(nbW))
+                _Debug(civ.CivilizationLeader.." spawn = "..tostring(civ.StartingHex:PrintXY()).." - HasWalkableRequirements = "..tostring(bW).." "..tostring(nbW))
                 _Debug("WalkableHexInRing ", civ.StartingHex:PrintXY(), #civ.StartingHex.WalkableHexInRing[1])
                 _Debug("WalkableHexInRing ", civ.StartingHex:PrintXY(), #civ.StartingHex.WalkableHexInRing[2])
                 _Debug("WalkableHexInRing ", civ.StartingHex:PrintXY(), #civ.StartingHex.WalkableHexInRing[3])
@@ -304,10 +306,10 @@ function BBS_AssignStartingPlots.Create(args)
         Game:SetProperty("BBM_ACTUALMINDIST", closestDist)
         _Debug("BBM_ACTUALMINDIST = ", closestDist)
         _Debug("BBM_ACTUALMINDIST GameProperty = ", Game:GetProperty("BBM_ACTUALMINDIST"))
-        print("Start BalanceMap",  os.date("%c"))
+        _Debug("Start BalanceMap",  os.date("%c"))
         BalanceMap(BBS_HexMap);
 
-        print("Start InitSpawnBalancing",  os.date("%c"))
+        _Debug("Start InitSpawnBalancing",  os.date("%c"))
         local allSpawnBalancing = {}
         for _, civ in pairs(BBS_Civilisations) do
             if civ.CivilizationLeader ~= BBS_LEADER_TYPE_SPECTATOR then
@@ -318,7 +320,7 @@ function BBS_AssignStartingPlots.Create(args)
 
         printAllStartYields(BBS_HexMap);
         BalanceAllCivYields(allSpawnBalancing)
-        print("End InitSpawnBalancing",  os.date("%c"))
+        _Debug("End InitSpawnBalancing",  os.date("%c"))
         -- randomly place cs in free space
         for i, cs in pairs(BBS_Citystates) do
             local foundSpawn = false
@@ -330,19 +332,21 @@ function BBS_AssignStartingPlots.Create(args)
                     foundSpawn = true;
                     cs:AssignMinorCivSpawn(BBS_HexMap, testedHex)
                     cs.Player:SetStartingPlot(cs.StartingHex.Plot)
-                    print("CS "..tostring(i).." - "..tostring(cs.CivilizationName).." spawn = "..tostring(cs.StartingHex:PrintXY()))
+                    _Debug("CS "..tostring(i).." - "..tostring(cs.CivilizationName).." spawn = "..tostring(cs.StartingHex:PrintXY()))
                 end
             end
             
         end
         Game:SetProperty("BBM_RESPAWN", true)
-        print("End Assign Centroid",  os.date("%c"))
+        _Debug("End Assign Centroid",  os.date("%c"))
     else
-        print("BBS_AssignStartingPlots: To Many Attempts Failed - Go to Firaxis Placement")
+        _Debug("BBM: To Many Attempts Failed - Go to Firaxis Placement")
         CallFiraxisPlacement(args);
     end   
     
-    -- print("BBS_AssignStartingPlots: Sending Data")
+    print("-----------------------")
+    print("Ending BBM Placement",  os.date("%c"))
+    print("-----------------------")
     return instance
 end
 
@@ -356,7 +360,7 @@ BBS_resources_count = {};
 -- 2: Spawn bias
 -- 3: Fresh water settle
 function BBS_AssignStartingPlots:__InitStartingData()
-    print("Start parsing map",  os.date("%c"))
+    _Debug("Start parsing map",  os.date("%c"))
     -- Datas stored in HexMap object
     local width, height = Map.GetGridSize();
     BBS_HexMap = HexMap.new(width, height, bbs_game_config.BBS_MAP_SCRIPT);
@@ -375,23 +379,23 @@ function BBS_AssignStartingPlots:__InitStartingData()
         if centroid.HexCluster ~= nil and #centroid.HexCluster > 0 then 
             local count = centroid:GetHillsInCluster();
             local hillPercent = (count / #centroid.HexCluster) * 100
-            print("Number of hill in centroid "..tostring(index).." = "..tostring(count).." for a total of "..tostring(#centroid.HexCluster).." tiles (="..tostring(hillPercent).."%)")
+            _Debug("Number of hill in centroid "..tostring(index).." = "..tostring(count).." for a total of "..tostring(#centroid.HexCluster).." tiles (="..tostring(hillPercent).."%)")
             local luxCount, bonusCount, strategicsCount = centroid:GetTotalResourcesCountInCluster();
-            print("Number of lux resource in centroid "..tostring(index).." = "..tostring(luxCount))
-            print("Number of bonus resource in centroid "..tostring(index).." = "..tostring(bonusCount))
-            print("Number of strat resource in centroid "..tostring(index).." = "..tostring(strategicsCount))
+            _Debug("Number of lux resource in centroid "..tostring(index).." = "..tostring(luxCount))
+            _Debug("Number of bonus resource in centroid "..tostring(index).." = "..tostring(bonusCount))
+            _Debug("Number of strat resource in centroid "..tostring(index).." = "..tostring(strategicsCount))
         end
     end
     -- Count % of hills on the land map
     local countHills, _ = BBS_HexMap:LookForHills();
     local countLandTiles, _ = BBS_HexMap:GetLandHexList();
-    print("totalLandPlots = "..tostring(countLandTiles))
-    print("totalHillPlots = "..tostring(countHills))
-    print("totalCostal = "..tostring(#BBS_HexMap.mapCostal))
+    _Debug("totalLandPlots = "..tostring(countLandTiles))
+    _Debug("totalHillPlots = "..tostring(countHills))
+    _Debug("totalCostal = "..tostring(#BBS_HexMap.mapCostal))
     local hillpercent = (countHills / countLandTiles) * 100
-    print("Hill% = "..tostring(hillpercent).." %")
+    _Debug("Hill% = "..tostring(hillpercent).." %")
      --------------------
-    print("Done parsing map",  os.date("%c"))
+     _Debug("Done parsing map",  os.date("%c"))
     _Debug("END BBM WORK",  os.date("%c"))
 end
 
