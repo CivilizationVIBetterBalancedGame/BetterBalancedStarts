@@ -773,7 +773,6 @@ function AddGoodiesBBM(iW, iH)
 	for improvement in GameInfo.Improvements() do
 		local improvementID = improvement.RowId - 1;
 		if(improvement.Goody and not (improvement.TilesPerGoody == nil)) then
-			local tilesPerGoody = improvement.TilesPerGoody;
 			for x = 0, iW - 1 do
 				for y = 0, iH - 1 do
 					local i = y * iW + x;
@@ -782,7 +781,7 @@ function AddGoodiesBBM(iW, iH)
 					local result = 0;
 					local goodyDensity = iTiles / iImprovements
 					if (bGoody) then	
-						if (iImprovements == 0 or (tilesPerGoody < iTiles / iImprovements)) then
+						if (iImprovements == 0 or (improvement.TilesPerGoody <= goodyDensity)) then
 							local goody_dice = TerrainBuilder.GetRandomNumber(2, "Goody Hut - LUA Goody Hut");
 							if(goody_dice ==  1) then
 								ImprovementBuilder.SetImprovementType(pPlot, improvementID, NO_PLAYER);
