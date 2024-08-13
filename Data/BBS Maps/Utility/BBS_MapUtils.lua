@@ -1174,7 +1174,7 @@ function HexMap:ComputeMajorSpawnableTiles(hex)
     local isCloseToTooManyFlood = hex:IsHexNextTo5FloodTiles();
     local isNextToVolcano = hex:IsNextToVolcano();
     local coastalNextToRiver = hex.IsCoastal and hex.IsFreshWater == false and hex:IsNextToCoastalFreshWater();
-    local nextTo3LakesInARow = hex:IsHexNextTo2ILakeMountainTilesInARow();
+    local nextTo3LakesInARow = hex:IsHexRing1NextToImpassableInARow(3);
     local isNotInPeninsula = hex.PeninsulaScore >= self.PeninsulaScoreThreshold
     local isTooCloseToSnow = hex:IsHexCloseToSnow()
     local hasEnoughWorkableRing2 = hex:HasEnoughWorkableRing2();
@@ -1256,7 +1256,7 @@ function Hex:LogWalkableTiles(testRing)
     return walkableInRing;
 end
 
-function Hex:IsHexNextTo2ILakeMountainTilesInARow()
+function Hex:IsHexRing1NextToImpassableInARow(threshold)
     if self:IsWater() then
         return false
     end
@@ -1276,7 +1276,7 @@ function Hex:IsHexNextTo2ILakeMountainTilesInARow()
         else
             lakesOrMountains = 0;
         end
-        if lakesOrMountains >= 2 then
+        if lakesOrMountains >= threshold then
             return true;
         end
     end
@@ -3462,7 +3462,7 @@ function even(test)
 end
 
 function HexMap:GetTeamerPositionConfig() 
-    if MapConfiguration.GetValue("BBM_Team_Spawn") ~= nil then
+    if MapConfiguration.GetValue("BBM_Team_Spawn") ~= nil and BBM_PlayerNumber > 2 and Is1v1OrTeamerConfig() then
         local Teamers_Config = MapConfiguration.GetValue("BBM_Team_Spawn");
         _Debug("GetTeamerPositionConfig : ", Teamers_Config)
         if Teamers_Config == 1 then
@@ -3470,6 +3470,20 @@ function HexMap:GetTeamerPositionConfig()
         end
     end 
     return TeamerConfigStandard;
+end
+
+function HexMap:CheckRTSContinent(idContCheck)
+    local continentSetup = self.RTSContinentSetup or {}
+    if continentSetup == {} then  
+        return false;
+    end
+    for _, cont in pairs(continentSetup) do
+        if cont == idContCheck then
+            _Debug("ContinentOccupied")
+            return true;
+        end
+    end
+    return false; 
 end
 
 function printAllStartYields(hexMap)

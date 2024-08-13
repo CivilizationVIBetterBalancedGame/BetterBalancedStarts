@@ -27,9 +27,10 @@ BBS_LEADER_TYPE_SPECTATOR = "LEADER_SPECTATOR"
 --  Init metatable -------------------------------------------------------------
 --------------------------------------------------------------------------------
 BBS_AssignStartingPlots = {};
-local BBS_HexMap = {};
-local BBS_Civilisations = {};
-local BBS_Teams = {}
+local BBM_HexMap = {};
+local BBM_Civilisations = {};
+local BBM_Teams = {};
+BBM_PlayerNumber = 0;
 ------------------------------------------------------------------------------
 function ___Debug(...)
     print(...);
@@ -111,12 +112,13 @@ function BBS_AssignStartingPlots.Create(args)
         local newCivilization = CivilizationAssignSpawn.new(player, leader, name, team, playerIndex)
         if leader ~= BBS_LEADER_TYPE_SPECTATOR then
             playerIndex = playerIndex + 1;
-            BBS_Teams[team] = BBS_Teams[team] or {}
+            BBM_Teams[team] = BBM_Teams[team] or {}
             _Debug("IsTeamerConfig - Added in team ", team)
-            table.insert(BBS_Teams[team], newCivilization)
+            table.insert(BBM_Teams[team], newCivilization)
+            BBM_PlayerNumber = BBM_PlayerNumber + 1;
         end
         _Debug("Leader added ", i, player, leader, name, team)
-        table.insert(BBS_Civilisations, newCivilization);
+        table.insert(BBM_Civilisations, newCivilization);
     end
 
     -- Get City States data
@@ -161,15 +163,25 @@ function BBS_AssignStartingPlots.Create(args)
     end
 
     -- Set game properties
-    Game:SetProperty("BBM_MAJOR_DISTANCE", BBS_HexMap.minimumDistanceMajorToMajorCivs);
+    Game:SetProperty("BBM_MAJOR_DISTANCE", BBM_HexMap.minimumDistanceMajorToMajorCivs);
 
     _Debug("Start Assign Score Centroid",  os.date("%c"))
 
     local isTeamer = Is1v1OrTeamerConfig();
 
-    -- Define scores for centroids
-    for _, civ in pairs(BBS_Civilisations) do
-        civ:CalculateTotalScores(BBS_HexMap);
+    -- Define scores for centroids and place 
+    for _, civ in pairs(BBM_Civilisations) do
+        -- On RTS East vs West mod, define position by index (spectator excluded) pp
+        -- With odd number teams, the additionnal player will be in sim position
+        _Debug("BBM_Teams[civ.CivilizationTeam] = ", civ.CivilizationTeam, BBM_Teams[civ.CivilizationTeam])
+        if civ.CivilizationLeader ~= BBS_LEADER_TYPE_SPECTATOR then 
+            local teamSize = #BBM_Teams[civ.CivilizationTeam] or 1            
+            if BBM_HexMap.TeamerConfig == TeamerConfigEastVsWest then
+                civ.TeamerSim = civ.PlayerIndex <= teamSize + teamSize % 2;
+                civ.TeamerWar = civ.PlayerIndex > teamSize + teamSize % 2;
+            end
+        end
+        civ:CalculateTotalScores(BBM_HexMap);
     end
 
     _Debug("End Assign Score Centroid",  os.date("%c"))
@@ -177,11 +189,11 @@ function BBS_AssignStartingPlots.Create(args)
     _Debug("Start Assign spawn order",  os.date("%c"))
     -- Define spawn order 
     -- Comparing first the number of valid tiles, placing first 
-    for _, civ in pairs(BBS_Civilisations) do
+    for _, civ in pairs(BBM_Civilisations) do
         _Debug(tostring(civ.CivilizationLeader).." - ScoreTotal = "..tostring(civ.TotalMapScore).." -  Valid tiles = "..tostring(civ.TotalValidTiles))
     end
 
-    table.sort(BBS_Civilisations,
+    table.sort(BBM_Civilisations,
             function(a, b)
                 if a.TotalValidTiles == b.TotalValidTiles then
                     if a.TotalMapScore == b.TotalMapScore then
@@ -198,7 +210,7 @@ function BBS_AssignStartingPlots.Create(args)
                 end
             end)
 
-    for _, civ in pairs(BBS_Civilisations) do
+    for _, civ in pairs(BBM_Civilisations) do
         _Debug(tostring(civ.CivilizationLeader).." - ScoreTotal = "..tostring(civ.TotalMapScore).." -  Valid tiles = "..tostring(civ.TotalValidTiles))
     end
 
@@ -208,16 +220,16 @@ function BBS_AssignStartingPlots.Create(args)
     local TriesMajorSpawnableLeft = {};
     while BBS_Success == false and BBS_AssignTries < bbs_game_config.BBM_MIN_ATTEMPTS do
         BBS_AssignTries = BBS_AssignTries + 1;
-        -- Place all civs and fill BBS_HexMap.tempMajorSpawns
-        local placementOK = instance:__PlaceMajorCivs(BBS_Civilisations, BBS_HexMap, BBS_AssignTries);
+        -- Place all civs and fill BBM_HexMap.tempMajorSpawns
+        local placementOK = instance:__PlaceMajorCivs(BBM_Civilisations, BBM_HexMap, BBS_AssignTries);
         -- Determine how many spawnable tiles left
-        local countMajorSpawnableLeft = BBS_HexMap:GetNumberMajorSpawnable(true);
+        local countMajorSpawnableLeft = BBM_HexMap:GetNumberMajorSpawnable(true);
         TriesMajorSpawnableLeft[BBS_AssignTries] = countMajorSpawnableLeft;
        
-        instance:__ResetMajorsSpawns(BBS_Civilisations, BBS_HexMap);
+        instance:__ResetMajorsSpawns(BBM_Civilisations, BBM_HexMap);
         if placementOK == false then
-            --instance:__ResetMajorsSpawns(BBS_Civilisations, BBS_HexMap);
-            BBS_HexMap.tempMajorSpawns[BBS_AssignTries] = {};
+            --instance:__ResetMajorsSpawns(BBM_Civilisations, BBM_HexMap);
+            BBM_HexMap.tempMajorSpawns[BBS_AssignTries] = {};
             print("Failed try number "..tostring(BBS_AssignTries))
         else
             print("BBS_Success on try "..tostring(BBS_AssignTries),  os.date("%c"))
@@ -227,8 +239,8 @@ function BBS_AssignStartingPlots.Create(args)
     local globalMinScore = 0;
     local maxMeanScoreIndex = 0
     local globalMajorSpawnableScore = 0;
-    for index, c in pairs(BBS_HexMap.tempMajorSpawns) do
-        local list = BBS_HexMap.tempMajorSpawns[index]
+    for index, c in pairs(BBM_HexMap.tempMajorSpawns) do
+        local list = BBM_HexMap.tempMajorSpawns[index]
         local majorSpawnableScore = TriesMajorSpawnableLeft[index]
         local minLocalScore = 9999;
         local maxLocalScore = 0;
@@ -249,7 +261,7 @@ function BBS_AssignStartingPlots.Create(args)
             _Debug("majorSpawnableScore = ", majorSpawnableScore);
 
             meanScore = totalScore / #list
-            if isTeamer and BBS_HexMap:IsTeamerValidContinentPlacement(index) == false then
+            if isTeamer and BBM_HexMap:IsTeamerValidContinentPlacement(index) == false then
                 _Debug("Malus try score because all team spawns in a single continent")
                 meanScore = meanScore - 20;
             end
@@ -273,17 +285,17 @@ function BBS_AssignStartingPlots.Create(args)
     if BBS_Success then
         _Debug("Selected try max score = "..tostring(maxMeanScoreIndex))
         if isTeamer then
-            Game:SetProperty("BBS_TEAMERCONTINENTCHECK", BBS_HexMap:IsTeamerValidContinentPlacement(maxMeanScoreIndex))
+            Game:SetProperty("BBS_TEAMERCONTINENTCHECK", BBM_HexMap:IsTeamerValidContinentPlacement(maxMeanScoreIndex))
         end
-        for _, c in pairs(BBS_HexMap.tempMajorSpawns[maxMeanScoreIndex]) do
+        for _, c in pairs(BBM_HexMap.tempMajorSpawns[maxMeanScoreIndex]) do
             _Debug("tempMajorSpawns AssignMajorCivSpawn for "..c.Civ.CivilizationLeader.." "..c.Spawn:PrintXY())
-            c.Civ:AssignMajorCivSpawn(BBS_HexMap, c.Spawn);
+            c.Civ:AssignMajorCivSpawn(BBM_HexMap, c.Spawn);
         end
          -- Firaxis methods for attribution of spawns 
-        for j, civ in pairs(BBS_Civilisations) do
+        for j, civ in pairs(BBM_Civilisations) do
             if civ.CivilizationLeader ~= BBS_LEADER_TYPE_SPECTATOR then
                 civ.Player:SetStartingPlot(civ.StartingHex.Plot)
-                table.insert(BBS_HexMap.majorSpawns, civ.StartingHex);
+                table.insert(BBM_HexMap.majorSpawns, civ.StartingHex);
                 local bW, nbW = civ.StartingHex:HasSpawnEnoughWalkableTiles()
                 _Debug(civ.CivilizationLeader.." spawn = "..tostring(civ.StartingHex:PrintXY()).." - HasWalkableRequirements = "..tostring(bW).." "..tostring(nbW))
                 _Debug("WalkableHexInRing ", civ.StartingHex:PrintXY(), #civ.StartingHex.WalkableHexInRing[1])
@@ -291,14 +303,14 @@ function BBS_AssignStartingPlots.Create(args)
                 _Debug("WalkableHexInRing ", civ.StartingHex:PrintXY(), #civ.StartingHex.WalkableHexInRing[3])
 
             else
-                local hex0 = BBS_HexMap:GetHexInMap(j, 0);
+                local hex0 = BBM_HexMap:GetHexInMap(j, 0);
                 civ.Player:SetStartingPlot(hex0.Plot)
             end
         end
         -- Measure minimum distance
         local closestDist = 9999
-        for _, hex in ipairs(BBS_HexMap.majorSpawns) do
-            local localClosestDist = hex:DistanceToClosest(BBS_HexMap, BBS_HexMap.majorSpawns)
+        for _, hex in ipairs(BBM_HexMap.majorSpawns) do
+            local localClosestDist = hex:DistanceToClosest(BBM_HexMap, BBM_HexMap.majorSpawns)
             if localClosestDist < closestDist then
                 closestDist = localClosestDist;
             end
@@ -307,30 +319,30 @@ function BBS_AssignStartingPlots.Create(args)
         _Debug("BBM_ACTUALMINDIST = ", closestDist)
         _Debug("BBM_ACTUALMINDIST GameProperty = ", Game:GetProperty("BBM_ACTUALMINDIST"))
         _Debug("Start BalanceMap",  os.date("%c"))
-        BalanceMap(BBS_HexMap);
+        BalanceMap(BBM_HexMap);
 
         _Debug("Start InitSpawnBalancing",  os.date("%c"))
         local allSpawnBalancing = {}
-        for _, civ in pairs(BBS_Civilisations) do
+        for _, civ in pairs(BBM_Civilisations) do
             if civ.CivilizationLeader ~= BBS_LEADER_TYPE_SPECTATOR then
-                local spawn = InitSpawnBalancing(BBS_HexMap, civ);
+                local spawn = InitSpawnBalancing(BBM_HexMap, civ);
                 table.insert(allSpawnBalancing, spawn);
             end
         end
 
-        printAllStartYields(BBS_HexMap);
+        printAllStartYields(BBM_HexMap);
         BalanceAllCivYields(allSpawnBalancing)
         _Debug("End InitSpawnBalancing",  os.date("%c"))
         -- randomly place cs in free space
         for i, cs in pairs(BBS_Citystates) do
             local foundSpawn = false
-            local validspawnsleft = BBS_HexMap:GetAnyMinorSpawnablesTiles()
+            local validspawnsleft = BBM_HexMap:GetAnyMinorSpawnablesTiles()
             while foundSpawn == false do
                 local rng = TerrainBuilder.GetRandomNumber(#validspawnsleft - 1, "Random valid spawns");
                 local testedHex = validspawnsleft[rng+1]
                 if testedHex.IsCivStartingPlot == false then
                     foundSpawn = true;
-                    cs:AssignMinorCivSpawn(BBS_HexMap, testedHex)
+                    cs:AssignMinorCivSpawn(BBM_HexMap, testedHex)
                     cs.Player:SetStartingPlot(cs.StartingHex.Plot)
                     _Debug("CS "..tostring(i).." - "..tostring(cs.CivilizationName).." spawn = "..tostring(cs.StartingHex:PrintXY()))
                 end
@@ -363,19 +375,19 @@ function BBS_AssignStartingPlots:__InitStartingData()
     _Debug("Start parsing map",  os.date("%c"))
     -- Datas stored in HexMap object
     local width, height = Map.GetGridSize();
-    BBS_HexMap = HexMap.new(width, height, bbs_game_config.BBS_MAP_SCRIPT);
+    BBM_HexMap = HexMap.new(width, height, bbs_game_config.BBS_MAP_SCRIPT);
 
-    --BBS_HexMap:PrintHexSpawnableMap();
-    BBS_HexMap:PrintHexPeninsuleMap();
+    --BBM_HexMap:PrintHexSpawnableMap();
+    BBM_HexMap:PrintHexPeninsuleMap();
 
-    BBS_HexMap:RunKmeans(GlobalNumberOfRegions, 30);
-    BBS_HexMap:PrintHexMap();
-    for _, c in pairs(BBS_HexMap.centroidsArray) do
+    BBM_HexMap:RunKmeans(GlobalNumberOfRegions, 30);
+    BBM_HexMap:PrintHexMap();
+    for _, c in pairs(BBM_HexMap.centroidsArray) do
         c:ComputeCentroidScore();
     end
     -- TEMP get hexes from a region (same centroid)
     -- TEMP count % of hills in a region
-    for index, centroid in ipairs(BBS_HexMap.centroidsArray) do
+    for index, centroid in ipairs(BBM_HexMap.centroidsArray) do
         if centroid.HexCluster ~= nil and #centroid.HexCluster > 0 then 
             local count = centroid:GetHillsInCluster();
             local hillPercent = (count / #centroid.HexCluster) * 100
@@ -387,11 +399,11 @@ function BBS_AssignStartingPlots:__InitStartingData()
         end
     end
     -- Count % of hills on the land map
-    local countHills, _ = BBS_HexMap:LookForHills();
-    local countLandTiles, _ = BBS_HexMap:GetLandHexList();
+    local countHills, _ = BBM_HexMap:LookForHills();
+    local countLandTiles, _ = BBM_HexMap:GetLandHexList();
     _Debug("totalLandPlots = "..tostring(countLandTiles))
     _Debug("totalHillPlots = "..tostring(countHills))
-    _Debug("totalCostal = "..tostring(#BBS_HexMap.mapCostal))
+    _Debug("totalCostal = "..tostring(#BBM_HexMap.mapCostal))
     local hillpercent = (countHills / countLandTiles) * 100
     _Debug("Hill% = "..tostring(hillpercent).." %")
      --------------------
@@ -399,36 +411,41 @@ function BBS_AssignStartingPlots:__InitStartingData()
     _Debug("END BBM WORK",  os.date("%c"))
 end
 
-function BBS_AssignStartingPlots:__PlaceMajorCivs(civs, BBS_HexMap, index) 
+function BBS_AssignStartingPlots:__PlaceMajorCivs(civs, BBM_HexMap, index) 
 -- TODO : manage cases when unable to place a civ => rollback and try again
-    BBS_HexMap.tempMajorSpawns[index] = {};
-
+    BBM_HexMap.tempMajorSpawns[index] = {};
+    
     for ind, civ in pairs(civs) do
         if civ.CivilizationLeader ~= BBS_LEADER_TYPE_SPECTATOR then
-            -- On RTS East vs West mod, define position by index (spectator excluded)
-            if BBS_HexMap.TeamerConfig == TeamerConfigEastVsWest then
-                civ.TeamerSim = (Is4v4Teamer() and civ.PlayerIndex <= 4) or (Is2v2Teamer() and civ.PlayerIndex <= 2);
-                civ.TeamerWar = (Is4v4Teamer() and civ.PlayerIndex > 4) or (Is2v2Teamer() and civ.PlayerIndex > 2);
-            end
-            local placed, spawnHex, score = civ:AssignSpawnByCentroid(BBS_HexMap);
+            local placed, spawnHex, score = civ:AssignSpawnByCentroid(BBM_HexMap);
             if placed == false then
                 print("Failed to place civ "..tostring(civ.CivilizationLeader))
                 return false;
             end
-            table.insert(BBS_HexMap.tempMajorSpawns[index], {Civ = civ, Spawn = spawnHex, Score = score});
-            if BBS_HexMap.TeamerConfig == TeamerConfigEastVsWest then
-                BBS_HexMap.RTSContinentSetup = BBS_HexMap.RTSContinentSetup or {}
-                BBS_HexMap.RTSContinentSetup[civ.CivilizationTeam] = spawnHex.IslandId;
-                if spawnHex:GetX() > BBS_HexMap.MiddleX then
+            table.insert(BBM_HexMap.tempMajorSpawns[index], {Civ = civ, Spawn = spawnHex, Score = score});
+            if BBM_HexMap.TeamerConfig == TeamerConfigEastVsWest then
+                BBM_HexMap.RTSContinentSetup = BBM_HexMap.RTSContinentSetup or {}
+                BBM_HexMap.RTSContinentSetup[civ.CivilizationTeam] = spawnHex.IslandId;
+                if spawnHex:GetX() > BBM_HexMap.MiddleX then
                     civ.TeamerSide = EastTeam;
                 else
                     civ.TeamerSide = WestTeam;
                 end
-                for _, teamCiv in pairs(BBS_Teams[civ.CivilizationTeam]) do
-                    _Debug("Going through same team civ ", teamCiv.CivilizationLeader, teamCiv.CivilizationTeam, civ.TeamerSide);
-                    teamCiv.TeamerSide = civ.TeamerSide;
-                    teamCiv.TeamerContinentId = spawnHex.IslandId;
+                for team, _ in pairs(BBM_Teams) do
+                    for _, teamCiv in pairs(BBM_Teams[team]) do
+                        if teamCiv.TeamerSide == "" then
+                            if civ.CivilizationTeam == teamCiv.CivilizationTeam then
+                                _Debug("Going through same team civ ", teamCiv.CivilizationLeader, teamCiv.CivilizationTeam, civ.TeamerSide);
+                                teamCiv.TeamerSide = civ.TeamerSide;
+                                teamCiv.TeamerContinentId = spawnHex.IslandId;
+                            else
+                                _Debug("Other side for opposing team ", teamCiv.CivilizationLeader, teamCiv.CivilizationTeam, civ.TeamerSide);
+                                teamCiv.TeamerSide = getRTSOtherSide(civ.TeamerSide);
+                            end
+                        end
+                    end
                 end
+                
             end
             _Debug("Civ ", ind, " in team ", civ.CivilizationTeam, " - Continent ID = ", spawnHex.IdContinent)
         end
@@ -436,9 +453,18 @@ function BBS_AssignStartingPlots:__PlaceMajorCivs(civs, BBS_HexMap, index)
     return true;
 end
 
-function BBS_AssignStartingPlots:__ResetMajorsSpawns(civs, BBS_HexMap)
-    BBS_HexMap.majorSpawns = {};
-    BBS_HexMap:ResetSpawnableHex();
+-- teamerSide = EastTeam or WestTeam global var
+function getRTSOtherSide(teamerSide)
+    if teamerSide == EastTeam then
+        return WestTeam;
+    elseif teamerSide == WestTeam then
+        return EastTeam;
+    end
+end
+
+function BBS_AssignStartingPlots:__ResetMajorsSpawns(civs, BBM_HexMap)
+    BBM_HexMap.majorSpawns = {};
+    BBM_HexMap:ResetSpawnableHex();
     for _, civ in pairs(civs) do
         if civ.AttributedCentroid ~= nil then
             civ.AttributedCentroid.PlacedCiv = false;
@@ -456,12 +482,12 @@ function Is1v1OrTeamerConfig()
     local team1Size = 0
     local team2Size = 0
     local fixedIndex = 1
-    for team, _ in pairs(BBS_Teams) do
+    for team, _ in pairs(BBM_Teams) do
         teamCount = teamCount + 1;
         if fixedIndex == 1 then
-            team1Size = #BBS_Teams[team]
+            team1Size = #BBM_Teams[team]
         elseif fixedIndex == 2 then
-            team2Size = #BBS_Teams[team]
+            team2Size = #BBM_Teams[team]
         end
         fixedIndex = fixedIndex + 1;
     end
@@ -470,44 +496,7 @@ function Is1v1OrTeamerConfig()
     return isTeamerConfig;
 end
 
-function Is4v4Teamer() 
-    local teamCount = 0
-    local team1Size = 0
-    local team2Size = 0
-    local fixedIndex = 1
-    for team, _ in pairs(BBS_Teams) do
-        teamCount = teamCount + 1;
-        if fixedIndex == 1 then
-            team1Size = #BBS_Teams[team]
-        elseif fixedIndex == 2 then
-            team2Size = #BBS_Teams[team]
-        end
-        fixedIndex = fixedIndex + 1;
-    end
-    local isTeamerConfig = teamCount == 2;
-    _Debug("IsTeamerConfig : ", teamCount, team1Size, team2Size, isTeamerConfig);
-    return teamCount == 2 and (team1Size == 4 and team2Size == 4);
-end
-
-function Is2v2Teamer() 
-    local teamCount = 0
-    local team1Size = 0
-    local team2Size = 0
-    local fixedIndex = 1
-    for team, _ in pairs(BBS_Teams) do
-        teamCount = teamCount + 1;
-        if fixedIndex == 1 then
-            team1Size = #BBS_Teams[team]
-        elseif fixedIndex == 2 then
-            team2Size = #BBS_Teams[team]
-        end
-        fixedIndex = fixedIndex + 1;
-    end
-    local isTeamerConfig = teamCount == 2;
-    _Debug("IsTeamerConfig : ", teamCount, team1Size, team2Size, isTeamerConfig);
-    return teamCount == 2 and (team1Size == 2 and team2Size == 2);
-end
-
+-- Call default fixaris placement script
 function CallFiraxisPlacement(args)
     Game:SetProperty("BBM_RESPAWN", false)
     local argSPlot = AssignStartingPlots.Create(args)

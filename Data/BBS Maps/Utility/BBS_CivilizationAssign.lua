@@ -256,10 +256,10 @@ function GetResourceIndex(resourceType)
 end
 
 -- Find the total score 
-function CivilizationAssignSpawn:CalculateTotalScores(BBS_HexMap)
+function CivilizationAssignSpawn:CalculateTotalScores(BBM_HexMap)
     -- Define scores for centroids and order them by score
     if self.CivilizationLeader ~= BBS_LEADER_TYPE_SPECTATOR then
-        self:CalculateOrderCentroidsScore(BBS_HexMap);
+        self:CalculateOrderCentroidsScore(BBM_HexMap);
         -- Sum of centroid scores (cover all maps) 
         local totalScore = 0 
         local totalValidTiles = 0
@@ -292,19 +292,19 @@ end
 -- Main first method to call to assign spawn
 -- Complete function of assigning spawn to a major civ 
 -- Add more random to calculations for non coastal and non bias ? 
-function CivilizationAssignSpawn:AssignSpawnByCentroid(BBS_HexMap)
+function CivilizationAssignSpawn:AssignSpawnByCentroid(BBM_HexMap)
     -- _Debug("AssignSpawnByCentroid for "..self.CivilizationLeader);
     if self.CivilizationLeader == BBS_LEADER_TYPE_SPECTATOR then
         return true;
     end
     -- Recalculate valid tiles in each centroid
-    self:CalculateOrderCentroidsScore(BBS_HexMap);
+    self:CalculateOrderCentroidsScore(BBM_HexMap);
     -- Find the best tiles based on score of top centroids 
     local hexSpawnFound, score = self:FindHighestScoreHex();
 
     -- 
     if hexSpawnFound ~= nil then
-        self:AssignMajorCivSpawn(BBS_HexMap, hexSpawnFound);
+        self:AssignMajorCivSpawn(BBM_HexMap, hexSpawnFound);
         return true, hexSpawnFound, score;
     else 
          -- Try again or go to firaxis placement
@@ -315,17 +315,17 @@ end
 
 
 -- Order the regions based on bias score and number of valid spawn tiles
-function CivilizationAssignSpawn:CalculateOrderCentroidsScore(BBS_HexMap)
+function CivilizationAssignSpawn:CalculateOrderCentroidsScore(BBM_HexMap)
     self.CentroidsScore = {};
      -- Mean score for each hex in centroid cluster by bias
-    for i, centroid in pairs(BBS_HexMap.centroidsArray) do
+    for i, centroid in pairs(BBM_HexMap.centroidsArray) do
         local centScore = self:ComputeBiasScoreCivCentroid(centroid);
         local meanPeninsulaScore = 0;
-        local validTiles = self:GetValidSpawnsInHexList(BBS_HexMap, centroid.HexCluster);
+        local validTiles = self:GetValidSpawnsInHexList(BBM_HexMap, centroid.HexCluster);
         local validBiasTiles = {}
         if #validTiles > 0 then
             for _, hex in pairs(validTiles) do
-                if self:IsBiasRespected(hex, BBS_HexMap) then
+                if self:IsBiasRespected(hex, BBM_HexMap) then
                     table.insert(validBiasTiles, hex);
                     meanPeninsulaScore = meanPeninsulaScore + hex.PeninsulaScore;
                 end
@@ -344,7 +344,7 @@ function CivilizationAssignSpawn:CalculateOrderCentroidsScore(BBS_HexMap)
         end
     end)
 
-    _Debug("Civilization : "..self.CivilizationLeader)
+    _Debug("Civilization : "..self.CivilizationLeader, self.TeamerSide)
     for _, c in pairs(self.CentroidsScore) do
         _Debug("AssignSpawnByCentroid - Score for centroid "..tostring(c.Centroid.id).." = "..tostring(c.Score).." Valid = "..tostring(#c.ValidTiles).." ValidBias = "..tostring(#c.ValidTilesBias).." TundraScoring = "..tostring(c.TundraScoring).." PeninsulaScore = "..tostring(c.MeanPeninsulaScore));
     end
@@ -353,13 +353,13 @@ function CivilizationAssignSpawn:CalculateOrderCentroidsScore(BBS_HexMap)
 end
 
 -- Main method to get valid spawns tiles depending on civ bias
-function CivilizationAssignSpawn:GetValidSpawnsInHexList(BBS_HexMap, listHex)
+function CivilizationAssignSpawn:GetValidSpawnsInHexList(BBM_HexMap, listHex)
     local validTiles = {}
-    local isTerraMap = BBS_HexMap.mapScript == MapScripts.MAP_TERRA;
+    local isTerraMap = BBM_HexMap.mapScript == MapScripts.MAP_TERRA;
     for _, hex in pairs(listHex) do
         -- In Terra, major civ spawn on the biggest island
-        local terraCondition = isTerraMap == false or (isTerraMap and hex.Plot:GetArea():GetID() == BBS_HexMap.BiggestIsland:GetID())
-        local RTScondition = self:GetXPlacementCondition(BBS_HexMap, hex);
+        local terraCondition = isTerraMap == false or (isTerraMap and hex.Plot:GetArea():GetID() == BBM_HexMap.BiggestIsland:GetID())
+        local RTScondition = self:GetXPlacementCondition(BBM_HexMap, hex);
         if RTScondition and terraCondition and hex.IsMajorSpawnable and self:ValidWalkableTiles(hex) and self:ValidTundraDensity(hex) then --pre calculation of technical spawns
             if self.IsTundraBias == false and self.IsDesertBias == false and hex:IsNextToOasis() == false then
                 -- If Maya ignore fresh water, it will be placed last because there is too much valid tiles
@@ -381,43 +381,43 @@ function CivilizationAssignSpawn:GetValidSpawnsInHexList(BBS_HexMap, listHex)
     return validTiles;
 end
 
-function CivilizationAssignSpawn:GetXPlacementCondition(BBS_HexMap, hex)
-    if  BBS_HexMap.TeamerConfig == TeamerConfigStandard then
+function CivilizationAssignSpawn:GetXPlacementCondition(BBM_HexMap, hex)
+    if  BBM_HexMap.TeamerConfig == TeamerConfigStandard then
         return true;
     end
-    BBS_HexMap.RTSContinentSetup = BBS_HexMap.RTSContinentSetup or {}
-    if BBS_HexMap.mapScript == MapScripts.MAP_PANGAEA then
+    BBM_HexMap.RTSContinentSetup = BBM_HexMap.RTSContinentSetup or {}
+    if BBM_HexMap.mapScript == MapScripts.MAP_PANGAEA then
         if self.TeamerWar then
-            local warSizeMax = BBS_HexMap.RTSPangaeaTeamerConfigWarMax
+            local warSizeMax = BBM_HexMap.RTSPangaeaTeamerConfigWarMax
             if self.IsTundraBias then
-                warSizeMax = BBS_HexMap.RTSPangaeaTeamerConfigWarMaxTundra;
+                warSizeMax = BBM_HexMap.RTSPangaeaTeamerConfigWarMaxTundra;
             end
             if self.TeamerSide == EastTeam then
-                return hex:GetX() > BBS_HexMap.MiddleX + BBS_HexMap.RTSPangaeaTeamerEvWBuffer and hex:GetX() <= BBS_HexMap.MiddleX + warSizeMax;
+                return hex:GetX() > BBM_HexMap.MiddleX + BBM_HexMap.RTSPangaeaTeamerEvWBuffer and hex:GetX() <= BBM_HexMap.MiddleX + warSizeMax;
             elseif self.TeamerSide == WestTeam then
-                return hex:GetX() < BBS_HexMap.MiddleX - BBS_HexMap.RTSPangaeaTeamerEvWBuffer and hex:GetX() >= BBS_HexMap.MiddleX - warSizeMax;
+                return hex:GetX() < BBM_HexMap.MiddleX - BBM_HexMap.RTSPangaeaTeamerEvWBuffer and hex:GetX() >= BBM_HexMap.MiddleX - warSizeMax;
             else -- Side not attributed yet
-                return (hex:GetX() > BBS_HexMap.MiddleX + BBS_HexMap.RTSPangaeaTeamerEvWBuffer and hex:GetX() <= BBS_HexMap.MiddleX + warSizeMax)
-                    or (hex:GetX() < BBS_HexMap.MiddleX - BBS_HexMap.RTSPangaeaTeamerEvWBuffer and hex:GetX() >= BBS_HexMap.MiddleX - warSizeMax)
+                return (hex:GetX() > BBM_HexMap.MiddleX + BBM_HexMap.RTSPangaeaTeamerEvWBuffer and hex:GetX() <= BBM_HexMap.MiddleX + warSizeMax)
+                    or (hex:GetX() < BBM_HexMap.MiddleX - BBM_HexMap.RTSPangaeaTeamerEvWBuffer and hex:GetX() >= BBM_HexMap.MiddleX - warSizeMax)
             end 
         elseif self.TeamerSim then
             if self.TeamerSide == EastTeam then
-                return hex:GetX() > BBS_HexMap.MiddleX + BBS_HexMap.RTSPangaeaTeamerConfigSimMin;
+                return hex:GetX() > BBM_HexMap.MiddleX + BBM_HexMap.RTSPangaeaTeamerConfigSimMin;
             elseif self.TeamerSide == WestTeam then
-                return hex:GetX() < BBS_HexMap.MiddleX - BBS_HexMap.RTSPangaeaTeamerConfigSimMin;
+                return hex:GetX() < BBM_HexMap.MiddleX - BBM_HexMap.RTSPangaeaTeamerConfigSimMin;
             else -- Side not attributed yet
-                return (hex:GetX() > BBS_HexMap.MiddleX + BBS_HexMap.RTSPangaeaTeamerConfigSimMin) or (hex:GetX() < BBS_HexMap.MiddleX - BBS_HexMap.RTSPangaeaTeamerConfigSimMin);
+                return (hex:GetX() > BBM_HexMap.MiddleX + BBM_HexMap.RTSPangaeaTeamerConfigSimMin) or (hex:GetX() < BBM_HexMap.MiddleX - BBM_HexMap.RTSPangaeaTeamerConfigSimMin);
             end 
         end
         return true;
     end
-    if BBS_HexMap.mapScript == MapScripts.MAP_CONTINENTS or BBS_HexMap.mapScript == MapScripts.MAP_CONTINENTS_ISLANDS then
-        local continentTeam = BBS_HexMap.RTSContinentSetup[self.CivilizationTeam];
+    if BBM_HexMap.mapScript == MapScripts.MAP_CONTINENTS or BBM_HexMap.mapScript == MapScripts.MAP_CONTINENTS_ISLANDS then
+        local continentTeam = BBM_HexMap.RTSContinentSetup[self.CivilizationTeam];
         if continentTeam == nil or continentTeam == hex.IslandId then
             if self.TeamerSide == EastTeam then
-                return hex:GetX() >= BBS_HexMap.MiddleX;
+                return hex:GetX() >= BBM_HexMap.MiddleX;
             elseif self.TeamerSide == WestTeam then
-                return hex:GetX() < BBS_HexMap.MiddleX;
+                return hex:GetX() < BBM_HexMap.MiddleX;
             end
         else 
             return false;
@@ -526,8 +526,12 @@ function CivilizationAssignSpawn:FindHighestScoreHex()
         for _, c in pairs(self.CentroidsScore) do
             if #c.ValidTiles > 0 then
                 table.insert(topCentroids, c)
+                local maxC = 99;
+                if self.TeamerSide == "" then
+                    maxC = 5;
+                end
                 i = i + 1
-                if i == 5 then
+                if i == maxC then
                     break;
                 end
             end
@@ -643,13 +647,21 @@ function CivilizationAssignSpawn:ComputeHexScoreCiv(hex)
         score = score - tundraScore;
     end
     -------------------
-    -- 5 - Flood malus - Discourage from spawning inside floodplains if not in bias
+    -- 5 - Malus scoring to discourage this spawn unless this is the last option
     -------------------
+    -- Flood malus - Discourage from spawning inside floodplains if not in bias
     local floodMalus = 0;
     if self.IsFloodplainsBias == false and self:IsFloodplainsMalus(hex) then
         floodMalus = 20;
         score = score - floodMalus
     end
+    -- 2 impassable tiles in a row ring 1 for non coastal civ
+    local impassableR1Malus = 0;
+    if self.IsCoastalBias == false and hex:IsHexRing1NextToImpassableInARow(2) then
+        impassableR1Malus = 20;
+        score = score - impassableR1Malus
+    end
+
     _Debug(hex:PrintXY(), " Score = ", baseScore, " BiasScore = ", totalBiasScore, " PeninsulaScore = ", peninsulaScore, " TundraScore = ", tundraScore, " - FloodMalus = ", floodMalus, hex.TundraScore, math.floor(score + 0.5), os.date("%c"))
 
     return math.floor(score + 0.5);
@@ -922,7 +934,7 @@ end
 
 -- Set the starting hex
 -- Firaxis method SetStartingPlot called in BBS_AssignStartingPlots
-function CivilizationAssignSpawn:AssignMajorCivSpawn(BBS_HexMap, startingHex)
+function CivilizationAssignSpawn:AssignMajorCivSpawn(BBM_HexMap, startingHex)
     if startingHex.Centroid ~= nil then
         self.AttributedCentroid = startingHex.Centroid
         self.AttributedCentroid.PlacedCiv = true
@@ -932,29 +944,29 @@ function CivilizationAssignSpawn:AssignMajorCivSpawn(BBS_HexMap, startingHex)
     startingHex.IsMajorSpawnable = false;
     startingHex.IsMinorSpawnable = false;
     -- Set minimum distance around starting hex
-    local list, mappedHex = BBS_HexMap:GetAllHexInRing(startingHex, BBS_HexMap.minimumDistanceMajorToMajorCivs)
+    local list, mappedHex = BBM_HexMap:GetAllHexInRing(startingHex, BBM_HexMap.minimumDistanceMajorToMajorCivs)
     for i, ringHexes in pairs(mappedHex) do
         for _, h in pairs(ringHexes) do
             h.IsMajorSpawnable = false;
             -- distance to cs usually shorter 
-            if i <= BBS_HexMap.minimumDistanceMinorToMajorCivs then
+            if i <= BBM_HexMap.minimumDistanceMinorToMajorCivs then
                 h.IsMinorSpawnable = false;
             end
         end
         
     end
-    --BBS_HexMap:PrintHexSpawnableMap()
+    --BBM_HexMap:PrintHexSpawnableMap()
     _Debug("Assigned spawn "..startingHex:PrintXY().." for civ "..tostring(self.CivilizationLeader))
     return;
 end
 
 -- To call after placing majors civs
-function CivilizationAssignSpawn:AssignMinorCivSpawn(BBS_HexMap, startingHex)
+function CivilizationAssignSpawn:AssignMinorCivSpawn(BBM_HexMap, startingHex)
     self.StartingHex = startingHex
     startingHex.IsCivStartingPlot = true;
     startingHex.IsMinorSpawnable = false;
-    table.insert(BBS_HexMap.minorSpawns, startingHex);
-    local list, _ = BBS_HexMap:GetAllHexInRing(startingHex, BBS_HexMap.minimumDistanceMinorToMinorCivs)
+    table.insert(BBM_HexMap.minorSpawns, startingHex);
+    local list, _ = BBM_HexMap:GetAllHexInRing(startingHex, BBM_HexMap.minimumDistanceMinorToMinorCivs)
     for i, hex in pairs(list) do
         hex.IsMinorSpawnable = false;
     end
@@ -1049,7 +1061,7 @@ function CivilizationAssignSpawn:IsBiasRespected(hex, hexMap)
                             countHill = countHill + 1;
                             -- 18 tiles total in ring 1+2, need at least 9
                             -- For now this is the only bias of greece and korea and ethiopia
-                            if countHill >= 8 then
+                            if countHill >= 7 then
                                 isOneOfBiasRespected = true;
                             end
                         end
@@ -1081,12 +1093,12 @@ function CivilizationAssignSpawn:IsBiasRespected(hex, hexMap)
 end
 
 
-function CivilizationAssignSpawn:FindTotalNumberOfValidTiles(BBS_HexMap)
+function CivilizationAssignSpawn:FindTotalNumberOfValidTiles(BBM_HexMap)
     local totalValidTiles = 0;
-    for i, centroid in pairs(BBS_HexMap.centroidsArray) do
+    for i, centroid in pairs(BBM_HexMap.centroidsArray) do
         local centScore = self:ComputeBiasScoreCivCentroid(centroid);
         local meanPeninsulaScore = 0;
-        local validTiles = self:GetValidSpawnsInHexList(BBS_HexMap, centroid.HexCluster);
+        local validTiles = self:GetValidSpawnsInHexList(BBM_HexMap, centroid.HexCluster);
         totalValidTiles = totalValidTiles + #validTiles;
     end    
 end
