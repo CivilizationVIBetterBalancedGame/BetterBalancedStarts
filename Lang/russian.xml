@@ -131,13 +131,13 @@
 		<Text>Запад-Восток</Text>
 	</Replace>
 	<Replace Tag="BBM_Team_Spawn_EW_DESC" language="ru_RU">
-		<Text>Для 2x2 или 4x4: игроки одной команды будут с большей вероятностью расположены на Западе или Востоке.</Text>
+		<Text>игроки одной команды будут с большей вероятностью расположены на Западе или Востоке.</Text>
 	</Replace>
 	<Replace Tag="BBM_Team_Spawn_NS_NAME" language="ru_RU">
 		<Text>Север-Юг</Text>
 	</Replace>
 	<Replace Tag="BBM_Team_Spawn_NS_DESC" language="ru_RU">
-		<Text>Для 2x2 или 4x4: игроки одной команды будут с большей вероятностью расположены на Севере или Юге.</Text>
+		<Text>игроки одной команды будут с большей вероятностью расположены на Севере или Юге.</Text>
 	</Replace>
 	
 	<!-- == Min distance == -->

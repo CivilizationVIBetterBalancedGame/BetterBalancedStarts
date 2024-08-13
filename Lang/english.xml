@@ -363,13 +363,13 @@
 			<Text>East vs. West</Text>
 		</Replace>
 		<Replace Tag="BBM_Team_Spawn_EW_DESC" Language="en_US">
-			<Text>For 2v2 or 4v4: players of the same team are much more likely to spawn East or West.</Text>
+			<Text>Players of the same team are much more likely to spawn East or West.</Text>
 		</Replace>
 		<Replace Tag="BBM_Team_Spawn_NS_NAME" Language="en_US">
 			<Text>North vs. South</Text>
 		</Replace>
 		<Replace Tag="BBM_Team_Spawn_NS_DESC" Language="en_US">
-			<Text>For 2v2 or 4v4: players of the same team are much more likely to spawn North or South.</Text>
+			<Text>Players of the same team are much more likely to spawn North or South.</Text>
 		</Replace>
 		
 		

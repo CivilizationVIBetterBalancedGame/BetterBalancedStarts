@@ -3462,7 +3462,7 @@ function even(test)
 end
 
 function HexMap:GetTeamerPositionConfig() 
-    if MapConfiguration.GetValue("BBM_Team_Spawn") ~= nil and BBM_PlayerNumber > 2 and Is1v1OrTeamerConfig() then
+    if MapConfiguration.GetValue("BBM_Team_Spawn") ~= nil and Is1v1OrTeamerConfig() then
         local Teamers_Config = MapConfiguration.GetValue("BBM_Team_Spawn");
         _Debug("GetTeamerPositionConfig : ", Teamers_Config)
         if Teamers_Config == 1 then

@@ -382,13 +382,13 @@
 		<Text>Leste contra Oeste</Text>
 	</Replace>
 	<Replace Tag="BBM_Team_Spawn_EW_DESC" Language="pt_BR">
-		<Text>Para 2v2 e 4v4: os jogadores da mesma equipe têm muito mais chances de aparecer no Leste ou no Oeste.</Text>
+		<Text>Os jogadores da mesma equipe têm muito mais chances de aparecer no Leste ou no Oeste.</Text>
 	</Replace>
 	<Replace Tag="BBM_Team_Spawn_NS_NAME" Language="pt_BR">
 		<Text>Norte contra Sul</Text>
 	</Replace>
 	<Replace Tag="BBM_Team_Spawn_NS_DESC" Language="pt_BR">
-		<Text>Para 2v2 e 4v4: os jogadores da mesma equipe têm muito mais chances de aparecer no Norte ou no Sul.</Text>
+		<Text>Os jogadores da mesma equipe têm muito mais chances de aparecer no Norte ou no Sul.</Text>
 	</Replace>
 	
 	

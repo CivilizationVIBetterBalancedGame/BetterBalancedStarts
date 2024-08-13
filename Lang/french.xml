@@ -382,13 +382,13 @@
 		<Text>Est contre Ouest</Text>
 	</Replace>
 	<Replace Tag="BBM_Team_Spawn_EW_DESC" Language="fr_FR">
-		<Text>Pour les 2v2 et 4v4 : les joueurs de la même équipe sont beaucoup plus susceptibles d'apparaître à l'Est ou à l'Ouest.</Text>
+		<Text>Les joueurs de la même équipe sont beaucoup plus susceptibles d'apparaître à l'Est ou à l'Ouest.</Text>
 	</Replace>
 	<Replace Tag="BBM_Team_Spawn_NS_NAME" Language="fr_FR">
 		<Text>Nord contre Sud</Text>
 	</Replace>
 	<Replace Tag="BBM_Team_Spawn_NS_DESC" Language="fr_FR">
-		<Text>Pour les 2v2 et 4v4 : les joueurs de la même équipe sont beaucoup plus susceptibles d'apparaître au Nord ou au Sud.</Text>
+		<Text>Les joueurs de la même équipe sont beaucoup plus susceptibles d'apparaître au Nord ou au Sud.</Text>
 	</Replace>
 	
 	

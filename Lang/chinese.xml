@@ -332,13 +332,13 @@
 			<Text>东西对战</Text>
 		</Replace>
 		<Replace Tag="BBM_Team_Spawn_EW_DESC" Language="zh_Hans_CN">
-			<Text>2v2或4v4时：同一队伍的文明很大概率共同位于东侧或西侧。</Text>
+			<Text>同一队伍的文明很大概率共同位于东侧或西侧。</Text>
 		</Replace>
 		<Replace Tag="BBM_Team_Spawn_NS_NAME" Language="zh_Hans_CN">
 			<Text>南北对战</Text>
 		</Replace>
 		<Replace Tag="BBM_Team_Spawn_NS_DESC" Language="zh_Hans_CN">
-			<Text>2v2或4v4时：同一队伍的文明很大概率共同位于南侧或北侧。</Text>
+			<Text>同一队伍的文明很大概率共同位于南侧或北侧。</Text>
 		</Replace>
 		
 		

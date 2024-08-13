@@ -401,12 +401,16 @@ function CivilizationAssignSpawn:GetXPlacementCondition(BBM_HexMap, hex)
                     or (hex:GetX() < BBM_HexMap.MiddleX - BBM_HexMap.RTSPangaeaTeamerEvWBuffer and hex:GetX() >= BBM_HexMap.MiddleX - warSizeMax)
             end 
         elseif self.TeamerSim then
+            local minimumSimDistance = BBM_HexMap.RTSPangaeaTeamerConfigSimMin;
+            if BBM_PlayerNumber == 2 then
+                minimumSimDistance = 5;
+            end
             if self.TeamerSide == EastTeam then
-                return hex:GetX() > BBM_HexMap.MiddleX + BBM_HexMap.RTSPangaeaTeamerConfigSimMin;
+                return hex:GetX() > BBM_HexMap.MiddleX + minimumSimDistance;
             elseif self.TeamerSide == WestTeam then
-                return hex:GetX() < BBM_HexMap.MiddleX - BBM_HexMap.RTSPangaeaTeamerConfigSimMin;
+                return hex:GetX() < BBM_HexMap.MiddleX - minimumSimDistance;
             else -- Side not attributed yet
-                return (hex:GetX() > BBM_HexMap.MiddleX + BBM_HexMap.RTSPangaeaTeamerConfigSimMin) or (hex:GetX() < BBM_HexMap.MiddleX - BBM_HexMap.RTSPangaeaTeamerConfigSimMin);
+                return (hex:GetX() > BBM_HexMap.MiddleX + minimumSimDistance) or (hex:GetX() < BBM_HexMap.MiddleX - minimumSimDistance);
             end 
         end
         return true;
