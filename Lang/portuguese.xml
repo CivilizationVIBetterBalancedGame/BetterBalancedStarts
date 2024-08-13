@@ -209,7 +209,6 @@
 	<Replace Tag="BBM_MIN_DISTANCE_TWENTYONE_DESC" Language="pt_BR">
 		<Text>21 paineis</Text>
 	</Replace>
-	
 	<Replace Tag="BBM_MIN_DISTANCE_TWENTYTWO_NAME" Language="pt_BR">
 		<Text>22</Text>
 	</Replace>
@@ -367,30 +366,31 @@
 	<Replace Tag="LOC_GAME_BBS_NATURAL_DESC" Language="pt_BR">
 		<Text>Controla o número máximo de maravilhas naturais que podem aparecer no mapa.</Text>
 	</Replace>
-	<Replace Tag="LOC_BBS_Team_Spawn_NAME" Language="pt_BR">
+	<Replace Tag="LOC_BBM_Team_Spawn_NAME" Language="pt_BR">
 		<Text>Posições de Equipe</Text>
 	</Replace>
-	<Replace Tag="LOC_BBS_Team_Spawn_DESC" Language="pt_BR">
+	<Replace Tag="LOC_BBM_Team_Spawn_DESC" Language="pt_BR">
 		<Text>Controla a posição das civilizações no mapa em um jogo em equipe.</Text>
 	</Replace>
-	<Replace Tag="BBS_Team_Spawn_NORMAL_NAME" Language="pt_BR">
+	<Replace Tag="BBM_Team_Spawn_NORMAL_NAME" Language="pt_BR">
 		<Text>Normal</Text>
 	</Replace>
-	<Replace Tag="BBS_Team_Spawn_NORMAL_DESC" Language="pt_BR">
+	<Replace Tag="BBM_Team_Spawn_NORMAL_DESC" Language="pt_BR">
 		<Text>Configurações padrão: os jogadores são colocados aleatoriamente.</Text>
 	</Replace>
-	<Replace Tag="BBS_Team_Spawn_EW_NAME" Language="pt_BR">
-		<Text>Este contra Oeste</Text>
+	<Replace Tag="BBM_Team_Spawn_EW_NAME" Language="pt_BR">
+		<Text>Leste contra Oeste</Text>
 	</Replace>
-	<Replace Tag="BBS_Team_Spawn_EW_DESC" Language="pt_BR">
+	<Replace Tag="BBM_Team_Spawn_EW_DESC" Language="pt_BR">
 		<Text>Para 2v2 e 4v4: os jogadores da mesma equipe têm muito mais chances de aparecer no Leste ou no Oeste.</Text>
 	</Replace>
-	<Replace Tag="BBS_Team_Spawn_NS_NAME" Language="pt_BR">
+	<Replace Tag="BBM_Team_Spawn_NS_NAME" Language="pt_BR">
 		<Text>Norte contra Sul</Text>
 	</Replace>
-	<Replace Tag="BBS_Team_Spawn_NS_DESC" Language="pt_BR">
+	<Replace Tag="BBM_Team_Spawn_NS_DESC" Language="pt_BR">
 		<Text>Para 2v2 e 4v4: os jogadores da mesma equipe têm muito mais chances de aparecer no Norte ou no Sul.</Text>
 	</Replace>
+	
 	
 	
 	<!-- === MARAVILHAS NATURAIS === -->
