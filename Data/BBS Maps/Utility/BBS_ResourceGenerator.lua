@@ -433,7 +433,8 @@ function BBS_ResourceGenerator:__SetWaterLuxury(eChosenLux, latitudeMax, latitud
 	iW, iH = Map.GetGridSize();
 
 	local iNumToPlace = self.iOccurencesPerFrequency * self.iSeaFrequency[eChosenLux];
-
+	print("__SetWaterLuxury", eChosenLux, iNumToPlace)
+	local coastTiles = {};
 	for x = 0, iW - 1 do
 		for y = 0, iH - 1 do
 			local i = y * iW + x;
@@ -441,36 +442,42 @@ function BBS_ResourceGenerator:__SetWaterLuxury(eChosenLux, latitudeMax, latitud
 			-- Water plots
 			if(pPlot~=nil and pPlot:IsWater() == true and IsAdjacentToIce(pPlot:GetX(), pPlot:GetY()) == false) then
 				local lat = math.abs((iH/2) - y)/(iH/2) * 100.0;
-				if(lat < latitudeMax and lat > latitudeMin and iNumber <= iNumToPlace) then
-
-					-- If the the luxury is placed then it returns true and is removed
-					local bChosen = self:__PlaceWaterLuxury(eChosenLux, pPlot);
-					if(bChosen == true) then
-						if(bFirst == true) then
-							if(self.bOdd == true) then
-								bOddSwitch = true;
-							else
-								if(#self.aLuxuryTypeCoast > 0) then
-									table.remove(self.aLuxuryTypeCoast, 1);
-								else
-									return;
-								end
-							end
-
-							bFirst = false;
-						end
-
-						iNumber = iNumber + 1;
-					end
+				if(lat < latitudeMax and lat > latitudeMin) then
+					table.insert(coastTiles, pPlot);
 				end
 			end
+		end
+	end
 
+	coastTiles = GetShuffledCopyOfTable(coastTiles)
+
+	for _, plot in ipairs(coastTiles) do
+		if (iNumber <= iNumToPlace) then
+			-- If the the luxury is placed then it returns true and is removed
+			local bChosen = self:__PlaceWaterLuxury(eChosenLux, plot);
+			if(bChosen == true) then
+				if(bFirst == true) then
+					if(self.bOdd == true) then
+						bOddSwitch = true;
+					else
+						if(#self.aLuxuryTypeCoast > 0) then
+							table.remove(self.aLuxuryTypeCoast, 1);
+						else
+							return;
+						end
+					end
+
+					bFirst = false;
+				end
+
+				iNumber = iNumber + 1;
+			end
+			
 			if(bOddSwitch == true and self.bOdd == true) then
 				self.bOdd  = false;
 			end	
 		end
 	end
-
 	--print("Water Resource: ", eChosenLux, " number placed = ",  iNumber);
 end
 
@@ -778,7 +785,8 @@ function BBS_ResourceGenerator:__SetWaterStrategic(eChosenStrat, latitudeMax, la
 	local iNumber = 0
 	local iW, iH;
 	iW, iH = Map.GetGridSize();
-
+	print("__SetWaterStrategic", self.iOccurencesPerFrequency)
+	local coastTiles = {};
 	for x = 0, iW - 1 do
 		for y = 0, iH - 1 do
 			local i = y * iW + x;
@@ -786,36 +794,43 @@ function BBS_ResourceGenerator:__SetWaterStrategic(eChosenStrat, latitudeMax, la
 			-- Water plots
 			if(pPlot~=nil and pPlot:IsWater() == true and IsAdjacentToIce(pPlot:GetX(), pPlot:GetY()) == false) then
 				local lat = math.abs((iH/2) - y)/(iH/2) * 100.0;
-				if(lat < latitudeMax and lat > latitudeMin and iNumber <= self.iOccurencesPerFrequency) then
-
-					-- If the the strategic is placed then it returns true and is removed
-					local bChosen = self:__PlaceWaterStrategic(eChosenStrat, pPlot);
-					if(bChosen == true) then
-						if(bFirst == true) then
-							if(self.bOdd == true) then
-								bOddSwitch = true;
-							else
-								if(#self.aStrategicTypeCoast > 0) then
-									table.remove(self.aStrategicTypeCoast, 1);
-								else
-									return;
-								end
-							end
-
-							bFirst = false;
-						end
-
-						iNumber = iNumber + 1;
-					end
+				if(lat < latitudeMax and lat > latitudeMin) then
+					table.insert(coastTiles, pPlot)
+					print("SetWaterStrategic added plot ", pPlot:GetX(), pPlot:GetY())
 				end
+			end
+		end
+	end
+
+	coastTiles = GetShuffledCopyOfTable(coastTiles);
+	
+	for _, plot in ipairs(coastTiles) do
+		if iNumber <= self.iOccurencesPerFrequency then
+			local bChosen = self:__PlaceWaterStrategic(eChosenStrat, plot);
+			if(bChosen == true) then
+				print("SetWaterStrategic select plot ", plot:GetX(), plot:GetY())
+				if(bFirst == true) then
+					if(self.bOdd == true) then
+						bOddSwitch = true;
+					else
+						if(#self.aStrategicTypeCoast > 0) then
+							table.remove(self.aStrategicTypeCoast, 1);
+						else
+							return;
+						end
+					end
+
+					bFirst = false;
+				end
+
+				iNumber = iNumber + 1;		
 			end
 
 			if(bOddSwitch == true and self.bOdd == true) then
 				self.bOdd  = false;
-			end	
-		end
+			end
+		end		
 	end
-
 	--print("Water Resource: ", eChosenStrat, " number placed = ",  iNumber);
 end
 
