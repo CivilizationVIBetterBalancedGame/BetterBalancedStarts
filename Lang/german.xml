@@ -14,7 +14,7 @@
 		<!-- === SETUP === -->
 		<!-- == Karteneigenschaften == -->
 		<Replace Tag="LOC_GAME_SPAWN_RECALCULATION" Language="de_DE">
-			<Text>Neuberechnung des Spawns</Text>
+			<Text>Neuberechnung des Startplatzes</Text>
 		</Replace>
 		<Replace Tag="LOC_GAME_SPAWN_RECALCULATION_DESC" Language="de_DE">
 			<Text>Versucht, die Zivilisation an einem besseren Startplatz zu platzieren</Text>
