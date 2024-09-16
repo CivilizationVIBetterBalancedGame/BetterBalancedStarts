@@ -20,10 +20,10 @@
 			<Text>Versucht, die Zivilisation an einem besseren Startplatz zu platzieren</Text>
 		</Replace>
 		<!-- = Höhenzüge-Definition = -->
-		<Replace Tag="LOC_GAME_BBM_RIDGE_NAME" Language="de_DE">
+		<Replace Tag="LOC_GAME_BBS_RIDGE_NAME" Language="de_DE">
 			<Text>Gebirge-Definition</Text>
 		</Replace>
-		<Replace Tag="LOC_GAME_BBM_RIDGE_DESC" Language="de_DE">
+		<Replace Tag="LOC_GAME_BBS_RIDGE_DESC" Language="de_DE">
 			<Text>Steuert, wie herausfordernd die Gebirgsketten im Spiel sind</Text>
 		</Replace>
 		<Replace Tag="BBS_RIDGE_NORMAL_NAME" Language="de_DE">
