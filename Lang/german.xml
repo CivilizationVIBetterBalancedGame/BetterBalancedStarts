@@ -254,31 +254,31 @@
 			<Text>Maximale Größe für Schwemmlandfelder.</Text>
 		</Replace>
 		<Replace Tag="LOC_BBM_MAXFLOODPLAINS_SIZE_4_DESCRIPTION" Language="de_DE">
-			<Text>4 Schwemmlandfelder pro Fluss. Beachte, dass sich sich an Flusskreuzungen sammeln können.</Text>
+			<Text>4 Schwemmlandfelder pro Fluss. Beachte, dass sie sich an Flusskreuzungen sammeln können.</Text>
 		</Replace>
 		<Replace Tag="LOC_BBM_MAXFLOODPLAINS_SIZE_5_DESCRIPTION" Language="de_DE">
-			<Text>5 Schwemmlandfelder pro Fluss. Beachte, dass sich sich an Flusskreuzungen sammeln können.</Text>
+			<Text>5 Schwemmlandfelder pro Fluss. Beachte, dass sie sich an Flusskreuzungen sammeln können.</Text>
 		</Replace>
 		<Replace Tag="LOC_BBM_MAXFLOODPLAINS_SIZE_6_DESCRIPTION" Language="de_DE">
-			<Text>6 Schwemmlandfelder pro Fluss. Beachte, dass sich sich an Flusskreuzungen sammeln können.</Text>
+			<Text>6 Schwemmlandfelder pro Fluss. Beachte, dass sie sich an Flusskreuzungen sammeln können.</Text>
 		</Replace>
 		<Replace Tag="LOC_BBM_MAXFLOODPLAINS_SIZE_7_DESCRIPTION" Language="de_DE">
-			<Text>7 Schwemmlandfelder pro Fluss. Beachte, dass sich sich an Flusskreuzungen sammeln können.</Text>
+			<Text>7 Schwemmlandfelder pro Fluss. Beachte, dass sie sich an Flusskreuzungen sammeln können.</Text>
 		</Replace>
 		<Replace Tag="LOC_BBM_MAXFLOODPLAINS_SIZE_8_DESCRIPTION" Language="de_DE">
-			<Text>8 Schwemmlandfelder pro Fluss. Beachte, dass sich sich an Flusskreuzungen sammeln können.</Text>
+			<Text>8 Schwemmlandfelder pro Fluss. Beachte, dass sie sich an Flusskreuzungen sammeln können.</Text>
 		</Replace>
 		<Replace Tag="LOC_BBM_MAXFLOODPLAINS_SIZE_9_DESCRIPTION" Language="de_DE">
-			<Text>9 Schwemmlandfelder pro Fluss. Beachte, dass sich sich an Flusskreuzungen sammeln können.</Text>
+			<Text>9 Schwemmlandfelder pro Fluss. Beachte, dass sie sich an Flusskreuzungen sammeln können.</Text>
 		</Replace>
 		<Replace Tag="LOC_BBM_MAXFLOODPLAINS_SIZE_10_DESCRIPTION" Language="de_DE">
-			<Text>10 Schwemmlandfelder pro Fluss. Beachte, dass sich sich an Flusskreuzungen sammeln können.</Text>
+			<Text>10 Schwemmlandfelder pro Fluss. Beachte, dass sie sich an Flusskreuzungen sammeln können.</Text>
 		</Replace>
 		<Replace Tag="LOC_BBM_MAXFLOODPLAINS_SIZE_11_DESCRIPTION" Language="de_DE">
-			<Text>11 Schwemmlandfelder pro Fluss. Beachte, dass sich sich an Flusskreuzungen sammeln können.</Text>
+			<Text>11 Schwemmlandfelder pro Fluss. Beachte, dass sie sich an Flusskreuzungen sammeln können.</Text>
 		</Replace>
 		<Replace Tag="LOC_BBM_MAXFLOODPLAINS_SIZE_12_DESCRIPTION" Language="de_DE">
-			<Text>12 Schwemmlandfelder pro Fluss. Beachte, dass sich sich an Flusskreuzungen sammeln können.</Text>
+			<Text>12 Schwemmlandfelder pro Fluss. Beachte, dass sie sich an Flusskreuzungen sammeln können.</Text>
 		</Replace>
 		
 		<!-- == Spieleroptionen == -->
