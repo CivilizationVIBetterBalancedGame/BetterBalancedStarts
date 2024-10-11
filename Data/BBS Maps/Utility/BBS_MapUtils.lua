@@ -2101,6 +2101,7 @@ function HexMap:TerraformDesert(hex)
         self:TerraformSetResource(hex, g_RESOURCE_NONE, true)
     end
     --50% plain/grass
+    local rngTerrain = TerrainBuilder.GetRandomNumber(100, "Desert terrain terraform");
     -- leave oasis as it is (cant be terraformed correctly to lakes)
     if hex.FeatureType == g_FEATURE_OASIS then
         _Debug("Removed oasis", hex:PrintXY())
@@ -2120,24 +2121,34 @@ function HexMap:TerraformDesert(hex)
     end
     local rng = TerrainBuilder.GetRandomNumber(100, "Desert terraform");
     if hex.TerrainType == g_TERRAIN_TYPE_DESERT then
-        self:TerraformSetTerrain(hex, g_TERRAIN_TYPE_PLAINS)
+        if rngTerrain <= 50 then
+            self:TerraformSetTerrain(hex, g_TERRAIN_TYPE_PLAINS)
+        else 
+            self:TerraformSetTerrain(hex, g_TERRAIN_TYPE_GRASS)
+        end
     elseif hex.TerrainType == g_TERRAIN_TYPE_DESERT_HILLS then
-        self:TerraformSetTerrain(hex, g_TERRAIN_TYPE_PLAINS_HILLS)
+        if rngTerrain <= 50 then
+            self:TerraformSetTerrain(hex, g_TERRAIN_TYPE_PLAINS_HILLS)
+        else 
+            self:TerraformSetTerrain(hex, g_TERRAIN_TYPE_GRASS_HILLS)
+        end
         -- Avoid 1/3 settle
         if hex.ResourceType == g_RESOURCE_GYPSUM and (hex.IsFreshWater or hex.IsCoastal) then
-            self:TerraformSetTerrain(hex, g_TERRAIN_TYPE_PLAINS)
+            self:TerraformToFlat(hex, false)
         end
     elseif hex.TerrainType == g_TERRAIN_TYPE_DESERT_MOUNTAIN then
-        self:TerraformSetTerrain(hex, g_TERRAIN_TYPE_PLAINS_MOUNTAIN)
+        if rngTerrain <= 50 then
+            self:TerraformSetTerrain(hex, g_TERRAIN_TYPE_PLAINS_MOUNTAIN)
+        else 
+            self:TerraformSetTerrain(hex, g_TERRAIN_TYPE_GRASS_MOUNTAIN)
+        end
     end
-
     if rng <= 33 and hex.FeatureType == g_FEATURE_NONE and hex.ResourceType == g_RESOURCE_NONE then
         self:TerraformSetFeature(hex, g_FEATURE_FOREST, false);
     end
     return true;
 end
 
--- TODO Add rng
 -- Possible 2/2 tiles without lux :
 -- Grass+Hill+Forest, Plain+Junle+Hills, Stone+Hills, Deer+Forest, Grass+Sheeps
 -- Extra yield (gold faith culture science) not taken in account here
