@@ -449,7 +449,7 @@ function BBS_ResourceGenerator:__SetWaterLuxury(eChosenLux, latitudeMax, latitud
 		end
 	end
 
-	coastTiles = GetShuffledCopyOfTable(coastTiles)
+	coastTiles = GetShuffledCopyOfTable(coastTiles);
 
 	for _, plot in ipairs(coastTiles) do
 		if (iNumber <= iNumToPlace) then
@@ -796,7 +796,6 @@ function BBS_ResourceGenerator:__SetWaterStrategic(eChosenStrat, latitudeMax, la
 				local lat = math.abs((iH/2) - y)/(iH/2) * 100.0;
 				if(lat < latitudeMax and lat > latitudeMin) then
 					table.insert(coastTiles, pPlot)
-					print("SetWaterStrategic added plot ", pPlot:GetX(), pPlot:GetY())
 				end
 			end
 		end
