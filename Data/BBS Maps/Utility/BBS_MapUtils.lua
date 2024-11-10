@@ -3950,7 +3950,10 @@ function SpawnBalancing:ApplyMinimalLandTiles(iMin, iMax)
             _Debug("MinimalTileV2 Ring ", i, " : tileToUp = ", tileToUp);
             _Debug("MinimalTileV2 Ring ", i, " : Empty = ", #self.RingTables[i].EMPTY_TILES);
             _Debug("MinimalTileV2 Ring ", i, " : Low = ",#self.RingTables[i].LOW_YIELD_TILES);
-
+            -- If there is no 2/2 but already 4yields tiles, add the 2/2 anyway
+            if tileToUp == 0 and #self:Find22TilesInRing(i) == 0 and i <= 2 then
+                tileToUp = 1;
+            end
             -- Try to apply randomly desired number of standard yield tiles in ring i
             while tileToUp > 0 do
                 local nb22inRing = #self:Find22TilesInRing(i);
@@ -4012,7 +4015,7 @@ function SpawnBalancing:ApplyMinimalLandTiles(iMin, iMax)
                 local nbTagged22 = 0;
                 found22tiles = GetShuffledCopyOfTable(found22tiles);
                 for _, h in ipairs(found22tiles) do
-                    if nbTagged22 < i then
+                    if nbTagged22 < 1 then
                         h:SetTaggedAsMinimum(true);
                         nbTagged22 = nbTagged22 + 1;
                     else
@@ -4031,7 +4034,6 @@ function SpawnBalancing:ApplyMinimalLandTiles(iMin, iMax)
                     local untaggedStdTiles = {};
                     for _, h in ipairs(stdTilesR1) do
                         if h.IsTaggedAsMinimum == false then
-                            _Debug("untaggedStdTiles : ", h:PrintXY());
                             table.insert(untaggedStdTiles, h);
                         else 
                             nbTagged4yields = nbTagged4yields + 1;
@@ -5142,8 +5144,7 @@ function SpawnBalancing:UpdateTableDataRing(h, i)
 
     if  h.ResourceType == g_RESOURCE_NONE and h.FeatureType == g_FEATURE_NONE then
         table.insert(self.RingTables[i].EMPTY_TILES, h)
-        -- 1/3 considered low yield in ring 1-2 because lack of food
-    elseif h.Food + h.Prod < 4 or (i <= 2 and h.Food == 1 and h.Prod == 3 and h.ExtraYield == false) then
+    elseif h.Food + h.Prod < 4 then
         table.insert(self.RingTables[i].LOW_YIELD_TILES, h)
     elseif h.Food + h.Prod >= 4 and h.ExtraYield then
         table.insert(self.RingTables[i].HIGH_EXTRA_YIELDS, h)
