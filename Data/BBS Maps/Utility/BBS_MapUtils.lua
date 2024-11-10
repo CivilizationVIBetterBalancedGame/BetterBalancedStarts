@@ -482,6 +482,20 @@ function Hex:IsCloseToCoast()
     return false;
 end
 
+function Hex:GetClosestCoastToHex(maxRange)
+    if self.IsCoastal then
+        return 0;
+    end
+    for i = 1, maxRange do
+        for _, h in pairs(self.AllRing6Map[i]) do
+            if h.IsCoastal then
+                return i;
+            end
+        end
+    end
+    return nil;
+end
+
 function Hex:IsNextToCoastalFreshWater()
     for _, h in pairs(self.AllRing6Map[1]) do
         if h.IsCoastal and h.IsOnRiver then
@@ -2188,7 +2202,21 @@ function HexMap:TerraformTo4Yields(hex, garanteed22, canChangeBonusRes)
     -- Standard terraform empty tile to 22
     elseif hex.ResourceType == g_RESOURCE_NONE and (hex.FeatureType == g_FEATURE_NONE or hex.FeatureType == g_FEATURE_MARSH)
         and hex:IsTundraLand() == false and hex:IsDesertLand() == false then
-        self:TerraformTo22Yields(hex, true)
+        local rng = TerrainBuilder.GetRandomNumber(100, "Random");
+        if hex:IsPlainLand() and hex.FeatureType ~= g_FEATURE_MARSH then
+            if rng <= 25 then
+                self:TerraformSetTerrain(hex, g_TERRAIN_TYPE_PLAINS_HILLS);
+                self:TerraformSetFeature(hex, g_FEATURE_FOREST, true);
+            elseif rng <= 50 and self:CanHaveJungle(hex) then
+                self:TerraformSetTerrain(hex, g_TERRAIN_TYPE_PLAINS_HILLS);
+                self:TerraformSetFeature(hex, g_FEATURE_JUNGLE, true);
+                self:TerraformSetResource(hex, g_RESOURCE_BANANAS);
+            else 
+                self:TerraformTo22Yields(hex, true);
+            end
+        else
+            self:TerraformTo22Yields(hex, true);
+        end
     -- Some bonus or lux resources that cant be changed naturally
     elseif canChangeBonusRes and g_RESOURCES_BONUS_LIST[hex.ResourceType] then
         self:TerraformSetResource(hex, g_RESOURCE_NONE);
@@ -3185,7 +3213,17 @@ function HexMap:GetNonExtremCostalTiles()
     return countLandtiles, landTiles;
 end
 
-
+function HexMap:IsHexRing2FromCoast(hex)
+    if hex.IsCoastal == false then
+        local ring1 = hex.AllRing6Map[1];
+        for _, h in pairs(ring1) do
+            if h.IsCoastal then
+                return true
+            end
+        end
+    end
+    return false
+end
 
 -- Return the count and all the hexes in the map that are not water and not snow
 function HexMap:GetLandHexList()
@@ -3905,30 +3943,25 @@ function SpawnBalancing:ApplyMinimalLandTiles(iMin, iMax)
             self:PlaceRelocatedHexOnRing(i);
             -- Formula used to count the number of standard yields tiles needed in a given ring around the spawning hex
             local minimumStandardTiles = i;
-            if i > 3 then
+            if i ~= 2 then
                 minimumStandardTiles = i + 1;
             end
-            local garanteed22 = i <= 2;
-            if self.Civ.IsTundraBias then
-                if i > 2 then
-                    minimumStandardTiles = i + 1;
-                end
-                garanteed22 = i == 1;
-            end
             local tileToUp = minimumStandardTiles - #self.RingTables[i].STANDARD_YIELD_TILES - #self.RingTables[i].HIGH_YIELD_TILES;
-            if garanteed22 then
-                tileToUp = minimumStandardTiles - #self:Find22TilesInRing(i);
-            end
             _Debug("MinimalTileV2 Ring ", i, " : tileToUp = ", tileToUp);
             _Debug("MinimalTileV2 Ring ", i, " : Empty = ", #self.RingTables[i].EMPTY_TILES);
             _Debug("MinimalTileV2 Ring ", i, " : Low = ",#self.RingTables[i].LOW_YIELD_TILES);
-            -- Try to apply randomly desired number of standard yield tiles in ring i
 
+            -- Try to apply randomly desired number of standard yield tiles in ring i
             while tileToUp > 0 do
+                local nb22inRing = #self:Find22TilesInRing(i);
+                -- Have 1 2/2 tile in ring 1 and 2
+                local garanteed22 = nb22inRing == 0 and i <= 2;
+                _Debug("Garanteed 2/2 in ring : ", i, nb22inRing, garanteed22, minimumStandardTiles);
                 local terraformedHex = self:TerraformRandomInRing(i, TerraformType[4], 0, false, false, garanteed22);
                 if terraformedHex ~= nil then
                     _Debug("Added 4yields tile : ", terraformedHex:PrintXY());
                     tileToUp = tileToUp - 1;
+                    -- Fixed the 4tiles in ring 1 and 2/2 in ring 2 
                     if garanteed22 then
                         _Debug("Garanteed 2/2 : ", terraformedHex:PrintXY());
                         terraformedHex:SetTaggedAsMinimum(true);
@@ -3973,7 +4006,7 @@ function SpawnBalancing:ApplyMinimalLandTiles(iMin, iMax)
                     end
                 end
             end
-            -- Tag garanteed22 as minimaltiles to avoid further terraforming
+            -- Tag one 2/2 tiles on each ring 1 and 2 as minimaltiles to avoid further terraforming
             if i <= 2 then
                 local found22tiles = self:Find22TilesInRing(i);
                 local nbTagged22 = 0;
@@ -3986,7 +4019,33 @@ function SpawnBalancing:ApplyMinimalLandTiles(iMin, iMax)
                         break
                     end
                 end
-                _Debug("Number of tagged garanteed 22 = ", nbTagged22)
+                -- On ring 1 only, tag a second 4yields  
+                if i == 1 then
+                    local stdTilesR1 = {};
+                    AddToTable(stdTilesR1, self.RingTables[1].STANDARD_YIELD_TILES);
+                    AddToTable(stdTilesR1, self.RingTables[1].HIGH_YIELD_TILES);
+                    AddToTable(stdTilesR1, self.RingTables[1].HIGH_EXTRA_YIELDS);
+                    stdTilesR1 = GetShuffledCopyOfTable(stdTilesR1);
+                    -- Verify if there is already 2x 4+ yields tagged as minimum (from lux or high food tile)
+                    local nbTagged4yields = 0
+                    local untaggedStdTiles = {};
+                    for _, h in ipairs(stdTilesR1) do
+                        if h.IsTaggedAsMinimum == false then
+                            _Debug("untaggedStdTiles : ", h:PrintXY());
+                            table.insert(untaggedStdTiles, h);
+                        else 
+                            nbTagged4yields = nbTagged4yields + 1;
+                        end
+                    end
+                    -- One 2/2 should have been already tagged before
+                    if nbTagged4yields < 2 then
+                        for _, h in ipairs(untaggedStdTiles) do
+                            _Debug("Extra 4yields guaranteed : ", h:PrintXY());
+                            h:SetTaggedAsMinimum(true);
+                            break;
+                        end
+                    end
+                end
             end
         end
     end
@@ -4105,8 +4164,32 @@ end
 function SpawnBalancing:ApplyMinimalCoastalTiles()
     -- Check if harbor tile, else clean and relocate
     if self.Hex.IsCoastal == false then
+        -- Check if one tile off coast 
+        if self.HexMap:IsHexRing2FromCoast(self.Hex) then
+            _Debug(self.Civ.CivilizationLeader, "IsHexRing2FromCoast")
+            -- Check number of resources in ring 2+3
+            local nbSeaResources = 0;
+            for _, h in pairs(self.RingTables[2].WATER_RF) do
+                if g_RESOURCES_FISHINGBOAT_LIST[h.ResourceType] and h.ResourceType ~= g_RESOURCE_CRABS then
+                    nbSeaResources = nbSeaResources + 1;     
+                end
+            end
+            for _, h in pairs(self.RingTables[3].WATER_RF) do
+                if g_RESOURCES_FISHINGBOAT_LIST[h.ResourceType] and h.ResourceType ~= g_RESOURCE_CRABS then
+                    nbSeaResources = nbSeaResources + 1;
+                    
+                end
+            end
+            -- Add a fish on ring 3 on empty coast tile
+            if #self.RingTables[3].WATER_EMPTY > 0 and nbSeaResources <= 3 then 
+                local newfish = self:TerraformRandomInRing(3, TerraformType[3], g_RESOURCE_FISH, false, false, false);
+                _Debug("IsHexRing2FromCoast New fish ring 3 = ", newfish:PrintXY(), nbSeaResources);
+            end
+        end
+
         return;
     end
+
     _Debug("Coastal start "..self.Civ.CivilizationLeader)
     local resourceRing3OK = 0;
     -- 2) Adding river
@@ -5034,12 +5117,14 @@ function SpawnBalancing:UpdateTableDataRing(h, i)
     if h:IsWater() then
         table.insert(self.RingTables[i].WATER, h) -- not used ?
         -- Directly separate empty water tiles and with resources for easier management
-        if h.TerrainType == g_TERRAIN_TYPE_COAST and h.FeatureType == g_FEATURE_NONE and h.ResourceType == g_RESOURCE_NONE then
-            table.insert(self.RingTables[i].WATER_EMPTY, h)
-        else
-            table.insert(self.RingTables[i].WATER_RF, h)
+        if h.TerrainType == g_TERRAIN_TYPE_COAST then
+            if h.FeatureType == g_FEATURE_NONE and h.ResourceType == g_RESOURCE_NONE then
+                table.insert(self.RingTables[i].WATER_EMPTY, h)
+            else
+                table.insert(self.RingTables[i].WATER_RF, h)
+            end
         end
-        if h.ResourceType == g_RESOURCE_FISH or g_RESOURCES_LUX_LIST[h.ResourceType] then
+        if h.TerrainType == g_TERRAIN_TYPE_COAST and h.ResourceType == g_RESOURCE_FISH or g_RESOURCES_LUX_LIST[h.ResourceType] then
             table.insert(self.RingTables[i].WATER_FISH_OR_LUX, h)
         end
     elseif h:IsMountain() then

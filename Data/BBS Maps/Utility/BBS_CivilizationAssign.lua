@@ -632,10 +632,11 @@ function CivilizationAssignSpawn:ComputeHexScoreCiv(hex)
     -- 3 - Peninsula score - Amount of walkable tiles around spawn to avoid tiny peninsulas or islands
     -------------------
     local peninsulaScore = math.floor((hex.PeninsulaScore / 10) + 0.5) * 10
-    if self.IsNoBias or self.IsKingNorthBias then
+    if self.IsNoBias or self.IsKingNorthBias or self.IsMountainBias then
         score = score + math.min(70, peninsulaScore)
         -- Slight adjustment for mountain civ to avoid being stuck inside mountains on standard ridges
     elseif self.IsMountainBias then
+        _Debug("Mountain bias peninsula score ", hex:PrintXY(), hex.PeninsulaScore)
         score = score + math.min(60, peninsulaScore)
     else
         -- especially for river and coastal else 5 pt is not much when testing other biases
@@ -665,7 +666,17 @@ function CivilizationAssignSpawn:ComputeHexScoreCiv(hex)
         impassableR1Malus = 20;
         score = score - impassableR1Malus
     end
-
+    -- Hydrophobic bias : in rare case when the "isBiasRespected" do not find any, we still discourage spawn clost to coast
+    if self.IsHydrophobicBias then
+        local distToCoast = hex:GetClosestCoastToHex(5)
+        if distToCoast ~= nil then
+            local malusScore = (5 - distToCoast) * 6
+            _Debug("IsHydrophobicBias debuff ", malusScore, distToCoast, hex:PrintXY())
+            score = score - malusScore
+        else 
+            _Debug("IsHydrophobicBias debuff none in ", hex:PrintXY())
+        end
+    end
     _Debug(hex:PrintXY(), " Score = ", baseScore, " BiasScore = ", totalBiasScore, " PeninsulaScore = ", peninsulaScore, " TundraScore = ", tundraScore, " - FloodMalus = ", floodMalus, hex.TundraScore, math.floor(score + 0.5), os.date("%c"))
 
     return math.floor(score + 0.5);
@@ -1021,7 +1032,7 @@ function CivilizationAssignSpawn:IsBiasRespected(hex, hexMap)
             else
                 return false;
             end
-        elseif bias.Type == "CUSTOM_HYDROPHOBIC" then 
+        elseif bias.Type == "CUSTOM_HYDROPHOBIC" then
             if hex.PeninsulaScore > 45 and hex:IsCloseToCoast() == false then
                 isOneOfBiasRespected = true;
             else 
@@ -1052,11 +1063,18 @@ function CivilizationAssignSpawn:IsBiasRespected(hex, hexMap)
                         end
                     end     
                 elseif (bias.Type == "TERRAINS" and bias.Value ~= g_TERRAIN_TYPE_COAST) or self.IsMountainLoverBias then
-                    if IsMountain(bias.Value) or self.IsMountainLoverBias then
+                    if IsMountain(bias.Value) then
                         -- At least 2 mountains in ring 3, density score do the rest
                         if i <= 3 and hring:IsMountain() then
                             countMountains = countMountains + 1;
                             if countMountains >= 2 then
+                                isOneOfBiasRespected = true;
+                            end
+                        end
+                    elseif self.IsMountainLoverBias then
+                        if i <= 3 and hring:IsMountain() then
+                            countMountains = countMountains + 1;
+                            if countMountains >= 4 then
                                 isOneOfBiasRespected = true;
                             end
                         end
