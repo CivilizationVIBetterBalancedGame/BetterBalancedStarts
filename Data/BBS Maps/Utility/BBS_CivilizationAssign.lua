@@ -1041,6 +1041,7 @@ function CivilizationAssignSpawn:IsBiasRespected(hex, hexMap)
     for _, bias in pairs(self.CivilizationBiases) do
         local countHill = 0
         local countMountains = 0;
+        local countJungle = 0;
         -- Mandatory biases
         if bias.Type == "TERRAINS" and IsTundraLand(bias.Value) and hex:IsTundraLand() == false then
             return false;
@@ -1082,10 +1083,15 @@ function CivilizationAssignSpawn:IsBiasRespected(hex, hexMap)
                     end
                 elseif bias.Type == "FEATURES" then
                     -- Respected if at lease 1 feature in ring 3
-                    if i < 4 and hring.FeatureType == bias.Value then
-                        isOneOfBiasRespected = true;
+                    if i <= 2 and hring.FeatureType == bias.Value then
                         if self.IsJungleBias and bias.Value == g_FEATURE_JUNGLE then
-                            jungleFound = true;
+                            countJungle = countJungle + 1;
+                            if countJungle > 2 then
+                                jungleFound = true;
+                                isOneOfBiasRespected = true;
+                            end
+                        else 
+                            isOneOfBiasRespected = true;
                         end
                     end     
                 elseif (bias.Type == "TERRAINS" and bias.Value ~= g_TERRAIN_TYPE_COAST) or self.IsMountainLoverBias then

@@ -2208,7 +2208,7 @@ function HexMap:TerraformTo4Yields(hex, garanteed22, canChangeBonusRes)
                 self:TerraformSetTerrain(hex, g_TERRAIN_TYPE_PLAINS_HILLS);
                 self:TerraformSetFeature(hex, g_FEATURE_FOREST, true);
             elseif rng <= 50 and self:CanHaveJungle(hex) then
-                self:TerraformSetTerrain(hex, g_TERRAIN_TYPE_PLAINS_HILLS);
+                self:TerraformSetTerrain(hex, g_TERRAIN_TYPE_PLAINS);
                 self:TerraformSetFeature(hex, g_FEATURE_JUNGLE, true);
                 self:TerraformSetResource(hex, g_RESOURCE_BANANAS);
             else 
