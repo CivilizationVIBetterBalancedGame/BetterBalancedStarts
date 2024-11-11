@@ -165,7 +165,7 @@ function BBS_AssignStartingPlots.Create(args)
     -- Set game properties
     Game:SetProperty("BBM_MAJOR_DISTANCE", BBM_HexMap.minimumDistanceMajorToMajorCivs);
 
-    _Debug("Start Assign Score Centroid",  os.date("%c"))
+    print("Start Assign Score Centroid",  os.date("%c"))
 
     local isTeamer = Is1v1OrTeamerConfig();
 
@@ -184,9 +184,9 @@ function BBS_AssignStartingPlots.Create(args)
         civ:CalculateTotalScores(BBM_HexMap);
     end
 
-    _Debug("End Assign Score Centroid",  os.date("%c"))
+    print("End Assign Score Centroid",  os.date("%c"))
 
-    _Debug("Start Assign spawn order",  os.date("%c"))
+    print("Start Assign spawn order",  os.date("%c"))
     -- Define spawn order 
     -- Comparing first the number of valid tiles, placing first 
     for _, civ in pairs(BBM_Civilisations) do
@@ -197,14 +197,11 @@ function BBS_AssignStartingPlots.Create(args)
             function(a, b)
                 if a.TotalValidTiles == b.TotalValidTiles then
                     if a.TotalMapScore == b.TotalMapScore then
-                        _Debug("SortBBS_Civilisations same score ", a.RandomPlaceIdOrder, a.CivilizationLeader, b.RandomPlaceIdOrder, b.CivilizationLeader)
                         return a.RandomPlaceIdOrder < b.RandomPlaceIdOrder;
                     else
-                        _Debug("SortBBS_Civilisations Same valid tiles")
                         return a.TotalMapScore < b.TotalMapScore
                     end
                 else
-                    _Debug("SortBBS_Civilisations Less valid tiles")
                     -- less score = more constraints for bias respect
                     return a.TotalValidTiles < b.TotalValidTiles
                 end
@@ -262,7 +259,7 @@ function BBS_AssignStartingPlots.Create(args)
 
             meanScore = totalScore / #list
             if isTeamer and BBM_HexMap:IsTeamerValidContinentPlacement(index) == false then
-                _Debug("Malus try score because all team spawns in a single continent")
+                print("Malus try score because all team spawns in a single continent")
                 meanScore = meanScore - 20;
             end
 
@@ -277,10 +274,10 @@ function BBS_AssignStartingPlots.Create(args)
                 maxMeanScoreIndex = index;
             end
         end
-        _Debug("Assign mean score for try "..tostring(index).." = "..meanScore.." with minimum score of "..tostring(minLocalScore).." and maximum of "..tostring(maxLocalScore))
+        print("Assign mean score for try "..tostring(index).." = "..meanScore.." with minimum score of "..tostring(minLocalScore).." and maximum of "..tostring(maxLocalScore))
     end
 
-    _Debug("End Assign spawn order",  os.date("%c"))
+    print("End Assign spawn order",  os.date("%c"))
     print("BBS_AssignTries = "..tostring(BBS_AssignTries).." - BBS_Success = "..tostring(BBS_Success))
     if BBS_Success then
         _Debug("Selected try max score = "..tostring(maxMeanScoreIndex))
@@ -318,10 +315,10 @@ function BBS_AssignStartingPlots.Create(args)
         Game:SetProperty("BBM_ACTUALMINDIST", closestDist)
         _Debug("BBM_ACTUALMINDIST = ", closestDist)
         _Debug("BBM_ACTUALMINDIST GameProperty = ", Game:GetProperty("BBM_ACTUALMINDIST"))
-        _Debug("Start BalanceMap",  os.date("%c"))
+        print("Start BalanceMap",  os.date("%c"))
         BalanceMap(BBM_HexMap);
 
-        _Debug("Start InitSpawnBalancing",  os.date("%c"))
+        print("Start InitSpawnBalancing",  os.date("%c"))
         local allSpawnBalancing = {}
         for _, civ in pairs(BBM_Civilisations) do
             if civ.CivilizationLeader ~= BBS_LEADER_TYPE_SPECTATOR then
@@ -332,7 +329,7 @@ function BBS_AssignStartingPlots.Create(args)
 
         printAllStartYields(BBM_HexMap);
         BalanceAllCivYields(allSpawnBalancing)
-        _Debug("End InitSpawnBalancing",  os.date("%c"))
+        print("End InitSpawnBalancing",  os.date("%c"))
         -- randomly place cs in free space
         for i, cs in pairs(BBS_Citystates) do
             local foundSpawn = false
@@ -350,9 +347,9 @@ function BBS_AssignStartingPlots.Create(args)
             
         end
         Game:SetProperty("BBM_RESPAWN", true)
-        _Debug("End Assign Centroid",  os.date("%c"))
+        print("End Assign Centroid",  os.date("%c"))
     else
-        _Debug("BBM: To Many Attempts Failed - Go to Firaxis Placement")
+        print("BBM: To Many Attempts Failed - Go to Firaxis Placement")
         CallFiraxisPlacement(args);
     end   
     

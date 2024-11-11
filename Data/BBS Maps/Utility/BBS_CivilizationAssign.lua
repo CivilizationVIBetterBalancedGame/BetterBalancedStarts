@@ -611,20 +611,6 @@ function CivilizationAssignSpawn:ComputeHexScoreCiv(hex)
     -- 2 - Bias score - Density of desired tiles around the spawn - capped
     -------------------
     local baseScore = tostring(score);
-    --[[local totalBiasScore = 0
-    local countBias = 0;
-    for _, bias in pairs(self.CivilizationBiases) do
-        local thisBiasScore = ComputeHexScoreByBias(hex, bias);
-        if bias.Value ~= g_TERRAIN_TYPE_COAST then
-            countBias = countBias + 1;
-        end
-        totalBiasScore = totalBiasScore + thisBiasScore
-    end
-    -- TODO : Split the score in differents bias terrain/feature/resource, mean of score on this
-    if countBias > 0 then
-        totalBiasScore = totalBiasScore / countBias;
-    end]]
-
     local totalBiasScore = self:ComputeHexScoreBiasCiv(hex);
     score = score + totalBiasScore;
 
@@ -634,10 +620,6 @@ function CivilizationAssignSpawn:ComputeHexScoreCiv(hex)
     local peninsulaScore = math.floor((hex.PeninsulaScore / 10) + 0.5) * 10
     if self.IsNoBias or self.IsKingNorthBias or self.IsMountainBias then
         score = score + math.min(70, peninsulaScore)
-        -- Slight adjustment for mountain civ to avoid being stuck inside mountains on standard ridges
-    elseif self.IsMountainBias then
-        _Debug("Mountain bias peninsula score ", hex:PrintXY(), hex.PeninsulaScore)
-        score = score + math.min(60, peninsulaScore)
     else
         -- especially for river and coastal else 5 pt is not much when testing other biases
         score = score + math.min(50, peninsulaScore)
@@ -685,20 +667,37 @@ end
 function CivilizationAssignSpawn:ComputeHexScoreBiasCiv(hex)
     local totalBiasScore = 0;
     local biasScoreCategory = {}
+    local biasCategoryList = {}
     local categotyTier = {}
+    -- Check bias category 
     for _, bias in pairs(self.CivilizationBiases) do
-        local thisBiasScore = ComputeHexScoreByBias(hex, bias);
         local category = self:GetBiasCategory(bias);
-        biasScoreCategory[category] = biasScoreCategory[category] or {}
-        table.insert(biasScoreCategory[category], thisBiasScore)
+        biasCategoryList[category] = biasCategoryList[category] or {}
+        table.insert(biasCategoryList[category], bias)
+
+        --local thisBiasScore = ComputeHexScoreByBias(hex, bias);
+        
+        --biasScoreCategory[category] = biasScoreCategory[category] or {}
+        --table.insert(biasScoreCategory[category], thisBiasScore)
         categotyTier[category] = bias.Tier
     end
+
+    for category, _ in pairs(biasCategoryList) do
+        local biases = {}
+        for _, bias in ipairs(biasCategoryList[category]) do
+            table.insert(biases, bias);
+        end
+        local scoreCategory = ComputeHexScoreByBiasCategory(hex, biases)
+        biasScoreCategory[category] = biasScoreCategory[category] or {}
+        table.insert(biasScoreCategory[category], scoreCategory)
+        --categotyTier[category] = bias.Tier
+    end
+
     -- Do the mean score for each category
     for categoryKey, scoreTable in pairs(biasScoreCategory) do
-        --_Debug("ComputeHexScoreBiasCiv ", self.CivilizationLeader, " ", categoryKey);
         local meanScore = 0
         for _, score in pairs(scoreTable) do
-            --_Debug("ComputeHexScoreBiasCiv ", self.CivilizationLeader, " Score = ", score);
+            _Debug("ComputeHexScoreBiasCiv ", self.CivilizationLeader, " Score = ", score);
             meanScore = meanScore + score;
         end
         meanScore = meanScore / #scoreTable;
@@ -737,6 +736,8 @@ function CivilizationAssignSpawn:GetBiasCategory(bias)
     elseif bias.Type == "TERRAINS" then
         if bias.Value == g_TERRAIN_TYPE_COAST then
             return "COAST_T"..tostring(bias.Tier);
+        elseif IsMountain(bias.Value) then
+            return "MOUNTAIN_T"..tostring(bias.Tier);
         elseif IsPlainLand(bias.Value) then
             return "PLAIN_T"..tostring(bias.Tier);
         elseif IsGrassLand(bias.Value) then
@@ -786,9 +787,34 @@ end
 -- Weighted by bias tier TODO : determine the weight for each tier
 -- Score max per bias = 120 -- Higher Tier = need more tiles to get to the max score (= prio on placement and higher chance of highroll)
 function ComputeHexScoreByBias(hex, bias)
-    local biasScore = 0;
+    local biasScore = GetBiasScorePerFactor(hex, bias);
     -- TODO : Bias threshold and factor : highter tier = higher threshold ?
-    local scoreThreshold = 120; -- to determine
+    local scoreThreshold = 120; 
+    return math.min(biasScore, scoreThreshold);
+end
+
+-- Variation of bias scoring, group all bias in one score threshold instead of doing averages of all bias category
+-- Ex : Mountains can be plains or grass, if there is 10+ grass and 0 plains, the score would be capped at half score while there is more mountains than in a 4 grass + 4 plains spawn
+function ComputeHexScoreByBiasCategory(hex, biases)
+    local biasScores = 0;
+    local scoreThreshold = 120; 
+    for _, bias in ipairs(biases) do
+        local biasScore = GetBiasScorePerFactor(hex, bias);
+        local biasScoreThreshold = scoreThreshold * #biases;
+        -- For resources, still cap the category at twice the initial amount to avoid highrolls
+        if bias.Type == "RESOURCES" then
+            biasScoreThreshold = math.min(scoreThreshold * 2, scoreThreshold * #biases);
+        end
+        biasScore = math.min(biasScore, biasScoreThreshold);
+        biasScores = biasScores + biasScore;
+    end
+    biasScores = biasScores / #biases
+    return math.min(biasScores, scoreThreshold);
+end
+
+
+function GetBiasScorePerFactor(hex, bias) 
+    local biasScore = 0;
     if bias.Value == g_TERRAIN_TYPE_COAST and hex.IsCoastal then
         -- Not taking into account the number of coastal tiles in the centroid for now 
         return biasScore;
@@ -825,7 +851,7 @@ function ComputeHexScoreByBias(hex, bias)
         end
     -- Custom Biases are usually computed in valid tiles and isBiasRespected method, not in the score
     end
-    return math.min(biasScore, scoreThreshold);
+    return biasScore;
 end
 
 function CivilizationAssignSpawn:IsFloodplainsMalus(hex)
@@ -871,15 +897,15 @@ function GetBiasFactorV2(bias)
     if (bias.Type == "TERRAINS" and bias.Value ~= g_TERRAIN_TYPE_COAST) then
         if IsMountain(bias.Value) then
             if bias.Tier == 1 then
-                return 3;
-            elseif bias.Tier == 2 then
-                return 4;
-            elseif bias.Tier == 3 then
-                return 5;
-            elseif bias.Tier == 4 then
-                return 7,5;
-            elseif bias.Tier == 5 then
                 return 10;
+            elseif bias.Tier == 2 then
+                return 12;
+            elseif bias.Tier == 3 then
+                return 20;
+            elseif bias.Tier == 4 then
+                return 24;
+            elseif bias.Tier == 5 then
+                return 30;
             end
         else
             if bias.Tier == 1 then
@@ -1063,18 +1089,18 @@ function CivilizationAssignSpawn:IsBiasRespected(hex, hexMap)
                         end
                     end     
                 elseif (bias.Type == "TERRAINS" and bias.Value ~= g_TERRAIN_TYPE_COAST) or self.IsMountainLoverBias then
-                    if IsMountain(bias.Value) then
-                        -- At least 2 mountains in ring 3, density score do the rest
-                        if i <= 3 and hring:IsMountain() then
+                    if self.IsMountainLoverBias then
+                        if i <= 2 and hring:IsMountain() then
                             countMountains = countMountains + 1;
                             if countMountains >= 2 then
                                 isOneOfBiasRespected = true;
                             end
                         end
-                    elseif self.IsMountainLoverBias then
+                    elseif IsMountain(bias.Value) then
+                        -- At least 2 mountains in ring 3, density score do the rest
                         if i <= 3 and hring:IsMountain() then
                             countMountains = countMountains + 1;
-                            if countMountains >= 4 then
+                            if countMountains >= 2 then
                                 isOneOfBiasRespected = true;
                             end
                         end
