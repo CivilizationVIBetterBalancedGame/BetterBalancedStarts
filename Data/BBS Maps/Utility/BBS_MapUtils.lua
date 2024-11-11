@@ -244,7 +244,7 @@ WestTeam = "West";
 
 
 function _Debug(...)
-    print(...);
+    --print(...);
 end
 
 ---------------------------------------

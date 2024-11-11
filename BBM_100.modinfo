@@ -1,26 +1,26 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Mod id="c88cba8b-8311-4d35-90c3-51a4a5d66542" version="3">
 	<Properties>
-	    <Name>LOC_BBS_TITLE</Name>
-		<Description>LOC_BBS_DESCRIPTION</Description>
+	    <Name>LOC_BBM_TITLE</Name>
+		<Description>LOC_BBM_DESCRIPTION</Description>
 		<Created>1</Created>
-		<Teaser>LOC_BBS_TEASER</Teaser>
+		<Teaser>LOC_BBM_TEASER</Teaser>
 		<Authors>BaNiPouZ, Talasta</Authors>
-		<SpecialThanks>Keride, Vodairo, BBG Team</SpecialThanks>
+		<SpecialThanks>Keride, Vodairo, BBG Team, Trad team : Rafael Pinheiro (PT), Onyxum (DE)</SpecialThanks>
 		<CompatibleVersions>1.2,2.0</CompatibleVersions>
-		<Version>0.95</Version>
+		<Version>1.00</Version>
 	</Properties>
 	
 		<LocalizedText>
-		<Text id="LOC_BBS_TITLE">
-			<en_US>Better Balanced Map 0.95 BETA</en_US>
-			<fr_FR>Better Balanced Map 0.95 BETA</fr_FR>
+		<Text id="LOC_BBM_TITLE">
+			<en_US>Better Balanced Map 1.00</en_US>
+			<fr_FR>Better Balanced Map 1.00</fr_FR>
 		</Text>
-		<Text id="LOC_BBS_TEASER">
+		<Text id="LOC_BBM_TEASER">
 			<en_US>Balanced spawn placement location and yields.</en_US>
             <fr_FR>Mod d'équilibrage de placement et des rendements des emplacements de départ.</fr_FR>
 		</Text>
-		<Text id="LOC_BBS_DESCRIPTION">
+		<Text id="LOC_BBM_DESCRIPTION">
 			<en_US>Balanced spawn placement location and yields.[NEWLINE][NEWLINE]Taking account for civilization biases.[NEWLINE][NEWLINE]Ensure minimum yields around start location.[NEWLINE][NEWLINE]Ensure having enough space to settle around starting location.</en_US>
             <fr_FR>Mod d'équilibrage de placement et des rendements des emplacements de départ.[NEWLINE][NEWLINE]Prise en compte des préférences des civilisations.[NEWLINE][NEWLINE]Assure un minimum de rendements sur les cases proches du départ.[NEWLINE][NEWLINE]Assure suffisamment d'espace pour poser d'autres villes autour.</fr_FR>
 		</Text>
