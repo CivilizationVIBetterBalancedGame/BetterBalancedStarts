@@ -3014,6 +3014,7 @@ TerraformType[12] = "ToStdHighFoodYield";
 TerraformType[13] = "StdTohighYield";
 TerraformType[14] = "ToHills";
 TerraformType[15] = "ToFlat";
+TerraformType[16] = "To22Tile";
 -- Call basic terraforming method depending on type
 function HexMap:TerraformHex(hex, type, id, forced, boolParam)
     if type == TerraformType[1] then
@@ -3046,6 +3047,8 @@ function HexMap:TerraformHex(hex, type, id, forced, boolParam)
         return self:TerraformToHill(hex, boolParam);
     elseif type == TerraformType[15] then
         return self:TerraformToFlat(hex, boolParam);
+    elseif type == TerraformType[16] then
+        return self:TerraformTo22Yields(hex, boolParam);  
     elseif type == TerraformType[99] then
        return self:TerraformEmptyTile(hex);
     else
@@ -3720,6 +3723,7 @@ function SpawnBalancing.new(hex, hexMap, civ)
     instance.MaxLuxOuterRingThreshold = 7;
     instance.MinHighYieldInnerRingThreshold = 0;
     instance.MaxHighYieldInnerRingThreshold = 1;
+    instance.Min22TilesInRing2 = 3;
     instance.IsBCYActivated = isBCYActivated()
     _Debug("Init SpawnBalancing")
 
@@ -3946,19 +3950,20 @@ function SpawnBalancing:ApplyMinimalLandTiles(iMin, iMax)
             if i ~= 2 then
                 minimumStandardTiles = i + 1;
             end
-            local tileToUp = minimumStandardTiles - #self.RingTables[i].STANDARD_YIELD_TILES - #self.RingTables[i].HIGH_YIELD_TILES;
+            local minimumNb2f2p = 0;
+            if i <= 2 then
+                minimumNb2f2p = i;
+            end
+           
+            local tileToUp = minimumStandardTiles - #self.RingTables[i].STANDARD_YIELD_TILES - #self.RingTables[i].HIGH_YIELD_TILES - #self.RingTables[i].HIGH_EXTRA_YIELDS;
             _Debug("MinimalTileV2 Ring ", i, " : tileToUp = ", tileToUp);
             _Debug("MinimalTileV2 Ring ", i, " : Empty = ", #self.RingTables[i].EMPTY_TILES);
             _Debug("MinimalTileV2 Ring ", i, " : Low = ",#self.RingTables[i].LOW_YIELD_TILES);
-            -- If there is no 2/2 but already 4yields tiles, add the 2/2 anyway
-            if tileToUp == 0 and #self:Find22TilesInRing(i) == 0 and i <= 2 then
-                tileToUp = 1;
-            end
-            -- Try to apply randomly desired number of standard yield tiles in ring i
+              -- Try to apply randomly desired number of standard yield tiles in ring i
             while tileToUp > 0 do
                 local nb22inRing = #self:Find22TilesInRing(i);
                 -- Have 1 2/2 tile in ring 1 and 2
-                local garanteed22 = nb22inRing == 0 and i <= 2;
+                local garanteed22 = nb22inRing < i and i <= 2;
                 _Debug("Garanteed 2/2 in ring : ", i, nb22inRing, garanteed22, minimumStandardTiles);
                 local terraformedHex = self:TerraformRandomInRing(i, TerraformType[4], 0, false, false, garanteed22);
                 if terraformedHex ~= nil then
@@ -3974,6 +3979,45 @@ function SpawnBalancing:ApplyMinimalLandTiles(iMin, iMax)
                     break;
                 end
             end
+
+            -- If there is enough standard tiles but there is 2/2 missing, terraform 4y to 2/2 or add one
+            local nb22LeftToUp = math.max(0, minimumNb2f2p - #self:Find22TilesInRing(i));
+            -- On ring 2, check if there is at least 3 2/2 on ring 1 and 2 combined
+            if i == 2 then
+                local total22R1R2 = #self:Find22TilesInRing(1) + #self:Find22TilesInRing(2);
+                _Debug("R 2 total22R1R2 : ", total22R1R2)
+                nb22LeftToUp = math.max(0, self.Min22TilesInRing2 - total22R1R2);
+            end
+            _Debug("nb22LeftToUp : ", nb22LeftToUp)
+            while nb22LeftToUp > 0 do
+                local stdTilesNon22 = GetShuffledCopyOfTable(self:FindNon22Tiles4YInRing(i)) 
+                _Debug("stdTilesNon22 : ", #stdTilesNon22)
+                local hexFound = false;
+                for _, hex in pairs(stdTilesNon22) do
+                    if self:TerraformHex(hex, i, TerraformType[16], 0, false, true) then
+                        _Debug("nb22LeftToUp found a non 22 to change to : ", hex:PrintXY())
+                        hex:SetTaggedAsMinimum(true);
+                        hexFound = true;
+                        break;
+                    else 
+                        _Debug("hex is non available to change : ", hex:PrintXY())
+                    end
+                end
+                -- Can not change existing standard tiles then add a 2/2 (use case : there is 3 standard tiles ring 2, turtle+food+2/2 all tagged, one 2/2 missing)
+                if hexFound == false then
+                    local terraformedHex = self:TerraformRandomInRing(i, TerraformType[4], 0, false, false, true);
+                    if terraformedHex ~= nil then
+                        _Debug("Added additional 2/2 tile : ", terraformedHex:PrintXY());
+                        terraformedHex:SetTaggedAsMinimum(true);
+                        nb22LeftToUp = math.max(0, minimumNb2f2p - #self:Find22TilesInRing(i));
+                    else 
+                        print("ApplyMinimalLandTiles - Impossible to terraform to meet 22 minimum threshold", i, self.Civ.CivilizationLeader);
+                        nb22LeftToUp = 0;
+                    end
+                end
+                _Debug("nb22LeftToUp update : ", nb22LeftToUp)
+            end
+            
 
             -- If left to update, it means there were obstacle to the terraformation (existing resources or features) if possible, relocate them in next ring
             while tileToUp > 0 and i < self.MaxRing do
@@ -4056,7 +4100,11 @@ end
 
 function SpawnBalancing:Find22TilesInRing(i)
     local list22 = {};
-    for _, h in ipairs(self.RingTables[i].STANDARD_YIELD_TILES) do
+    local listStdPlusTiles = {};
+    AddToTable(listStdPlusTiles, self.RingTables[i].STANDARD_YIELD_TILES);
+    AddToTable(listStdPlusTiles, self.RingTables[i].HIGH_YIELD_TILES);
+    AddToTable(listStdPlusTiles, self.RingTables[i].HIGH_EXTRA_YIELDS);
+    for _, h in ipairs(listStdPlusTiles) do
         if IsTundraLand(self.Hex.TerrainType) then
             if self:GetHexBaseFood(h) >= 2 and self:GetHexBaseProd(h) >= 2
                     and (i > 1 or (i == 1 and h.ResourceType == g_RESOURCE_DEER)) then
@@ -4069,6 +4117,20 @@ function SpawnBalancing:Find22TilesInRing(i)
     return list22;
 end
 
+-- Opposite of Find22TilesInRing, look for non 2/2 4yields standard tiles in ring
+function SpawnBalancing:FindNon22Tiles4YInRing(i)
+    local listNon22 = {};
+    local listStdPlusTiles = {};
+    AddToTable(listStdPlusTiles, self.RingTables[i].STANDARD_YIELD_TILES);
+    AddToTable(listStdPlusTiles, self.RingTables[i].HIGH_YIELD_TILES);
+    AddToTable(listStdPlusTiles, self.RingTables[i].HIGH_EXTRA_YIELDS);
+    for _, h in ipairs(listStdPlusTiles) do
+        if self:GetHexBaseFood(h) < 2 or self:GetHexBaseProd(h) < 2 then
+            table.insert(listNon22, h);
+        end
+    end
+    return listNon22;
+end
 
 function SpawnBalancing:AddHighYieldFromStandard()
     _Debug("AddHighYieldFromStandard enter");
