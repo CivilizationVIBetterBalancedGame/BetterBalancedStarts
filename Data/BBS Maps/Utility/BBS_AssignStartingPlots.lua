@@ -175,7 +175,9 @@ function BBS_AssignStartingPlots.Create(args)
         -- With odd number teams, the additionnal player will be in sim position
         _Debug("BBM_Teams[civ.CivilizationTeam] = ", civ.CivilizationTeam, BBM_Teams[civ.CivilizationTeam])
         if civ.CivilizationLeader ~= BBS_LEADER_TYPE_SPECTATOR then 
-            local teamSize = #BBM_Teams[civ.CivilizationTeam] or 1            
+            local teamSize = #BBM_Teams[civ.CivilizationTeam] or 1
+            local team1Index = 1;
+            local team2Index = 1;            
             if BBM_HexMap.TeamerConfig == TeamerConfigEastVsWest then
                 civ.TeamerSim = civ.PlayerIndex <= teamSize + teamSize % 2;
                 civ.TeamerWar = civ.PlayerIndex > teamSize + teamSize % 2;
@@ -280,7 +282,7 @@ function BBS_AssignStartingPlots.Create(args)
     print("End Assign spawn order",  os.date("%c"))
     print("BBS_AssignTries = "..tostring(BBS_AssignTries).." - BBS_Success = "..tostring(BBS_Success))
     if BBS_Success then
-        _Debug("Selected try max score = "..tostring(maxMeanScoreIndex))
+        print("Selected try max score = "..tostring(maxMeanScoreIndex))
         if isTeamer then
             Game:SetProperty("BBS_TEAMERCONTINENTCHECK", BBM_HexMap:IsTeamerValidContinentPlacement(maxMeanScoreIndex))
         end
@@ -294,11 +296,7 @@ function BBS_AssignStartingPlots.Create(args)
                 civ.Player:SetStartingPlot(civ.StartingHex.Plot)
                 table.insert(BBM_HexMap.majorSpawns, civ.StartingHex);
                 local bW, nbW = civ.StartingHex:HasSpawnEnoughWalkableTiles()
-                _Debug(civ.CivilizationLeader.." spawn = "..tostring(civ.StartingHex:PrintXY()).." - HasWalkableRequirements = "..tostring(bW).." "..tostring(nbW))
-                _Debug("WalkableHexInRing ", civ.StartingHex:PrintXY(), #civ.StartingHex.WalkableHexInRing[1])
-                _Debug("WalkableHexInRing ", civ.StartingHex:PrintXY(), #civ.StartingHex.WalkableHexInRing[2])
-                _Debug("WalkableHexInRing ", civ.StartingHex:PrintXY(), #civ.StartingHex.WalkableHexInRing[3])
-
+                _Debug(civ.CivilizationLeader.." spawn = "..tostring(civ.StartingHex:PrintXY()).." - HasWalkableRequirements = "..tostring(bW).." "..tostring(nbW));
             else
                 local hex0 = BBM_HexMap:GetHexInMap(j, 0);
                 civ.Player:SetStartingPlot(hex0.Plot)
@@ -326,10 +324,10 @@ function BBS_AssignStartingPlots.Create(args)
                 table.insert(allSpawnBalancing, spawn);
             end
         end
-
         printAllStartYields(BBM_HexMap);
         BalanceAllCivYields(allSpawnBalancing)
         print("End InitSpawnBalancing",  os.date("%c"))
+        
         -- randomly place cs in free space
         for i, cs in pairs(BBS_Citystates) do
             local foundSpawn = false

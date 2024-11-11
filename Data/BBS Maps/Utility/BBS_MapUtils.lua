@@ -244,7 +244,7 @@ WestTeam = "West";
 
 
 function _Debug(...)
-    print(...);
+    --print(...);
 end
 
 ---------------------------------------
@@ -3593,8 +3593,8 @@ function BalanceMap(hexMap)
             end
         end
     end
-    _Debug("Added "..tostring(iForestCounter).." Forest to the base map.")
-    _Debug("Changed "..tostring(iNearFloodsCounter).." near floods to add prod.")
+    print("Added "..tostring(iForestCounter).." Forest to the base map.")
+    print("Changed "..tostring(iNearFloodsCounter).." near floods to add prod.")
 end
 
 ---------------------------------------
@@ -4230,7 +4230,6 @@ function SpawnBalancing:ApplyMinimalCoastalTiles()
     if self.Hex.IsCoastal == false then
         -- Check if one tile off coast 
         if self.HexMap:IsHexRing2FromCoast(self.Hex) then
-            _Debug(self.Civ.CivilizationLeader, "IsHexRing2FromCoast")
             -- Check number of resources in ring 2+3
             local nbSeaResources = 0;
             for _, h in pairs(self.RingTables[2].WATER_RF) do
@@ -4245,9 +4244,11 @@ function SpawnBalancing:ApplyMinimalCoastalTiles()
                 end
             end
             -- Add a fish on ring 3 on empty coast tile
-            if #self.RingTables[3].WATER_EMPTY > 0 and nbSeaResources <= 3 then 
+            while #self.RingTables[3].WATER_EMPTY > 0 and nbSeaResources < 2 do 
                 local newfish = self:TerraformRandomInRing(3, TerraformType[3], g_RESOURCE_FISH, false, false, false);
-                _Debug("IsHexRing2FromCoast New fish ring 3 = ", newfish:PrintXY(), nbSeaResources);
+                nbSeaResources = nbSeaResources + 1;
+                print("IsHexRing2FromCoast New fish ring 3 = ", self.Civ.CivilizationLeader, nbSeaResources);
+                _Debug(self.Civ.CivilizationLeader, newfish:PrintXY(), nbSeaResources)
             end
         end
 
