@@ -1,10 +1,18 @@
 <?xml version="1.0" frcoding="utf-8"?>
 <GameData>
+	<LocalizedText>	
 
-	<LocalizedText>		
+	<!-- Autor : Rafael Pinheiro -->
+	<!-- Com a ajuda de Apeul, Chuck, jogadores da LBC, -->
+	<!-- Agradecimentos especiais a platypus -->
+	<!-- Baseado no trabalho de Ybanca -->
+
+
+
+	<!-- === PARÂMETROS	=== -->
 	<!-- Map Sizes -->
 	<Replace Tag="LOC_MAPSIZE_ENORMOUS_NAME" Language="pt_BR">
-		<Text>Enorme</Text>
+		<Text>Gigante</Text>
 	</Replace>
 	<Replace Tag="LOC_MAPSIZE_ENORMOUS_DESCRIPTION" Language="pt_BR">
 		<Text>Mapa para 16 jogadores.</Text>
@@ -47,7 +55,7 @@
 		<Text>As cadeias de montanhas são fortemente erodidas para criar um mapa muito mais plano com muitas colinas.</Text>
 	</Replace>
 	<Replace Tag="BBS_RIDGE_MORE_NAME" Language="pt_BR">
-		<Text>Intransponível</Text>
+		<Text>Impenetrável</Text>
 	</Replace>
 	<Replace Tag="BBS_RIDGE_MORE_DESC" Language="pt_BR">
 		<Text>Amplia as cristas das montanhas com menos passagens</Text>
@@ -88,7 +96,6 @@
 	<Replace Tag="BBS_SRESOURCES_GARANTEED_DESC" Language="pt_BR">
 		<Text>A presença de todos os recursos estratégicos em um raio de 5 paineis ao redor do ponto de surgimento é quase garantida.</Text>
 	</Replace>
-	
 	<Replace Tag="LOC_GAME_BBM_MIN_DISTANCE_NAME" Language="pt_BR">
 		<Text>Distância mínima entre jogadores</Text>
 	</Replace>
@@ -104,105 +111,90 @@
 	<Replace Tag="BBM_MIN_DISTANCE_SIX_DESC" Language="pt_BR">
 		<Text>6 paineis</Text>
 	</Replace>
-	
 	<Replace Tag="BBM_MIN_DISTANCE_SEVEN_NAME" Language="pt_BR">
 		<Text>7</Text>
 	</Replace>
 	<Replace Tag="BBM_MIN_DISTANCE_SEVEN_DESC" Language="pt_BR">
 		<Text>7 paineis</Text>
 	</Replace>
-	
 	<Replace Tag="BBM_MIN_DISTANCE_EIGHT_NAME" Language="pt_BR">
 		<Text>8</Text>
 	</Replace>
 	<Replace Tag="BBM_MIN_DISTANCE_EIGHT_DESC" Language="pt_BR">
 		<Text>8 paineis</Text>
 	</Replace>
-	
 	<Replace Tag="BBM_MIN_DISTANCE_NINE_NAME" Language="pt_BR">
 		<Text>9</Text>
 	</Replace>
 	<Replace Tag="BBM_MIN_DISTANCE_NINE_DESC" Language="pt_BR">
 		<Text>9 paineis</Text>
 	</Replace>
-	
 	<Replace Tag="BBM_MIN_DISTANCE_TEN_NAME" Language="pt_BR">
 		<Text>10</Text>
 	</Replace>
 	<Replace Tag="BBM_MIN_DISTANCE_TEN_DESC" Language="pt_BR">
 		<Text>10 paineis</Text>
 	</Replace>
-	
 	<Replace Tag="BBM_MIN_DISTANCE_ELEVEN_NAME" Language="pt_BR">
 		<Text>11</Text>
 	</Replace>
 	<Replace Tag="BBM_MIN_DISTANCE_ELEVEN_DESC" Language="pt_BR">
 		<Text>11 paineis</Text>
 	</Replace>
-	
 	<Replace Tag="BBM_MIN_DISTANCE_TWELVE_NAME" Language="pt_BR">
 		<Text>12</Text>
 	</Replace>
 	<Replace Tag="BBM_MIN_DISTANCE_TWELVE_DESC" Language="pt_BR">
 		<Text>12 paineis</Text>
 	</Replace>
-	
 	<Replace Tag="BBM_MIN_DISTANCE_THIRTEEN_NAME" Language="pt_BR">
 		<Text>13</Text>
 	</Replace>
 	<Replace Tag="BBM_MIN_DISTANCE_THIRTEEN_DESC" Language="pt_BR">
 		<Text>13 paineis</Text>
 	</Replace>
-	
 	<Replace Tag="BBM_MIN_DISTANCE_FOURTEEN_NAME" Language="pt_BR">
 		<Text>14</Text>
 	</Replace>
 	<Replace Tag="BBM_MIN_DISTANCE_FOURTEEN_DESC" Language="pt_BR">
 		<Text>14 paineis</Text>
 	</Replace>
-	
 	<Replace Tag="BBM_MIN_DISTANCE_FIFTEEN_NAME" Language="pt_BR">
 		<Text>15</Text>
 	</Replace>
 	<Replace Tag="BBM_MIN_DISTANCE_FIFTEEN_DESC" Language="pt_BR">
 		<Text>15 paineis</Text>
 	</Replace>
-	
 	<Replace Tag="BBM_MIN_DISTANCE_SIXTEEN_NAME" Language="pt_BR">
 		<Text>16</Text>
 	</Replace>
 	<Replace Tag="BBM_MIN_DISTANCE_SIXTEEN_DESC" Language="pt_BR">
 		<Text>16 paineis</Text>
 	</Replace>
-	
 	<Replace Tag="BBM_MIN_DISTANCE_SEVENTEEN_NAME" Language="pt_BR">
 		<Text>17</Text>
 	</Replace>
 	<Replace Tag="BBM_MIN_DISTANCE_SEVENTEEN_DESC" Language="pt_BR">
 		<Text>17 paineis</Text>
 	</Replace>
-	
 	<Replace Tag="BBM_MIN_DISTANCE_EIGHTEEN_NAME" Language="pt_BR">
 		<Text>18</Text>
 	</Replace>
 	<Replace Tag="BBM_MIN_DISTANCE_EIGHTEEN_DESC" Language="pt_BR">
 		<Text>18 paineis</Text>
 	</Replace>
-	
 	<Replace Tag="BBM_MIN_DISTANCE_NINETEEN_NAME" Language="pt_BR">
 		<Text>19</Text>
 	</Replace>
 	<Replace Tag="BBM_MIN_DISTANCE_NINETEEN_DESC" Language="pt_BR">
 		<Text>19 paineis</Text>
 	</Replace>
-	
 	<Replace Tag="BBM_MIN_DISTANCE_TWENTY_NAME" Language="pt_BR">
 		<Text>20</Text>
 	</Replace>
 	<Replace Tag="BBM_MIN_DISTANCE_TWENTY_DESC" Language="pt_BR">
 		<Text>20 paineis</Text>
 	</Replace>
-	
 	<Replace Tag="BBM_MIN_DISTANCE_TWENTYONE_NAME" Language="pt_BR">
 		<Text>21</Text>
 	</Replace>
@@ -215,32 +207,27 @@
 	<Replace Tag="BBM_MIN_DISTANCE_TWENTYTWO_DESC" Language="pt_BR">
 		<Text>22 paineis</Text>
 	</Replace>
-	
 	<Replace Tag="BBM_MIN_DISTANCE_TWENTYTHREE_NAME" Language="pt_BR">
 		<Text>23</Text>
 	</Replace>
 	<Replace Tag="BBM_MIN_DISTANCE_TWENTYTHREE_DESC" Language="pt_BR">
 		<Text>23 paineis</Text>
 	</Replace>
-	
 	<Replace Tag="BBM_MIN_DISTANCE_TWENTYFOUR_NAME" Language="pt_BR">
 		<Text>24</Text>
 	</Replace>
 	<Replace Tag="BBM_MIN_DISTANCE_TWENTYFOUR_DESC" Language="pt_BR">
 		<Text>24 paineis</Text>
 	</Replace>
-	
 	<Replace Tag="BBM_MIN_DISTANCE_TWENTYFIVE_NAME" Language="pt_BR">
 		<Text>25</Text>
 	</Replace>
 	<Replace Tag="BBM_MIN_DISTANCE_TWENTYFIVE_DESC" Language="pt_BR">
 		<Text>25 paineis</Text>
 	</Replace>
-	
 	<Replace Tag="LOC_GAME_BBM_MIN_ATTEMPTS_NAME" Language="pt_BR">
 		<Text>Número de Tentativas de BBM</Text>
 	</Replace>
-	
 	<Replace Tag="LOC_BBM_MAXFLOODPLAINS_SIZE" Language="pt_BR">
 		<Text>Tamanho máximo das planícies inundáveis</Text>
 	</Replace>
@@ -271,77 +258,66 @@
 	<Replace Tag="LOC_BBM_MAXFLOODPLAINS_SIZE_12_DESCRIPTION" Language="pt_BR">
 		<Text>No máximo 12 paineis inundáveis por rio. Note que os paineis inundáveis podem se aglomerar na junção de vários rios.</Text>
 	</Replace>
-	
 	<Replace Tag="BBM_MIN_ATTEMPTS_ONE_NAME" Language="pt_BR">
 		<Text>1</Text>
 	</Replace>
 	<Replace Tag="BBM_MIN_ATTEMPTS_ONE_DESC" Language="pt_BR">
 		<Text>1 tentativa</Text>
 	</Replace>
-	
 	<Replace Tag="BBM_MIN_ATTEMPTS_TWO_NAME" Language="pt_BR">
 		<Text>2</Text>
 	</Replace>
 	<Replace Tag="BBM_MIN_ATTEMPTS_TWO_DESC" Language="pt_BR">
 		<Text>2 tentativas</Text>
 	</Replace>
-	
 	<Replace Tag="BBM_MIN_ATTEMPTS_THREE_NAME" Language="pt_BR">
 		<Text>3</Text>
 	</Replace>
 	<Replace Tag="BBM_MIN_ATTEMPTS_THREE_DESC" Language="pt_BR">
 		<Text>3 tentativas</Text>
 	</Replace>
-	
 	<Replace Tag="BBM_MIN_ATTEMPTS_FOUR_NAME" Language="pt_BR">
 		<Text>4</Text>
 	</Replace>
 	<Replace Tag="BBM_MIN_ATTEMPTS_FOUR_DESC" Language="pt_BR">
 		<Text>4 tentativas</Text>
 	</Replace>
-	
 	<Replace Tag="BBM_MIN_ATTEMPTS_FIVE_NAME" Language="pt_BR">
 		<Text>5</Text>
 	</Replace>
 	<Replace Tag="BBM_MIN_ATTEMPTS_FIVE_DESC" Language="pt_BR">
 		<Text>5 tentativas</Text>
 	</Replace>
-	
 	<Replace Tag="BBM_MIN_ATTEMPTS_SIX_NAME" Language="pt_BR">
 		<Text>6</Text>
 	</Replace>
 	<Replace Tag="BBM_MIN_ATTEMPTS_SIX_DESC" Language="pt_BR">
 		<Text>6 tentativas</Text>
 	</Replace>
-	
 	<Replace Tag="BBM_MIN_ATTEMPTS_SEVEN_NAME" Language="pt_BR">
 		<Text>7</Text>
 	</Replace>
 	<Replace Tag="BBM_MIN_ATTEMPTS_SEVEN_DESC" Language="pt_BR">
 		<Text>7 tentativas</Text>
 	</Replace>
-	
 	<Replace Tag="BBM_MIN_ATTEMPTS_EIGHT_NAME" Language="pt_BR">
 		<Text>8</Text>
 	</Replace>
 	<Replace Tag="BBM_MIN_ATTEMPTS_EIGHT_DESC" Language="pt_BR">
 		<Text>8 tentativas</Text>
 	</Replace>
-	
 	<Replace Tag="BBM_MIN_ATTEMPTS_NINE_NAME" Language="pt_BR">
 		<Text>9</Text>
 	</Replace>
 	<Replace Tag="BBM_MIN_ATTEMPTS_NINE_DESC" Language="pt_BR">
 		<Text>9 tentativas</Text>
 	</Replace>
-	
 	<Replace Tag="BBM_MIN_ATTEMPTS_TEN_NAME" Language="pt_BR">
 		<Text>10</Text>
 	</Replace>
 	<Replace Tag="BBM_MIN_ATTEMPTS_TEN_DESC" Language="pt_BR">
 		<Text>10 tentativas</Text>
 	</Replace>
-	
 	<Replace Tag="BBS_NATURAL_NORMAL_NAME" Language="pt_BR">
 		<Text>Normal</Text>
 	</Replace>
@@ -399,7 +375,7 @@
 		<Text>Cráter Barringer</Text>
 	</Replace>
 	<Replace Tag="LOC_FEATURE_BARRINGER_CRATER_DESCRIPTION" Language="pt_BR">
-		<Text>Maravilha natural de uma única célula. [ICON_FOOD] Comida +2, [ICON_GOLD] Ouro +3 e [ICON_SCIENCE] Ciência +3. [ICON_PRODUCTION] Produção +10% para projetos espaciais.</Text>
+		<Text>Maravilha natural de uma única painel. [ICON_FOOD] Comida +2, [ICON_GOLD] Ouro +3 e [ICON_SCIENCE] Ciência +3. [ICON_PRODUCTION] Produção +10% para projetos espaciais.</Text>
 	</Replace>
 	<Replace Tag="LOC_FEATURE_BARRINGER_CRATER_QUOTE" Language="pt_BR">
 		<Text>"Hoje podemos provar que este cratera é resultado da colisão de um corpo extraterrestre com a Terra, provavelmente um pequeno asteroide de natureza metálica."[NEWLINE]- Daniel Barringer</Text>
@@ -413,7 +389,7 @@
 		<Text>Baía Bioluminescente</Text>
 	</Replace>
 	<Replace Tag="LOC_FEATURE_BIOLUMINESCENT_BAY_DESCRIPTION" Language="pt_BR">
-		<Text>Maravilha natural de uma única célula, considerada um recife. [ICON_FOOD] Comida +1, [ICON_GOLD] Ouro +1 e [ICON_SCIENCE] Ciência +3. [ICON_GOLD] Ouro +1 em barcos de pesca se você possuir este paineil.</Text>
+		<Text>Maravilha natural de uma única painel. [ICON_FOOD] Comida +1, [ICON_GOLD] Ouro +1 e [ICON_SCIENCE] Ciência +3. [ICON_GOLD] Ouro +1 em barcos de pesca se você possuir este paineil.</Text>
 	</Replace>
 	<Replace Tag="LOC_FEATURE_BIOLUMINESCENT_BAY_QUOTE" Language="pt_BR">
 		<Text>"A emissão de luz, seja de fogo, relâmpagos, estrelas ou seres vivos, sempre atrai a atenção de qualquer ser humano. No caso da baía bioluminescente, ela emite um brilho estranho, algo mágico e misterioso."[NEWLINE]- Cassius Stevani</Text>
@@ -654,7 +630,7 @@
         <Text>Localizado no sudoeste da Bolívia, perto da fronteira chilena e do deserto de Atacama, está o Salar de Uyuni, a maior planície salgada do mundo com 10.582 quilômetros quadrados, cerca de 100 vezes o tamanho das planícies salinas de Bonneville nos Estados Unidos. O Salar foi formado após transformações entre vários lagos pré-históricos. Coberto por alguns metros de crosta salgada, possui uma planicidade extraordinária com variações de altitude médias de menos de um metro em toda a área do Salar. Sua grande superfície, céu limpo e planicidade excepcional fazem dele um local ideal para calibrar os altímetros dos satélites de observação da Terra.</Text>
     </Replace>
     <Replace Tag="LOC_DISTRICT_SALAR_DE_UYUNI_GOLD" Language="pt_BR">
-        <Text>+{1_num} [ICON_GOLD] Ouro para cada Salar de Uyuni.</Text>
+		<Text>[ICON_GOLD] Ouro +{1_num} para cada terreno do Salar de Uyuni.</Text>
     </Replace>
 
     <!-- = Mount Sinai = -->
@@ -718,8 +694,5 @@
     <Replace Tag="LOC_PEDIA_FEATURES_PAGE_FEATURE_WULINGYUAN_CHAPTER_HISTORY_PARA_1" Language="pt_BR">
         <Text>Wulingyuan é um site pitoresco e histórico no centro-sul da China. É conhecido por mais de 3000 pilares e picos de arenito quartzito, muitos dos quais têm mais de 200 metros de altura, além de ravinas, desfiladeiros, poças, lagos, rios e cachoeiras. Inclui 40 cavernas e duas pontes naturais, Xianrenqiao (Ponte dos Imortais) e Tianqiashengkong (Ponte através do céu).</Text>
     </Replace>
-	
-	
 	</LocalizedText>
-
 </GameData>
