@@ -250,6 +250,37 @@
 			<Text>25单元格</Text>
 		</Replace>
 
+		<Replace Tag="LOC_BBM_MAXFLOODPLAINS_SIZE" Language="zh_Hans_CN">
+			<Text>泛滥平原最大面积</Text>
+		</Replace>
+		<Replace Tag="LOC_BBM_MAXFLOODPLAINS_SIZE_4_DESCRIPTION" Language="zh_Hans_CN">
+			<Text>每条河流最多拥有4格泛滥平原单元格，但泛滥平原可能在河流交汇处相连接。</Text>
+		</Replace>
+		<Replace Tag="LOC_BBM_MAXFLOODPLAINS_SIZE_5_DESCRIPTION" Language="zh_Hans_CN">
+			<Text>每条河流最多拥有5格泛滥平原单元格，但泛滥平原可能在河流交汇处相连接。</Text>
+		</Replace>
+		<Replace Tag="LOC_BBM_MAXFLOODPLAINS_SIZE_6_DESCRIPTION" Language="zh_Hans_CN">
+			<Text>每条河流最多拥有6格泛滥平原单元格，但泛滥平原可能在河流交汇处相连接。</Text>
+		</Replace>
+		<Replace Tag="LOC_BBM_MAXFLOODPLAINS_SIZE_7_DESCRIPTION" Language="zh_Hans_CN">
+			<Text>每条河流最多拥有7格泛滥平原单元格，但泛滥平原可能在河流交汇处相连接。</Text>
+		</Replace>
+		<Replace Tag="LOC_BBM_MAXFLOODPLAINS_SIZE_8_DESCRIPTION" Language="zh_Hans_CN">
+			<Text>每条河流最多拥有8格泛滥平原单元格，但泛滥平原可能在河流交汇处相连接。</Text>
+		</Replace>
+		<Replace Tag="LOC_BBM_MAXFLOODPLAINS_SIZE_9_DESCRIPTION" Language="zh_Hans_CN">
+			<Text>每条河流最多拥有9格泛滥平原单元格，但泛滥平原可能在河流交汇处相连接。</Text>
+		</Replace>
+		<Replace Tag="LOC_BBM_MAXFLOODPLAINS_SIZE_10_DESCRIPTION" Language="zh_Hans_CN">
+			<Text>每条河流最多拥有10格泛滥平原单元格，但泛滥平原可能在河流交汇处相连接。</Text>
+		</Replace>
+		<Replace Tag="LOC_BBM_MAXFLOODPLAINS_SIZE_11_DESCRIPTION" Language="zh_Hans_CN">
+			<Text>每条河流最多拥有11格泛滥平原单元格，但泛滥平原可能在河流交汇处相连接。</Text>
+		</Replace>
+		<Replace Tag="LOC_BBM_MAXFLOODPLAINS_SIZE_12_DESCRIPTION" Language="zh_Hans_CN">
+			<Text>每条河流最多拥有12格泛滥平原单元格，但泛滥平原可能在河流交汇处相连接。</Text>
+		</Replace>
+
 		<!-- == Players options == -->
 		<!-- = Attempts = -->
 		<Replace Tag="LOC_GAME_BBM_MIN_ATTEMPTS_NAME" Language="zh_Hans_CN">
