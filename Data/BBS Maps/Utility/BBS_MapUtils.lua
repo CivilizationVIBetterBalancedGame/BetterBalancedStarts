@@ -3587,9 +3587,11 @@ function BalanceMap(hexMap)
                     and BalanceNearFloodplainsYields(hexMap, hex, iFloodplainsScore) then
                     iNearFloodsCounter = iNearFloodsCounter + 1;
                 end
-            elseif hex.FeatureType == g_FEATURE_VOLCANO and hex:IsWater() then
-                -- Additionnal check to avoid volcanoes on lakes (TODO : look why it is the case)
-                hexMap:TerraformSetTerrain(hex, g_TERRAIN_TYPE_GRASS_MOUNTAIN);
+            elseif hex.FeatureType == g_FEATURE_VOLCANO then
+                -- Additionnal check to avoid volcanoes on lakes
+                if hex.Plot:IsLake() then 
+                    hexMap:TerraformSetTerrain(hex, g_TERRAIN_TYPE_GRASS_MOUNTAIN);
+                end
             end
         end
     end

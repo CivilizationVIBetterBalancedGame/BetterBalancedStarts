@@ -151,7 +151,9 @@ function GenerateMap()
 	local start_plot_database = BBS_Assign(args)
 
 	local GoodyGen = AddGoodiesBBM(g_iW, g_iH);	
-	local Balance = BBS_Script();	AreaBuilder.Recalculate();	TerrainBuilder.AnalyzeChokepoints();
+	local Balance = BBS_Script();
+	AreaBuilder.Recalculate();
+	TerrainBuilder.AnalyzeChokepoints();
 end
 
 -------------------------------------------------------------------------------
