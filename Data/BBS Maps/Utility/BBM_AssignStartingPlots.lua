@@ -12,8 +12,9 @@ include("TerrainGenerator");
 include("NaturalWonderGenerator");
 include("ResourceGenerator");
 include("AssignStartingPlots");
-include "BBS_MapUtils";
-include "BBS_CivilizationAssign";
+include "BBM_MapUtils";
+include "BBM_SpawnBalancing";
+include "BBM_CivilizationAssign";
 
 local BBS_VERSION = "2.2.0"
 
@@ -26,7 +27,7 @@ BBS_LEADER_TYPE_SPECTATOR = "LEADER_SPECTATOR"
 --------------------------------------------------------------------------------
 --  Init metatable -------------------------------------------------------------
 --------------------------------------------------------------------------------
-BBS_AssignStartingPlots = {};
+BBM_AssignStartingPlots = {};
 local BBM_HexMap = {};
 local BBM_Civilisations = {};
 local BBM_Teams = {};
@@ -37,7 +38,7 @@ function ___Debug(...)
 end
 
 ------------------------------------------------------------- BBS ----------------------------
-function BBS_AssignStartingPlots.Create(args)
+function BBM_AssignStartingPlots.Create(args)
     bbs_game_config = {
         BBM_Team_Spawn = MapConfiguration.GetValue("BBM_Team_Spawn"),
         BBS_MAP_SCRIPT = MapConfiguration.GetValue("MAP_SCRIPT"),
@@ -59,14 +60,14 @@ function BBS_AssignStartingPlots.Create(args)
     }
 
     instance = {
-        __InitStartingData      = BBS_AssignStartingPlots.__InitStartingData,
-        __FindBias              = BBS_AssignStartingPlots.__FindBias,
-        __ComputeBiasScore      = BBS_AssignStartingPlots.__ComputeBiasScore,
-        __GetTerrainIndex       = BBS_AssignStartingPlots.__GetTerrainIndex,
-        __GetFeatureIndex       = BBS_AssignStartingPlots.__GetFeatureIndex,
-        __GetResourceIndex      = BBS_AssignStartingPlots.__GetResourceIndex,
-        __PlaceMajorCivs        = BBS_AssignStartingPlots.__PlaceMajorCivs,
-        __ResetMajorsSpawns     = BBS_AssignStartingPlots.__ResetMajorsSpawns,
+        __InitStartingData      = BBM_AssignStartingPlots.__InitStartingData,
+        __FindBias              = BBM_AssignStartingPlots.__FindBias,
+        __ComputeBiasScore      = BBM_AssignStartingPlots.__ComputeBiasScore,
+        __GetTerrainIndex       = BBM_AssignStartingPlots.__GetTerrainIndex,
+        __GetFeatureIndex       = BBM_AssignStartingPlots.__GetFeatureIndex,
+        __GetResourceIndex      = BBM_AssignStartingPlots.__GetResourceIndex,
+        __PlaceMajorCivs        = BBM_AssignStartingPlots.__PlaceMajorCivs,
+        __ResetMajorsSpawns     = BBM_AssignStartingPlots.__ResetMajorsSpawns,
     }
     print("-----------------------")
     print("Starting BBM Placement",  os.date("%c"))
@@ -366,7 +367,7 @@ BBS_resources_count = {};
 -- 1: Min distance between civilisations
 -- 2: Spawn bias
 -- 3: Fresh water settle
-function BBS_AssignStartingPlots:__InitStartingData()
+function BBM_AssignStartingPlots:__InitStartingData()
     _Debug("Start parsing map",  os.date("%c"))
     -- Datas stored in HexMap object
     local width, height = Map.GetGridSize();
@@ -406,7 +407,7 @@ function BBS_AssignStartingPlots:__InitStartingData()
     _Debug("END BBM WORK",  os.date("%c"))
 end
 
-function BBS_AssignStartingPlots:__PlaceMajorCivs(civs, BBM_HexMap, index) 
+function BBM_AssignStartingPlots:__PlaceMajorCivs(civs, BBM_HexMap, index) 
 -- TODO : manage cases when unable to place a civ => rollback and try again
     BBM_HexMap.tempMajorSpawns[index] = {};
     
@@ -457,7 +458,7 @@ function getRTSOtherSide(teamerSide)
     end
 end
 
-function BBS_AssignStartingPlots:__ResetMajorsSpawns(civs, BBM_HexMap)
+function BBM_AssignStartingPlots:__ResetMajorsSpawns(civs, BBM_HexMap)
     BBM_HexMap.majorSpawns = {};
     BBM_HexMap:ResetSpawnableHex();
     for _, civ in pairs(civs) do

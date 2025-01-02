@@ -16,7 +16,7 @@ include "BBS_NaturalWonderGenerator"
 include "BBS_ResourceGenerator"
 include "DW_CoastalLowlands"
 include "AssignStartingPlots"
-include "BBS_AssignStartingPlots";include "BBS_Balance";local g_iW, g_iH;
+include "BBM_AssignStartingPlots";include "BBS_Balance";local g_iW, g_iH;
 local g_iFlags = {};
 local g_continentsFrac = nil;
 local featureGen = nil;
@@ -28,7 +28,7 @@ function BBS_Assign(args)
 	print("BBS_Assign: Injecting Spawn Placement")
 	local start_plot_database = {};
 
-	start_plot_database = BBS_AssignStartingPlots.Create(args)
+	start_plot_database = BBM_AssignStartingPlots.Create(args)
 
 	return start_plot_database
 end

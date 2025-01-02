@@ -7,9 +7,9 @@ ExposedMembers.LuaEvents = LuaEvents
 
 include "MapEnums"
 include "SupportFunctions"
-include "BBS_AssignStartingPlots"
+include "BBM_AssignStartingPlots"
 include("MapUtilities");
-include "BBS_MapUtils";
+include "BBM_MapUtils";
 
 local world_age = 2;
 local high_roll = 0.15;

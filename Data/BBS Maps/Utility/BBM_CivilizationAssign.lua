@@ -51,7 +51,7 @@ function CivilizationAssignSpawn:GetBiases()
         bias.Tier = 1;
         bias.Type = "TERRAINS";
         bias.Value = g_TERRAIN_TYPE_COAST;
-        _Debug("BBS_AssignStartingPlots: Add Bias : Civilization",self.CivilizationName,"Bias Type:", bias.Type, "Tier :", bias.Tier, "Type :", row.TerrainType);
+        _Debug("BBM_AssignStartingPlots: Add Bias : Civilization",self.CivilizationName,"Bias Type:", bias.Type, "Tier :", bias.Tier, "Type :", row.TerrainType);
         table.insert(biases, bias);
         self.IsCoastalBias = true;
     end
@@ -62,7 +62,7 @@ function CivilizationAssignSpawn:GetBiases()
             bias.Tier = row.Tier;
             bias.Type = "RESOURCES";
             bias.Value = GetResourceIndex(row.ResourceType);
-            _Debug("BBS_AssignStartingPlots: Add Bias : Civilization",self.CivilizationName,"Bias Type:", bias.Type, "Tier :", bias.Tier, "Type :", row.ResourceType);
+            _Debug("BBM_AssignStartingPlots: Add Bias : Civilization",self.CivilizationName,"Bias Type:", bias.Type, "Tier :", bias.Tier, "Type :", row.ResourceType);
             table.insert(biases, bias);
         end
     end
@@ -73,7 +73,7 @@ function CivilizationAssignSpawn:GetBiases()
             bias.Tier = row.Tier;
             bias.Type = "FEATURES";
             bias.Value = GetFeatureIndex(row.FeatureType);
-            _Debug("BBS_AssignStartingPlots: Add Bias : Civilization",self.CivilizationName,"Bias Type:", bias.Type, "Tier :", bias.Tier, "Type :", row.FeatureType);
+            _Debug("BBM_AssignStartingPlots: Add Bias : Civilization",self.CivilizationName,"Bias Type:", bias.Type, "Tier :", bias.Tier, "Type :", row.FeatureType);
             table.insert(biases, bias);
             if bias.Value == g_FEATURE_FLOODPLAINS or bias.Value == g_FEATURE_FLOODPLAINS_GRASSLAND or bias.Value == g_FEATURE_FLOODPLAINS_PLAINS then
                 self.IsFloodplainsBias = true;
@@ -90,7 +90,7 @@ function CivilizationAssignSpawn:GetBiases()
             bias.Tier = row.Tier;
             bias.Type = "TERRAINS";
             bias.Value = GetTerrainIndex(row.TerrainType);
-            _Debug("BBS_AssignStartingPlots: Add Bias : Civilization",self.CivilizationName,"Bias Type:", bias.Type, "Tier :", bias.Tier, "Type :", row.TerrainType);
+            _Debug("BBM_AssignStartingPlots: Add Bias : Civilization",self.CivilizationName,"Bias Type:", bias.Type, "Tier :", bias.Tier, "Type :", row.TerrainType);
             table.insert(biases, bias);
             if bias.Value == g_TERRAIN_TYPE_COAST then --only wilhemine has non T1 coast bias -what to do with her)
                 self.IsCoastalBias = true
@@ -110,9 +110,9 @@ function CivilizationAssignSpawn:GetBiases()
             bias.Tier = row.Tier;
             bias.Type = "RIVERS";
             bias.Value = nil;
-            _Debug("BBS_AssignStartingPlots: Add Bias : Civilization",self.CivilizationName,"Bias Type:", bias.Type, "Tier :", bias.Tier, "Type :", bias.Value);
+            _Debug("BBM_AssignStartingPlots: Add Bias : Civilization",self.CivilizationName,"Bias Type:", bias.Type, "Tier :", bias.Tier, "Type :", bias.Value);
             table.insert(biases, bias);
-            _Debug("BBS_AssignStartingPlots - Civilization ",self.CivilizationName)
+            _Debug("BBM_AssignStartingPlots - Civilization ",self.CivilizationName)
             self.IsRiverBias = true;
         end
     end
@@ -124,19 +124,19 @@ function CivilizationAssignSpawn:GetBiases()
 				bias.Value = GetTerrainIndex(row.TerrainType);
 				bias.Type = "NEGATIVE_TERRAINS";
 				bias.Tier = row.Tier;
-				_Debug("BBS_AssignStartingPlots: Add Bias : Civilization",self.CivilizationName,"Bias Type:", bias.Type, "Tier :", bias.Tier, "Type :", row.TerrainType);
+				_Debug("BBM_AssignStartingPlots: Add Bias : Civilization",self.CivilizationName,"Bias Type:", bias.Type, "Tier :", bias.Tier, "Type :", row.TerrainType);
 				table.insert(biases, bias);
 				elseif row.FeatureType ~= nil then
 				bias.Value = GetFeatureIndex(row.FeatureType);
 				bias.Type = "NEGATIVE_FEATURES";
 				bias.Tier = row.Tier;
-				_Debug("BBS_AssignStartingPlots: Add Bias : Civilization",self.CivilizationName,"Bias Type:", bias.Type, "Tier :", bias.Tier, "Type :", row.FeatureType);
+				_Debug("BBM_AssignStartingPlots: Add Bias : Civilization",self.CivilizationName,"Bias Type:", bias.Type, "Tier :", bias.Tier, "Type :", row.FeatureType);
 				table.insert(biases, bias);
 				elseif row.ResourceType ~= nil then
 				bias.Value = GetResourceIndex(row.ResourceType);
 				bias.Type = "NEGATIVE_RESOURCES";
 				bias.Tier = row.Tier;
-				_Debug("BBS_AssignStartingPlots: Add Bias : Civilization",self.CivilizationName,"Bias Type:", bias.Type, "Tier :", bias.Tier, "Type :", row.ResourceType);
+				_Debug("BBM_AssignStartingPlots: Add Bias : Civilization",self.CivilizationName,"Bias Type:", bias.Type, "Tier :", bias.Tier, "Type :", row.ResourceType);
 				table.insert(biases, bias);
 			end	
         end
@@ -149,8 +149,8 @@ function CivilizationAssignSpawn:GetBiases()
 				bias.Type = row.CustomPlacement;
 				bias.Tier = 1;
 				bias.Value = -1;
-				_Debug("BBS_AssignStartingPlots: Add Bias : Civilization",self.CivilizationName,"Bias Type:", bias.Type, "Tier :", bias.Tier, "Type :", bias.Value);
-				_Debug("BBS_AssignStartingPlots: Add Bias : Civilization",self.CivilizationName,"Bias Type:", bias.Type, "Tier :", bias.Tier, "Type :", bias.Value);
+				_Debug("BBM_AssignStartingPlots: Add Bias : Civilization",self.CivilizationName,"Bias Type:", bias.Type, "Tier :", bias.Tier, "Type :", bias.Value);
+				_Debug("BBM_AssignStartingPlots: Add Bias : Civilization",self.CivilizationName,"Bias Type:", bias.Type, "Tier :", bias.Tier, "Type :", bias.Value);
 				table.insert(biases, bias);
                 -- Custom Biases 
                 if (bias.Type == "CUSTOM_NO_FRESH_WATER") then
@@ -974,7 +974,7 @@ end
 
 
 -- Set the starting hex
--- Firaxis method SetStartingPlot called in BBS_AssignStartingPlots
+-- Firaxis method SetStartingPlot called in BBM_AssignStartingPlots
 function CivilizationAssignSpawn:AssignMajorCivSpawn(BBM_HexMap, startingHex)
     if startingHex.Centroid ~= nil then
         self.AttributedCentroid = startingHex.Centroid

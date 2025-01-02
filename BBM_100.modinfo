@@ -186,7 +186,7 @@
 	<File>Data/BBS Maps/perfectworld6.lua</File>
 	<File>Data/BBS Maps/Utility/BBS_NaturalWonderGenerator.lua</File>
 	<File>Data/BBS Maps/Utility/BBS_MountainsCliffs.lua</File>
-	<File>Data/BBS Maps/Utility/BBS_AssignStartingPlots.lua</File>
+	<File>Data/BBS Maps/Utility/BBM_AssignStartingPlots.lua</File>
 	<File>Data/BBS Maps/Utility/DW_CoastalLowlands.lua</File>
 	<File>Data/BBS Maps/Utility/BBM_FeatureGenerator.lua</File>
 	<File>Data/BBS Maps/Utility/DW_MapUtilities.lua</File>
@@ -196,8 +196,9 @@
 	<File>Data/BBS Maps/Utility/BBS_TerrainGenerator.lua</File>
 	<File>Data/BBS Maps/Utility/BBS_ResourceGenerator.lua</File>
 	<File>Data/BBS Maps/Utility/BBS_Balance.lua</File>
-	<File>Data/BBS Maps/Utility/BBS_MapUtils.lua</File>
-	<File>Data/BBS Maps/Utility/BBS_CivilizationAssign.lua</File>
+	<File>Data/BBS Maps/Utility/BBM_MapUtils.lua</File>
+    <File>Data/BBS Maps/Utility/BBM_SpawnBalancing.lua</File>
+	<File>Data/BBS Maps/Utility/BBM_CivilizationAssign.lua</File>
     </ImportFiles>
 
     	<UpdateDatabase id="BBS_Global_Parameters">
@@ -369,7 +370,7 @@
 	<File>Data/BBS Maps/wetlands_xp2.lua</File>
 	<File>Data/BBS Maps/perfectworld6.lua</File>
 	<File>Data/BBS Maps/Utility/BBS_NaturalWonderGenerator.lua</File>
-	<File>Data/BBS Maps/Utility/BBS_AssignStartingPlots.lua</File>
+	<File>Data/BBS Maps/Utility/BBM_AssignStartingPlots.lua</File>
 	<File>Data/BBS Maps/Utility/BBS_MountainsCliffs.lua</File>
 	<File>Data/BBS Maps/Utility/DW_CoastalLowlands.lua</File>
 	<File>Data/BBS Maps/Utility/BBM_FeatureGenerator.lua</File>
@@ -380,8 +381,9 @@
 	<File>Data/BBS Maps/Utility/BBS_TerrainGenerator.lua</File>
 	<File>Data/BBS Maps/Utility/BBS_ResourceGenerator.lua</File>
 	<File>Data/BBS Maps/Utility/BBS_Balance.lua</File>
-	<File>Data/BBS Maps/Utility/BBS_MapUtils.lua</File>
-	<File>Data/BBS Maps/Utility/BBS_CivilizationAssign.lua</File>
+	<File>Data/BBS Maps/Utility/BBM_MapUtils.lua</File>
+    <File>Data/BBS Maps/Utility/BBM_SpawnBalancing.lua</File>
+	<File>Data/BBS Maps/Utility/BBM_CivilizationAssign.lua</File>
     <File>Data/BBS Maps/PerfectWorld6.lua</File>
 	<File>Data/BBS Maps/DWArchipelago.lua</File>
 	<File>Data/BBS Maps/DWContinents.lua</File>
