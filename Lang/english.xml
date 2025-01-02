@@ -9,8 +9,12 @@
 			<Text>Huge map for 16 players</Text>
 		</Replace>
 
-
-
+		<Replace Tag="LOC_MAP_NAME_TILTED_WRAP" Language="en_US">
+			<Text>Tilted Axis Wrap</Text>
+		</Replace>
+		<Replace Tag="LOC_MAP_DESC_TILTED_WRAP" Language="en_US">
+			<Text>A polar centered continents map (with circumnavigation).</Text>
+		</Replace>
 		<!-- === SETUP === -->
 		<!-- == Map features == -->
 		<Replace Tag="LOC_GAME_SPAWN_RECALCULATION" Language="en_US">

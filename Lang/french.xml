@@ -7,7 +7,13 @@
 		<!-- Special thanks to platypus and ZhenjaMax -->
 		<!-- Based on the work of Priz, who took care of the French translation before me -->
 
-
+		<!-- Maps -->
+		<Replace Tag="LOC_MAP_NAME_TILTED_WRAP" Language="fr_FR">
+			<Text>Axe renversé Wrap</Text>
+		</Replace>
+		<Replace Tag="LOC_MAP_DESC_TILTED_WRAP" Language="fr_FR">
+			<Text>Une carte où les pôles sont inversés (avec tour du monde).</Text>
+		</Replace>
 
 		<!-- === SETTINGS - PARAMÈTRES	=== -->
 		<!-- = Map Sizes = -->

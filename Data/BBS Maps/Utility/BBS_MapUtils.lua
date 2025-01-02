@@ -10,6 +10,7 @@ MapScripts.MAP_SEVEN_SEAS = "Seven_Seas.lua"
 MapScripts.MAP_PRIMORDIAL = "Primordial.lua"
 MapScripts.MAP_PANGAEA = "Pangaea.lua"
 MapScripts.MAP_TILTED_AXIS = "Tilted_Axis.lua"
+MapScripts.MAP_TILTED_AXIS_WRAP = "Tilted_Axis_Wrap.lua"
 MapScripts.MAP_FRACTAL = "Fractal.lua"
 MapScripts.MAP_ISLAND_PLATES = "Island_Plates.lua"
 MapScripts.MAP_SMALL_CONTINENTS = "Small_Continents.lua"
@@ -811,13 +812,19 @@ end
 function HexMap:SetMinimumDistanceMajorToMajorCivs()
     local minDistanceConfig = MapConfiguration.GetValue("BBMMinDistance");
     if minDistanceConfig == 0 then
-        if self.mapScript == MapScripts.MAP_HIGHLANDS or self.mapScript == MapScripts.MAP_LAKES or self.mapScript == MapScripts.MAP_RICH_HIGHLANDS then
+        if self.mapScript == MapScripts.MAP_HIGHLANDS 
+        or self.mapScript == MapScripts.MAP_LAKES 
+        or self.mapScript == MapScripts.MAP_RICH_HIGHLANDS then
             return 15;
         elseif self.mapScript == MapScripts.MAP_INLAND_SEA then
             return 14;
         elseif self.mapScript == MapScripts.MAP_SEVEN_SEAS then
             return 13;
-        elseif self.mapScript == MapScripts.MAP_PANGAEA or self.mapScript == MapScripts.MAP_SHUFFLE or self.mapScript == MapScripts.MAP_TILTED_AXIS or self.mapScript == MapScripts.MAP_PRIMORDIAL then
+        elseif self.mapScript == MapScripts.MAP_PANGAEA 
+            or self.mapScript == MapScripts.MAP_SHUFFLE 
+            or self.mapScript == MapScripts.MAP_TILTED_AXIS 
+            or self.mapScript == MapScripts.MAP_TILTED_AXIS_WRAP 
+            or self.mapScript == MapScripts.MAP_PRIMORDIAL then
             return 12;
         elseif self.mapScript == MapScripts.MAP_TERRA then
             return 8;
