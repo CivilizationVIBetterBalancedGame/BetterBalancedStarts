@@ -1,7 +1,7 @@
 ------------------------------------------------------------------------------
---	FILE:	 Tilted_Axis.lua
---	AUTHOR:  D. / Jack The Narrator
---	PURPOSE: Base game script - Produces widely varied continents.
+--	FILE:	 Tilted_Axis_ref.lua
+--	AUTHOR:  Banipouz
+--	PURPOSE: Refactored script Tilted Axis for normal and wrap versions
 ------------------------------------------------------------------------------
 --	Copyright (c) 2014 Firaxis Games, Inc. All rights reserved.
 ------------------------------------------------------------------------------
@@ -16,7 +16,9 @@ include "BBS_NaturalWonderGenerator"
 include "BBS_ResourceGenerator"
 include "CoastalLowlands"
 include "AssignStartingPlots"
-include "BBM_AssignStartingPlots";include "BBS_Balance";local g_iW, g_iH;
+include "BBM_AssignStartingPlots";
+include "BBS_Balance";
+local g_iW, g_iH;
 local g_iFlags = {};
 local g_yCenter;
 local g_xCenter;
@@ -51,7 +53,7 @@ function BBS_Assign(args)
 	return start_plot_database
 end
 -------------------------------------------------------------------------------
-function GenerateMap()
+function GenerateMap_Tilted()
 	print("Generating Tilted Axis Map");
 	local pPlot;
 
@@ -63,12 +65,14 @@ function GenerateMap()
 	g_iNumEquator = math.ceil(g_iH / 2);
 	
 	local temperature = MapConfiguration.GetValue("temperature"); -- Default setting is Temperate.
+	print("tilted wrap temp", temperature)
 	if temperature == 4 then
 		temperature  =  1 + TerrainBuilder.GetRandomNumber(3, "Random Temperature- Lua");
 	end
 	
 	--	local world_age
 	local world_age = MapConfiguration.GetValue("world_age");
+	print("tilted wrap world_age", world_age)
 	if (world_age == 1) then
 		world_age = world_age_new;
 	elseif (world_age == 2) then
@@ -148,6 +152,8 @@ function GenerateMap()
 		MIN_BARBARIAN_FERTILITY = 1,
 		START_CONFIG = startConfig,
 	};
+	print("args",  args)
+	print("args",  args.startConfig)
 	local start_plot_database = BBS_Assign(args)
 
 	local GoodyGen = AddGoodiesBBM(g_iW, g_iH);	
@@ -982,23 +988,4 @@ function BBS_GenerateTerrainTypes(plotTypes)
 	end
 	
 	return terrainTypes; 
-end
-
-------------------------------------------------------------------------------
-
-function GetMapInitData(MapSize)
-	local MapSizeTypes = {};
-	local Width = 0;
-	local Height = 0;
-
-	for row in GameInfo.Maps() do
-		if(MapSize == row.Hash) then
-			Width = row.GridWidth;
-			Height = row.GridHeight;
-		end
-	end
-
-	local WrapX = false;
-
-	return {Width = Width, Height = Height, WrapX = WrapX,}
 end
