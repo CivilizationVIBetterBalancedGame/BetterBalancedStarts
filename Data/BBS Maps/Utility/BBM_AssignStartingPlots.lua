@@ -171,18 +171,27 @@ function BBM_AssignStartingPlots.Create(args)
     local isTeamer = Is1v1OrTeamerConfig();
 
     -- Define scores for centroids and place 
+    local team1Index = 0;
+    local team2Index = 0;
     for _, civ in pairs(BBM_Civilisations) do
         -- On RTS East vs West mod, define position by index (spectator excluded) pp
         -- With odd number teams, the additionnal player will be in sim position
         _Debug("BBM_Teams[civ.CivilizationTeam] = ", civ.CivilizationTeam, BBM_Teams[civ.CivilizationTeam])
-        if civ.CivilizationLeader ~= BBS_LEADER_TYPE_SPECTATOR then 
-            local teamSize = #BBM_Teams[civ.CivilizationTeam] or 1
-            local team1Index = 1;
-            local team2Index = 1;            
-            if BBM_HexMap.TeamerConfig == TeamerConfigEastVsWest then
-                civ.TeamerSim = civ.PlayerIndex <= teamSize + teamSize % 2;
-                civ.TeamerWar = civ.PlayerIndex > teamSize + teamSize % 2;
+        if civ.CivilizationLeader ~= BBS_LEADER_TYPE_SPECTATOR then
+            local playerTeamIndex;
+            if civ.CivilizationTeam == 1 then
+                team1Index = team1Index + 1;
+                playerTeamIndex = team1Index;
+            else
+                team2Index = team2Index + 1;
+                playerTeamIndex = team2Index;
             end
+            local teamSize = #BBM_Teams[civ.CivilizationTeam] or 1    
+            
+            if BBM_HexMap.TeamerConfig == TeamerConfigEastVsWest then
+                civ.TeamerSim = playerTeamIndex <= teamSize / 2 + teamSize % 2;
+                civ.TeamerWar = playerTeamIndex > teamSize / 2 + teamSize % 2;
+            end  
         end
         civ:CalculateTotalScores(BBM_HexMap);
     end
