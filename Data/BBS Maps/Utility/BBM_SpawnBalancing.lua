@@ -637,7 +637,7 @@ function SpawnBalancing:ApplyMinimalCoastalTiles()
         local hex;
         if #self.RingTables[2].WATER_EMPTY > 0 then
             listWater = self.RingTables[2].WATER_EMPTY;
-            _Debug("Number of empty water tiles r2 = ", #listWater)
+            print("Number of empty water tiles r2 = ", #listWater, self.Civ.CivilizationLeader)
         elseif #self.RingTables[2].WATER_RF > 0 then
             listWater = self.RingTables[2].WATER_RF;
             _Debug("Number of res or feat water tiles r2 = ", #listWater)
@@ -651,9 +651,29 @@ function SpawnBalancing:ApplyMinimalCoastalTiles()
         if #listWater > 1 then
             listWater = GetShuffledCopyOfTable(listWater);
         end
+        -- New condition : always have a empty water ring 2
+        if #self.RingTables[2].WATER_EMPTY > 0 then
+            local listWater = self.RingTables[2].WATER_EMPTY;
+            if #listWater > 1 then
+                listWater = GetShuffledCopyOfTable(listWater);
+            else
+                _Debug("ERR no water empty on r2", self.Civ.CivilizationLeader)
+            end
+            for _, h in pairs(listWater) do
+                if self.Hex:IsWalkableInRange(h, 2) then
+                    _Debug("Added to coastal reef fish", h:PrintXY(), self.Civ.CivilizationLeader)
+                    hex = h;
+                    break;
+                else
+                    print("ERR Couldnt add on water r2 ", self.Civ.CivilizationLeader)
+                end
+            end
+        else
+            print("WATER_EMPTY r2 NO", self.Civ.CivilizationLeader)
+        end
+
         hex = hex or listWater[1]; -- take previously selected hex if relocated, else just take random empty
         _Debug("Try to add ", tostring(TerraformType[2]), " id = ", tostring(g_FEATURE_REEF), " to ", hex)
-        _Debug(hex:PrintXY())
         self:TerraformHex(hex, 2, TerraformType[2], g_FEATURE_REEF, true, false);
         local rng = TerrainBuilder.GetRandomNumber(100, "Ring2 Turtle or Fish");
         local isTurtlesOnMap = Contains(self.HexMap.LuxTable[-1], g_RESOURCE_TURTLES);
@@ -1522,7 +1542,7 @@ function SpawnBalancing:UpdateTableDataRing(h, i)
     if h:IsWater() then
         table.insert(self.RingTables[i].WATER, h) -- not used ?
         -- Directly separate empty water tiles and with resources for easier management
-        if h.TerrainType == g_TERRAIN_TYPE_COAST then
+        if h.TerrainType == g_TERRAIN_TYPE_COAST and h.Plot:IsLake() == false then
             if h.FeatureType == g_FEATURE_NONE and h.ResourceType == g_RESOURCE_NONE then
                 table.insert(self.RingTables[i].WATER_EMPTY, h)
             else

@@ -246,7 +246,7 @@ WestTeam = "West";
 
 
 function _Debug(...)
-    --print(...);
+    print(...);
 end
 
 ---------------------------------------
@@ -1200,6 +1200,8 @@ function HexMap:ComputeMajorSpawnableTiles(hex)
     local isNotInPeninsula = hex.PeninsulaScore >= self.PeninsulaScoreThreshold
     local isTooCloseToSnow = hex:IsHexCloseToSnow()
     local hasEnoughWorkableRing2 = hex:HasEnoughWorkableRing2();
+    local hasEmptyWaterCoastRing2 = hex:HasEmptyWaterCoastRing2() ;
+    local hasMoreThan2WaterCoastRing2 = hex:HasMoreThan2WaterCoastRing2()
     hex.IsMajorSpawnable = hex:IsImpassable() == false
         and hex:IsSnowLand() == false
         and hex.FeatureType ~= g_FEATURE_OASIS
@@ -1212,7 +1214,9 @@ function HexMap:ComputeMajorSpawnableTiles(hex)
         and isTooCloseToNaturalWonder == false
         and coastalNextToRiver == false
         and hasEnoughWorkableRing2 == true
-        and isTooCloseToSnow == false;
+        and isTooCloseToSnow == false
+        and hasEmptyWaterCoastRing2 == true
+        and hasMoreThan2WaterCoastRing2 == true;
 end
 
 function HexMap:ComputeMinorSpawnableTiles(hex)
@@ -1321,6 +1325,35 @@ function Hex:HasEnoughWorkableRing2()
     return true;
 end
 
+function Hex:HasEmptyWaterCoastRing2()
+    if self.IsCoastal == false then
+        return true;
+    end
+    local ring2 = self.AllRing6Map[2];
+    for _, h in ipairs(ring2) do
+        if h:IsWater() and h.Plot:IsLake() == false and h.ResourceType == g_RESOURCE_NONE and h.FeatureType == g_FEATURE_NONE then
+            return true;
+        end
+    end
+    return false;
+end
+
+function Hex:HasMoreThan2WaterCoastRing2()
+    if self.IsCoastal == false then
+        return true;
+    end
+    local ring2 = self.AllRing6Map[2];
+    local waterRing2 = 0;
+    for _, h in ipairs(ring2) do
+        if h:IsWater() and h.Plot:IsLake() == false then
+            waterRing2 = waterRing2 + 1;
+            if waterRing2 > 1 then
+                return true;
+            end
+        end
+    end
+    return false;
+end
 
 function Hex:IsHexCloseToSnow()
     local ring1 = self.AllRing6Map[1];
