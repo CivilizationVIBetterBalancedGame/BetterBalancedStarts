@@ -1193,7 +1193,7 @@ function HexMap:ComputeMajorSpawnableTiles(hex)
     local isCloseToMapBorderX = self.canCircumnavigate == false and (self.width - hex.x <= 3 or hex.x <= 3);
     local isCloseToMapBorderY = self.height - hex.y <= 3 or hex.y <= 3;
     local isTooCloseToNaturalWonder = hex:IsCloseToNaturalWonder()
-    local isCloseToTooManyFlood = hex:IsHexNextTo5FloodTiles();
+    local isCloseToTooManyFlood = hex:IsHexTooCloseToFloodTiles();
     local isNextToVolcano = hex:IsNextToVolcano();
     local coastalNextToRiver = hex.IsCoastal and hex.IsFreshWater == false and hex:IsNextToCoastalFreshWater();
     local nextTo3LakesInARow = hex:IsHexRing1NextToImpassableInARow(3);
@@ -1356,7 +1356,7 @@ function Hex:IsNextToVolcano()
 end
 
 -- Avoid spawns on too many floodplains ring 1 and coastal on spawning
-function Hex:IsHexNextTo5FloodTiles()
+function Hex:IsHexTooCloseToFloodTiles()
     local ring1 = self.AllRing6Map[1];
     local floodplainsR1 = 0
     for _, r1 in pairs(ring1) do
@@ -1367,6 +1367,17 @@ function Hex:IsHexNextTo5FloodTiles()
             return true;
         end
     end
+    local ring2 = self.AllRing6Map[2];
+    local floodplainsR2 = 0
+    for _, r2 in pairs(ring2) do
+        if r2:IsFloodplains(true) or r2:IsWater() then
+            floodplainsR2 = floodplainsR2 + 1
+        end
+        if floodplainsR2 > 5 then
+            return true;
+        end
+    end
+    
     return false;
 end
 
