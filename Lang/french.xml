@@ -9,7 +9,7 @@
 
 		<!-- Maps -->
 		<Replace Tag="LOC_MAP_NAME_TILTED_WRAP" Language="fr_FR">
-			<Text>Axe renversé Wrap</Text>
+			<Text>Axe renversé Wraparound</Text>
 		</Replace>
 		<Replace Tag="LOC_MAP_DESC_TILTED_WRAP" Language="fr_FR">
 			<Text>Une carte où les pôles sont inversés (avec tour du monde).</Text>

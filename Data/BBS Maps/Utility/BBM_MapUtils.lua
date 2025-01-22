@@ -246,7 +246,7 @@ WestTeam = "West";
 
 
 function _Debug(...)
-    print(...);
+    --print(...);
 end
 
 ---------------------------------------
@@ -2042,7 +2042,7 @@ function HexMap:TerraformAddRandomLux(hex, canAddOnWater)
     possiblesLux = GetShuffledCopyOfTable(possiblesLux);
     for _, idLux in ipairs(possiblesLux) do
         if self:TerraformSetResource(hex, idLux, false) then
-            _Debug("TerraformAddRandomLux - A lux has been added (id = ", idLux, ")")
+            print("TerraformAddRandomLux - A lux has been added (id = ", idLux, ")")
             self:CleanHighYieldsOnFresh(hex)
             return true;
         end

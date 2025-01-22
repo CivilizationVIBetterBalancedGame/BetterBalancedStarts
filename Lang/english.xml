@@ -10,7 +10,7 @@
 		</Replace>
 
 		<Replace Tag="LOC_MAP_NAME_TILTED_WRAP" Language="en_US">
-			<Text>Tilted Axis Wrap</Text>
+			<Text>Tilted Axis Wraparound</Text>
 		</Replace>
 		<Replace Tag="LOC_MAP_DESC_TILTED_WRAP" Language="en_US">
 			<Text>A polar centered continents map (with circumnavigation).</Text>

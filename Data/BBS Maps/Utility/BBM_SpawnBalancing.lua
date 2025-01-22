@@ -656,17 +656,6 @@ function SpawnBalancing:ApplyMinimalCoastalTiles()
             local listWater = self.RingTables[2].WATER_EMPTY;
             if #listWater > 1 then
                 listWater = GetShuffledCopyOfTable(listWater);
-            else
-                _Debug("ERR no water empty on r2", self.Civ.CivilizationLeader)
-            end
-            for _, h in pairs(listWater) do
-                if self.Hex:IsWalkableInRange(h, 2) then
-                    _Debug("Added to coastal reef fish", h:PrintXY(), self.Civ.CivilizationLeader)
-                    hex = h;
-                    break;
-                else
-                    print("ERR Couldnt add on water r2 ", self.Civ.CivilizationLeader)
-                end
             end
         else
             print("WATER_EMPTY r2 NO", self.Civ.CivilizationLeader)
@@ -943,15 +932,16 @@ function SpawnBalancing:CheckLuxThreshold()
     self.InnerRingLuxCount = 0;
     self.OuterRingLuxCount = 0;
     local i = 1;
+    print("CheckLuxThreshold START", self.Civ.CivilizationLeader)
     while i <= 6 do
         for _,h in pairs(self.RingTables[i].HexRings) do
             if h:HasLux()  then
-                _Debug("CheckLuxThreshold found a lux on ", h:PrintXY(), i);
+                print("CheckLuxThreshold found a lux on ", h:PrintXY(), i);
                 if i <= 3 then
                     self.InnerRingLuxCount = self.InnerRingLuxCount + 1;
                     if (self.InnerRingLuxCount > self.MaxLuxInnerRingThreshold) and h.IsTaggedAsMinimum == false then
                         self:TerraformHex(h, i, TerraformType[3], g_RESOURCE_NONE, false, false);
-                        _Debug("CheckLuxThreshold deleted a lux on ", h:PrintXY(), " Ring = ", i)
+                        print("CheckLuxThreshold deleted a lux on ", h:PrintXY(), " Ring = ", i)
                     else
                         h:SetTaggedAsMinimum(true);
                     end
@@ -959,37 +949,37 @@ function SpawnBalancing:CheckLuxThreshold()
                     self.OuterRingLuxCount = self.OuterRingLuxCount + 1;
                     if self.OuterRingLuxCount > self.MaxLuxOuterRingThreshold then
                         self:TerraformHex(h, i, TerraformType[3], g_RESOURCE_NONE, false, false);
-                        _Debug("CheckLuxThreshold deleted a lux on ", h:PrintXY(), " Ring = ", i)
+                        print("CheckLuxThreshold deleted a lux on ", h:PrintXY(), " Ring = ", i)
                     end
                 end
             end
         end
         i = i + 1;
     end
-    _Debug("CheckLuxThreshold innerRing = ", self.InnerRingLuxCount, " outerRing = ", self.OuterRingLuxCount, " Threshold = ", self.InnerRingLuxCount < self.MaxLuxInnerRingThreshold)
+    print("CheckLuxThreshold innerRing = ", self.InnerRingLuxCount, " outerRing = ", self.OuterRingLuxCount, " Threshold = ", self.InnerRingLuxCount < self.MaxLuxInnerRingThreshold)
     while self.InnerRingLuxCount < self.MinLuxInnerRingThreshold do
         local randomHexLux = self:TerraformInRingsRandomOrder(2, 3, TerraformType[11], 0, false, false, false);
         if randomHexLux ~= nil then
-            _Debug("CheckLuxThreshold - Added lux ");
+            print("CheckLuxThreshold - Added lux ");
             self.InnerRingLuxCount = self.InnerRingLuxCount + 1;
             randomHexLux:SetTaggedAsMinimum(true);
         else
-            _Debug("CheckLuxThresholdERROR - Could not add lux in ring 1-3 for ", self.Civ.CivilizationLeader)
+            print("CheckLuxThresholdERROR - Could not add lux in ring 1-3 for ", self.Civ.CivilizationLeader)
             self.InnerRingLuxCount = self.MinLuxInnerRingThreshold;
         end
     end
     while self.OuterRingLuxCount < self.MinLuxOuterRingThreshold do
         local randomHexLux = self:TerraformInRingsRandomOrder(4, 6, TerraformType[11], 0, false, false, false);
         if randomHexLux ~= nil then
-            _Debug("CheckLuxThreshold - Added lux ");
+            print("CheckLuxThreshold - Added lux ");
             self.OuterRingLuxCount = self.OuterRingLuxCount + 1;
             randomHexLux:SetTaggedAsMinimum(true);
         else
-            _Debug("CheckLuxThresholdERROR - Could not add lux in ring 4-6 for ", self.Civ.CivilizationLeader)
+            print("CheckLuxThresholdERROR - Could not add lux in ring 4-6 for ", self.Civ.CivilizationLeader)
             self.OuterRingLuxCount = self.MinLuxOuterRingThreshold;
         end
     end
-    _Debug("CheckLuxThreshold DONE")
+    print("CheckLuxThreshold DONE", self.Civ.CivilizationLeader)
 end
 
 
