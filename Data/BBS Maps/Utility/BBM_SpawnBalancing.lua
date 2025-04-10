@@ -602,7 +602,7 @@ function SpawnBalancing:ApplyMinimalCoastalTiles()
         self.HexMap:AddCoastalRiver(self.Hex)
     end
 
-    -- 3) Changing ocean to coast in all round 2 tiles and clean ice up to ring 2
+    -- 3) Changing ocean to coast in all round 2 tiles 
     _Debug("Number of water tiles R2 = "..tostring(#self.RingTables[2].WATER))
     for _, h in pairs(self.RingTables[2].WATER) do
         if h.TerrainType == g_TERRAIN_TYPE_OCEAN then
@@ -617,8 +617,17 @@ function SpawnBalancing:ApplyMinimalCoastalTiles()
             self:TerraformHex(h, 1, TerraformType[2], g_FEATURE_NONE, true, false)
         end
     end
-
-
+    -- Clean ice up to ring 4
+    for _, h in pairs(self.RingTables[3].WATER) do
+        if h.FeatureType == g_FEATURE_ICE then
+            self:TerraformHex(h, 3, TerraformType[2], g_FEATURE_NONE, true, false)
+        end
+    end
+    for _, h in pairs(self.RingTables[4].WATER) do
+        if h.FeatureType == g_FEATURE_ICE then
+            self:TerraformHex(h, 4, TerraformType[2], g_FEATURE_NONE, true, false)
+        end
+    end
 
     -- 4) At least one fish reef or turtle ring 2
     local foundFishR2 = false;
