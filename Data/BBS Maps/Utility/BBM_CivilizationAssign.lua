@@ -648,6 +648,10 @@ function CivilizationAssignSpawn:ComputeHexScoreCiv(hex)
         impassableR1Malus = 20;
         score = score - impassableR1Malus
     end
+    -- Coastal : have at least 2 water tiles ring 2 if possible
+    if hex:HasMoreThan2WaterCoastRing2() == false then
+        score = score - 20
+    end
     -- Hydrophobic bias : in rare case when the "isBiasRespected" do not find any, we still discourage spawn clost to coast
     if self.IsHydrophobicBias then
         local distToCoast = hex:GetClosestCoastToHex(5)

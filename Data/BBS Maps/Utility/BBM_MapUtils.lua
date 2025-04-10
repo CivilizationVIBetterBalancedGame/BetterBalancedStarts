@@ -1204,7 +1204,6 @@ function HexMap:ComputeMajorSpawnableTiles(hex)
     local isTooCloseToSnow = hex:IsHexCloseToSnow()
     local hasEnoughWorkableRing2 = hex:HasEnoughWorkableRing2();
     local hasEmptyWaterCoastRing2 = hex:HasEmptyWaterCoastRing2() ;
-    local hasMoreThan2WaterCoastRing2 = hex:HasMoreThan2WaterCoastRing2()
     hex.IsMajorSpawnable = hex:IsImpassable() == false
         and hex:IsSnowLand() == false
         and hex.FeatureType ~= g_FEATURE_OASIS
@@ -1218,8 +1217,7 @@ function HexMap:ComputeMajorSpawnableTiles(hex)
         and coastalNextToRiver == false
         and hasEnoughWorkableRing2 == true
         and isTooCloseToSnow == false
-        and hasEmptyWaterCoastRing2 == true
-        and hasMoreThan2WaterCoastRing2 == true;
+        and hasEmptyWaterCoastRing2 == true;
 end
 
 function HexMap:ComputeMinorSpawnableTiles(hex)
