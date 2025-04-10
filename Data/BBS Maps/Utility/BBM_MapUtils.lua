@@ -246,7 +246,7 @@ WestTeam = "West";
 
 
 function _Debug(...)
-    --print(...);
+    print(...);
 end
 
 ---------------------------------------
@@ -786,7 +786,7 @@ function HexMap.new(_width, _height, mapScript)
     instance.PeninsulaScoreThreshold = 35;
     instance:FillHexMapDatas();
     instance:StoreHexRings();
-    instance:RemoveCoastalMountains();
+    instance:GlobalMountainsTerraform();
     instance:CalculateWalkableHexInRange();
     instance:CleanGlobalHighYieldsOnFresh();
     instance:ComputeScoreHex();
@@ -803,6 +803,9 @@ function HexMap.new(_width, _height, mapScript)
     instance.RTSPangaeaTeamerConfigWarMaxTundra = math.floor(_width * 0.18 + 0.5); -- on 4v4 = +-15 from middle
     instance.RTSPangaeaTeamerConfigSimMin = math.floor(_width * 0.2 + 0.5); -- on 4v4 = +-17 from middle
     -- Put maps parameters here ? (world age, temperature, rainfall etc)
+    -- BBM Mountains change = recalculate areas
+    AreaBuilder.Recalculate();
+    TerrainBuilder.AnalyzeChokepoints();
     return instance;
 end
 
@@ -2967,7 +2970,8 @@ function HexMap:AddCoastalRiver(hex)
      return false;
 end
 
-function HexMap:RemoveCoastalMountains()
+function HexMap:GlobalMountainsTerraform()
+    local allMont = {}
     for y = 0, self.height - 1 do
         for x = 0, self.width - 1 do
             local hex = self:GetHexInMap(x, y);
@@ -2985,9 +2989,36 @@ function HexMap:RemoveCoastalMountains()
                         -- Clear coastal mountain to hill
                         self:TerraformMountainToHill(hex);
                     end
-                elseif hex:IsWater() then
-                    _Debug("Found water mountain");
-                    self:TerraformSetTerrain(hex, g_TERRAIN_TYPE_PLAINS_MOUNTAIN);
+                elseif hex.FeatureType ~= g_FEATURE_VOLCANO  then 
+                    -- Clear all mountains adjacents to lakes and store them in table
+                    local nextToLake = false
+                    local ring1 = hex.AllRing6Map[1];
+                    local impassableRing1 = 0
+                    local mountainClusterSize = hex.Plot:GetArea():GetPlotCount()
+                    for _, r1 in pairs(ring1) do
+                        if r1.Plot:IsLake() then
+                            self:TerraformMountainToHill(hex)
+                        else 
+                            impassableRing1 = impassableRing1 + 1
+                        end
+                    end
+                    local rng = TerrainBuilder.GetRandomNumber(100, "Random");
+                    -- For huge clusters, keep a part of rng so it doesnt disappear completely
+                    local maxRng = math.min(mountainClusterSize * 2, 70)
+                    maxRng = math.max(mountainClusterSize * 2, 25)
+                    if mountainClusterSize > 8 and rng < maxRng then
+                        self:TerraformMountainToHill(hex)
+                        local yieldRng =  TerrainBuilder.GetRandomNumber(100, "Random");
+                        if yieldRng < 10 then
+                            self:TerraformTo22Yields(hex, true) 
+                        elseif yieldRng < 20 then
+                            self:TerraformAdd1Food(hex)
+                        elseif yieldRng < 30 then
+                            self:TerraformAdd1Prod(hex)
+                        elseif yieldRng < 55 then
+                            self:TerraformToFlat(hex, true) 
+                        end
+                    end
                 end
             end
         end
