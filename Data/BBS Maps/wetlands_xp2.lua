@@ -18,7 +18,7 @@ include "BBS_ResourceGenerator"
 include "CoastalLowlands"
 include "AssignStartingPlots"
 include "BBM_AssignStartingPlots"
-include "BBS_Balance"								 					 
+								 					 
 
 local g_iW, g_iH;
 local g_iFlags = {};
@@ -141,8 +141,7 @@ function GenerateMap()
 		START_MAX_Y = 15,
 		START_CONFIG = startConfig,
 	};
-	local start_plot_database = BBS_Assign(args)
-	local Balance = BBS_Script()						 
+	local start_plot_database = BBS_Assign(args)			 
 
 	local GoodyGen = AddGoodiesBBM(g_iW, g_iH);
 	AreaBuilder.Recalculate();					   

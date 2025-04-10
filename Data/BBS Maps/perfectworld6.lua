@@ -36,7 +36,7 @@ include "ResourceGenerator"
 include "CoastalLowlands"
 include "AssignStartingPlots"
 include "BBM_AssignStartingPlots"
-include "BBS_Balance"
+
 -------------------------------------------------------------------------------
 function BBS_Assign(args)
 	print("BBS_Assign: Injecting Spawn Placement")
@@ -408,7 +408,6 @@ function GenerateMap()
 		LAND = true,
 	})
 	
-	local Balance = BBS_Script()
 	local gridWidth, gridHeight = Map.GetGridSize();
     AddGoodies(gridWidth, gridHeight);
 	print("finished adding goodies")

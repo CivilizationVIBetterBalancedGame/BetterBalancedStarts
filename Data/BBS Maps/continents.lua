@@ -18,7 +18,7 @@ include "BBS_ResourceGenerator"
 include "CoastalLowlands"
 include "AssignStartingPlots"
 include "BBM_AssignStartingPlots"
-include "BBS_Balance"
+
 
 local g_iW, g_iH;
 local g_iFlags = {};
@@ -144,7 +144,6 @@ function GenerateMap()
 
 	local GoodyGen = AddGoodiesBBM(g_iW, g_iH);
 	
-	local Balance = BBS_Script()
 	AreaBuilder.Recalculate();
 	TerrainBuilder.AnalyzeChokepoints();		
 		

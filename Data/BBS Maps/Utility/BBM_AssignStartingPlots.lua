@@ -411,9 +411,7 @@ function BBM_AssignStartingPlots:__InitStartingData()
     _Debug("totalCostal = "..tostring(#BBM_HexMap.mapCostal))
     local hillpercent = (countHills / countLandTiles) * 100
     _Debug("Hill% = "..tostring(hillpercent).." %")
-     --------------------
-     _Debug("Done parsing map",  os.date("%c"))
-    _Debug("END BBM WORK",  os.date("%c"))
+    _Debug("Done parsing map",  os.date("%c"))
 end
 
 function BBM_AssignStartingPlots:__PlaceMajorCivs(civs, BBM_HexMap, index) 

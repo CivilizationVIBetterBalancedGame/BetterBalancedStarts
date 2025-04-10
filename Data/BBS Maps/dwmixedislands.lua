@@ -17,7 +17,7 @@ include "BBS_ResourceGenerator"
 include "DW_CoastalLowlands"
 include "AssignStartingPlots"
 include "BBM_AssignStartingPlots";
-include "BBS_Balance";
+
 local g_iW, g_iH;
 local g_iFlags = {};
 local g_continentsFrac = nil;
@@ -115,8 +115,9 @@ function GenerateMap()
 		LAND = false,
 	};
 	local start_plot_database = BBS_Assign(args)
-
-		local GoodyGen = AddGoodies(g_iW, g_iH);	local Balance = BBS_Script();	AreaBuilder.Recalculate();	TerrainBuilder.AnalyzeChokepoints();
+	local GoodyGen = AddGoodies(g_iW, g_iH);
+	AreaBuilder.Recalculate();
+	TerrainBuilder.AnalyzeChokepoints();
 end
 
 -------------------------------------------------------------------------------

@@ -17,7 +17,7 @@ include "BBS_NaturalWonderGenerator"
 include "BBS_ResourceGenerator"
 include "CoastalLowlands"
 include "AssignStartingPlots"
-include "BBM_AssignStartingPlots";include "BBS_Balance";local g_iW, g_iH;
+include "BBM_AssignStartingPlots";local g_iW, g_iH;
 local g_iFlags = {};
 local g_continentsFrac = nil;
 local featureGen = nil;
