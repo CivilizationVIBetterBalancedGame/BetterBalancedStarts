@@ -246,7 +246,7 @@ WestTeam = "West";
 
 
 function _Debug(...)
-    print(...);
+    --print(...);
 end
 
 ---------------------------------------
@@ -3003,7 +3003,7 @@ function HexMap:GlobalMountainsTerraform()
                     local rng = TerrainBuilder.GetRandomNumber(100, "Random");
                     -- For huge clusters, keep a part of rng so it doesnt disappear completely
                     local maxRng = math.min(mountainClusterSize * 2, 70)
-                    maxRng = math.max(mountainClusterSize * 2, 25)
+                    maxRng = math.max(maxRng, 25)
                     if mountainClusterSize > 8 and rng < maxRng then
                         self:TerraformMountainToHill(hex)
                         local yieldRng =  TerrainBuilder.GetRandomNumber(100, "Random");
