@@ -173,13 +173,17 @@ function BBM_AssignStartingPlots.Create(args)
     -- Define scores for centroids and place 
     local team1Index = 0;
     local team2Index = 0;
+    local firstTeamNumber = nil;
     for _, civ in pairs(BBM_Civilisations) do
         -- On RTS East vs West mod, define position by index (spectator excluded) pp
         -- With odd number teams, the additionnal player will be in sim position
         _Debug("BBM_Teams[civ.CivilizationTeam] = ", civ.CivilizationTeam, BBM_Teams[civ.CivilizationTeam])
         if civ.CivilizationLeader ~= BBS_LEADER_TYPE_SPECTATOR then
             local playerTeamIndex;
-            if civ.CivilizationTeam == 1 then
+            if firstTeamNumber == nil then
+                firstTeamNumber = civ.CivilizationTeam
+            end
+            if civ.CivilizationTeam == firstTeamNumber then
                 team1Index = team1Index + 1;
                 playerTeamIndex = team1Index;
             else
