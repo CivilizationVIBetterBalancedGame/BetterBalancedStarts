@@ -17,11 +17,17 @@
 
 		<!-- === SETTINGS - PARAMÈTRES	=== -->
 		<!-- = Map Sizes = -->
+		<Replace Tag="LOC_MAPSIZE_HUGE_NAME" Language="fr_FR">
+			<Text>Immense</Text>
+		</Replace>
+		<Replace Tag="LOC_MAPSIZE_HUGE_DESCRIPTION" Language="fr_FR">
+			<Text>Carte immense pour douze joueurs.</Text>
+		</Replace>
 		<Replace Tag="LOC_MAPSIZE_ENORMOUS_NAME" Language="fr_FR">
 			<Text>Gigantesque</Text>
 		</Replace>
 		<Replace Tag="LOC_MAPSIZE_ENORMOUS_DESCRIPTION" Language="fr_FR">
-			<Text>Map pour 16 joueurs.</Text>
+			<Text>Carte gigantesque pour pour seize joueurs.</Text>
 		</Replace>
 		<!-- = Setup = -->
 		<Replace Tag="LOC_GAME_SPAWN_RECALCULATION" Language="fr_FR">

@@ -15,14 +15,17 @@
 		<Text id="LOC_BBM_TITLE">
 			<en_US>Better Balanced Map 1.20</en_US>
 			<fr_FR>Better Balanced Map 1.20</fr_FR>
+			<de_DE>Better Balanced Map 1.20</de_DE>
 		</Text>
 		<Text id="LOC_BBM_TEASER">
 			<en_US>Balanced spawn placement location and yields.</en_US>
             <fr_FR>Mod d'équilibrage de placement et des rendements des emplacements de départ.</fr_FR>
+			<de_DE>Ausgeglichene Platzierung der Startpositionen von Civilisationen, Erträgen und Ressourcen. Neue Karteneinstellungen und Naturwunder.</de_DE>
 		</Text>
 		<Text id="LOC_BBM_DESCRIPTION">
 			<en_US>Balanced spawn placement location and yields.[NEWLINE][NEWLINE]Taking account for civilization biases.[NEWLINE][NEWLINE]Ensure minimum yields around start location.[NEWLINE][NEWLINE]Ensure having enough space to settle around starting location.</en_US>
             <fr_FR>Mod d'équilibrage de placement et des rendements des emplacements de départ.[NEWLINE][NEWLINE]Prise en compte des préférences des civilisations.[NEWLINE][NEWLINE]Assure un minimum de rendements sur les cases proches du départ.[NEWLINE][NEWLINE]Assure suffisamment d'espace pour poser d'autres villes autour.</fr_FR>
+			<de_DE>Ausgeglichene Platzierung der Startpositionen von Civilisationen, Erträgen und Ressourcen.[NEWLINE][NEWLINE]Berücksichtigung der Präferenzen der Zivilisationen.[NEWLINE][NEWLINE]Gewährleistet minimale Erträge auf Feldern in der Nähe des Startpunkts.[NEWLINE][NEWLINE]Gewährleistet ausreichend Platz für weitere Städte in der Umgebung.[NEWLINE][NEWLINE]Einstellung der Gebirgsketten-Modifikation.[NEWLINE][NEWLINE] Einstellung der Menge an Schwemmlandfeldern pro Fluss.[NEWLINE][NEWLINE]Einstellung der Team-Startposition.[NEWLINE][NEWLINE]Neue Naturwunder.</de_DE>
 		</Text>
 	</LocalizedText>
 	

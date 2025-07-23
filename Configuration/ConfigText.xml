@@ -98,7 +98,7 @@
 		  <Text>Enormous</Text>
 	</Replace>
 	<Replace Tag="LOC_MAPSIZE_ENORMOUS_DESCRIPTION" Language="en_US">
-		  <Text>Huge map for 16 players</Text>
+		  <Text>Enormous map for 16 players</Text>
 	</Replace>
 	<Replace Tag="LOC_GAME_BBS_SRESOURCES_NAME" Language="en_US">
 		  <Text>Strategic Resources</Text>

@@ -464,7 +464,7 @@
 			<Text>维多利亚湖</Text>
 		</Replace>
 		<Replace Tag="LOC_FEATURE_LAKE_VICTORIA_DESCRIPTION" Language="zh_Hans_CN">
-			<Text>占4个单元格的自然奇观，表现为湖泊。提供+3 [ICON_FOOD] 食物、+1 [ICON_CULTURE] 文化、+1 [ICON_PRODUCTION] 生产力、+1 [ICON_GOLD] 金币。</Text>
+			<Text>占4个单元格的自然奇观，表现为湖泊。提供+2 [ICON_FOOD] 食物、+1 [ICON_CULTURE] 文化、+1 [ICON_PRODUCTION] 生产力、+1 [ICON_GOLD] 金币。</Text>
 		</Replace>
 		<Replace Tag="LOC_FEATURE_LAKE_VICTORIA_QUOTE" Language="zh_Hans_CN">
 			<Text>“我毫不怀疑地看到了尼罗河老父亲的起源在维多利亚尼亚湖中，正如我所预言的，那个湖是孕育了我们宗教信仰的第一位阐述者的神圣河流的伟大源头。”[NEWLINE]——约翰·汉宁·斯派克</Text>
