@@ -20,6 +20,7 @@ MapScripts.MAP_WETLANDS = "Wetlands_XP2.lua"
 MapScripts.MAP_CONTINENTS_ISLANDS = "Continents_Islands.lua"
 MapScripts.MAP_SPLINTERED_FRACTAL = "Splintered_Fractal.lua"
 MapScripts.MAP_TERRA = "Terra.lua"
+MapScripts.MAP_PANGAEA_SMALL_OCEAN = "pangaea_small_ocean.lua"
 
 g_FEATURE_VOLCANO			    = GetGameInfoIndex("Features", "FEATURE_VOLCANO");
 g_FEATURE_VOLCANIC_SOIL			= GetGameInfoIndex("Features", "FEATURE_VOLCANIC_SOIL");
@@ -818,11 +819,14 @@ function HexMap:SetMinimumDistanceMajorToMajorCivs()
     if minDistanceConfig == 0 then
         if self.mapScript == MapScripts.MAP_HIGHLANDS 
         or self.mapScript == MapScripts.MAP_LAKES 
-        or self.mapScript == MapScripts.MAP_RICH_HIGHLANDS then
+        or self.mapScript == MapScripts.MAP_RICH_HIGHLANDS
+        or self.mapScript == MapScripts.MAP_HIGHLANDS_RVRS then
             return 15;
-        elseif self.mapScript == MapScripts.MAP_INLAND_SEA then
+        elseif self.mapScript == MapScripts.MAP_INLAND_SEA 
+        or self.mapScript == MapScripts.MAP_PANGAEA_SMALL_OCEAN then
             return 14;
-        elseif self.mapScript == MapScripts.MAP_SEVEN_SEAS then
+        elseif self.mapScript == MapScripts.MAP_SEVEN_SEAS
+         then
             return 13;
         elseif self.mapScript == MapScripts.MAP_PANGAEA 
             or self.mapScript == MapScripts.MAP_SHUFFLE 
