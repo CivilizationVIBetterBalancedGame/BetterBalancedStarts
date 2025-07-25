@@ -1,9 +1,11 @@
 <GameInfo>
-	<Maps>
-		<!--  New DW Maps -->
-		<Row Domain="Maps:Expansion2Maps" File="Tilted_Axis_Wrap.lua" Name="LOC_MAP_NAME_TILTED_WRAP" Description="LOC_MAP_DESC_TILTED_WRAP" Image="Map_Tilted" SortIndex="259"/>
-		<Row Domain="Maps:Expansion2Maps" File="rich_highlands_xp2.lua" Name="Rich Highlands" Description="Highlands, with more resources" Image="Map_Pangea" SortIndex="260"/>
-	</Maps>
+    <Maps>
+        <!--  New DW Maps -->
+        <Row Domain="Maps:Expansion2Maps" File="Tilted_Axis_Wrap.lua" Name="LOC_MAP_NAME_TILTED_WRAP" Description="LOC_MAP_DESC_TILTED_WRAP" Image="Map_Tilted" SortIndex="259"/>
+        <Row Domain="Maps:Expansion2Maps" File="rich_highlands_xp2.lua" Name="Rich Highlands" Description="Highlands, with more resources" Image="Map_Pangea" SortIndex="260"/>
+		<Row Domain="Maps:Expansion2Maps" File="pangaea_small_ocean.lua" Name="Pangaea (Small Ocean)" Description="A pangaea map with reduced ocean for more usable land" Image="Map_Pangea" SortIndex="262"/>
+
+    </Maps>
 	
 	<Parameters>
 		<!--  Legacy Beta Sliders -->
@@ -149,6 +151,15 @@
 		<Row Key1="Map" Key2="EarthStandard_XP2.lua" ParameterId="EarthStandard_XP2MapName" 		Name="MapName" Description="" Domain="text" DefaultValue="EarthStandard_XP2" 		ConfigurationGroup="Map" ConfigurationId="MapName" GroupId="MapOptions" Visible="0" SortIndex="2010"/>
 		<Row Key1="Map" Key2="TSLEarthStandard_XP2.lua" ParameterId="TSLEarthStandard_XP2MapName" 		Name="MapName" Description="" Domain="text" DefaultValue="TSLEarthStandard_XP2" 		ConfigurationGroup="Map" ConfigurationId="MapName" GroupId="MapOptions" Visible="0" SortIndex="2010"/>
 	
+		<Row Key1="Map" Key2="pangaea_small_ocean.lua" ParameterId="PangaeaSmallOceanMapName" Name="MapName" Description="" Domain="text" DefaultValue="Pangaea_Small_Ocean" ConfigurationGroup="Map" ConfigurationId="MapName" GroupId="MapOptions" Visible="0" SortIndex="2010"/>
+		<Row Key1="Map" Key2="pangaea_small_ocean.lua" ParameterId="SpawnRecalculation" Name="LOC_GAME_SPAWN_RECALCULATION" Description="LOC_GAME_SPAWN_RECALCULATION_DESC" Domain="bool" DefaultValue="1" ConfigurationGroup="Game" ConfigurationId="SpawnRecalculation" GroupId="BBSOptions" SortIndex="2050"/>
+		<Row Key1="Map" Key2="pangaea_small_ocean.lua" ParameterId="AutoRemap" Name="LOC_GAME_SPAWN_REMAP" Description="LOC_GAME_SPAWN_REMAP_DESC" Domain="bool" DefaultValue="0" ConfigurationGroup="Game" ConfigurationId="AutoRemap" GroupId="AdvancedOptions" Visible="0" SortIndex="2051"/>
+		<Row Key1="Map" Key2="pangaea_small_ocean.lua" ParameterId="BBStemp" Name="LOC_GAME_BBS_TEMP" Description="LOC_GAME_BBS_TEMP_DESC" Domain="bool" DefaultValue="1" ConfigurationGroup="Game" ConfigurationId="BBStemp" GroupId="AdvancedOptions" Visible="0" SortIndex="2052"/>
+		<Row Key1="Map" Key2="pangaea_small_ocean.lua" ParameterId="BBM_Team_Spawn" Name="LOC_BBM_Team_Spawn_NAME" Description="LOC_BBM_Team_Spawn_DESC" Domain="BBM_Team_Spawn" DefaultValue="0" ConfigurationGroup="Map" ConfigurationId="BBM_Team_Spawn" GroupId="MapOptions" Visible="1" Hash="0" SortIndex="2053"/>
+		<Row Key1="Map" Key2="pangaea_small_ocean.lua" ParameterId="WorldAge" Name="LOC_MAP_WORLD_AGE_NAME" Description="LOC_MAP_WORLD_AGE_DESCRIPTION" Domain="WorldAge" DefaultValue="2" ConfigurationGroup="Map" ConfigurationId="world_age" GroupId="MapOptions" Hash="0" SortIndex="230"/>
+		<Row Key1="Map" Key2="pangaea_small_ocean.lua" ParameterId="Temperature" Name="LOC_MAP_TEMPERATURE_NAME" Description="LOC_MAP_TEMPERATURE_DESCRIPTION" Domain="Temperature" DefaultValue="2" ConfigurationGroup="Map" ConfigurationId="temperature" GroupId="MapOptions" Hash="0" SortIndex="240"/>
+		<Row Key1="Map" Key2="pangaea_small_ocean.lua" ParameterId="Rainfall" Name="LOC_MAP_RAINFALL_NAME" Description="LOC_MAP_RAINFALL_DESCRIPTION" Domain="Rainfall" DefaultValue="2" ConfigurationGroup="Map" ConfigurationId="rainfall" GroupId="MapOptions" Hash="0" SortIndex="250"/>
+			
 	</Parameters>
 
 	<DomainValues>

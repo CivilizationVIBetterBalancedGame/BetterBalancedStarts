@@ -171,6 +171,7 @@
 	<File>Data/BBS Maps/island_plates.lua</File>
 	<File>Data/BBS Maps/lakes.lua</File>
 	<File>Data/BBS Maps/pangaea.lua</File>
+    <File>Data/BBS Maps/pangaea_small_ocean.lua</File>
 	<File>Data/BBS Maps/primordial.lua</File>
 	<File>Data/BBS Maps/seven_seas.lua</File>
 	<File>Data/BBS Maps/shuffle.lua</File>
@@ -356,6 +357,7 @@
 	<File>Data/BBS Maps/island_plates.lua</File>
 	<File>Data/BBS Maps/lakes.lua</File>
 	<File>Data/BBS Maps/pangaea.lua</File>
+    <File>Data/BBS Maps/pangaea_small_ocean.lua</File>
 	<File>Data/BBS Maps/primordial.lua</File>
 	<File>Data/BBS Maps/seven_seas.lua</File>
 	<File>Data/BBS Maps/shuffle.lua</File>

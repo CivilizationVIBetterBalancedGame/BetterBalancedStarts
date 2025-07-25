@@ -969,7 +969,7 @@ function SpawnBalancing:CheckLuxThreshold()
     while self.InnerRingLuxCount < self.MinLuxInnerRingThreshold do
         local randomHexLux = self:TerraformInRingsRandomOrder(2, 3, TerraformType[11], 0, false, false, false);
         if randomHexLux ~= nil then
-            print("CheckLuxThreshold - Added lux ");
+            print("CheckLuxThreshold - Added lux ", randomHexLux:PrintXY());
             self.InnerRingLuxCount = self.InnerRingLuxCount + 1;
             randomHexLux:SetTaggedAsMinimum(true);
         else
@@ -988,7 +988,7 @@ function SpawnBalancing:CheckLuxThreshold()
             self.OuterRingLuxCount = self.MinLuxOuterRingThreshold;
         end
     end
-    print("CheckLuxThreshold DONE", self.Civ.CivilizationLeader)
+    print("CheckLuxThreshold DONE", self.Civ.CivilizationLeader, self.InnerRingLuxCount)
 end
 
 
