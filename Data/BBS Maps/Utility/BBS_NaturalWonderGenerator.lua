@@ -265,7 +265,6 @@ function BBS_NaturalWonderGenerator:__ScorePlots(NWIndex)
 		else
 			iDistanceScore = 1500 + (iClosestConflictingDist - 10);
 		end
-		print("iDistanceScore ", iDistanceScore, "iClosestConflictingDist",  iClosestConflictingDist)
 		row.Score = iDistanceScore + TerrainBuilder.GetRandomNumber(100, "Natural Wonder Placement Score Adjust");
 	end
 end

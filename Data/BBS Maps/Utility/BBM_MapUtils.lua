@@ -819,8 +819,7 @@ function HexMap:SetMinimumDistanceMajorToMajorCivs()
     if minDistanceConfig == 0 then
         if self.mapScript == MapScripts.MAP_HIGHLANDS 
         or self.mapScript == MapScripts.MAP_LAKES 
-        or self.mapScript == MapScripts.MAP_RICH_HIGHLANDS
-        or self.mapScript == MapScripts.MAP_HIGHLANDS_RVRS then
+        or self.mapScript == MapScripts.MAP_RICH_HIGHLANDS then
             return 15;
         elseif self.mapScript == MapScripts.MAP_INLAND_SEA 
         or self.mapScript == MapScripts.MAP_PANGAEA_SMALL_OCEAN then
