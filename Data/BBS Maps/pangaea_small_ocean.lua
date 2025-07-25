@@ -918,7 +918,6 @@ function AddExtraHills(plotTypes)
 end
 
 ------------------------------------------------------------------------------
--- function to fill inland seas
 function FillInlandSeas(plotTypes)
     print("Filling inland seas to maintain true Pangaea shape");
     
@@ -931,6 +930,10 @@ function FillInlandSeas(plotTypes)
         local stack = {{x = x, y = y}};
         local waterBody = {};
         local reachedTopBottomEdge = false;
+        local touchesLeftRightEdge = false;
+        local isLargeWaterBody = false;
+        local edgeCount = 0;
+        local MAX_SIZE_TO_FILL = 400; -- Don't fill water bodies larger than this
         
         while #stack > 0 do
             local curr = table.remove(stack);
@@ -942,9 +945,20 @@ function FillInlandSeas(plotTypes)
                 if plotTypes[i] == g_PLOT_TYPE_OCEAN then
                     table.insert(waterBody, i);
                     
-                    -- Only check top and bottom edges for a cylindrical map
+                    -- Check if this water body is getting too large
+                    if #waterBody > MAX_SIZE_TO_FILL then
+                        isLargeWaterBody = true;
+                    end
+                    
+                    -- Check if we reached any map edge
                     if curr.y == 0 or curr.y == g_iH - 1 then
                         reachedTopBottomEdge = true;
+                        edgeCount = edgeCount + 1;
+                    end
+                    
+                    if curr.x == 0 or curr.x == g_iW - 1 then
+                        touchesLeftRightEdge = true;
+                        edgeCount = edgeCount + 1;
                     end
                     
                     -- Add adjacent water tiles to the stack
@@ -964,7 +978,51 @@ function FillInlandSeas(plotTypes)
             end
         end
         
-        return waterBody, reachedTopBottomEdge;
+        -- Calculate edge ratio: how much of this water body is touching map edges
+        local edgeRatio = 0;
+        if #waterBody > 0 then
+            edgeRatio = edgeCount / #waterBody;
+        end
+        
+        -- Also check water body perimeter to see how enclosed it is
+        local landPerimeterCount = 0;
+        local edgePerimeterCount = 0;
+        local totalPerimeter = 0;
+        
+        for _, plotIndex in ipairs(waterBody) do
+            local y = math.floor(plotIndex / g_iW);
+            local x = plotIndex % g_iW;
+            
+            for direction = 0, 5 do
+                local adjPlot = Map.GetAdjacentPlot(x, y, direction);
+                if adjPlot then
+                    totalPerimeter = totalPerimeter + 1;
+                    local adjX = adjPlot:GetX();
+                    local adjY = adjPlot:GetY();
+                    
+                    -- Check if adjacent tile is at map edge
+                    if adjX == 0 or adjX == g_iW - 1 or adjY == 0 or adjY == g_iH - 1 then
+                        edgePerimeterCount = edgePerimeterCount + 1;
+                    elseif plotTypes[adjY * g_iW + adjX] ~= g_PLOT_TYPE_OCEAN then
+                        landPerimeterCount = landPerimeterCount + 1;
+                    end
+                end
+            end
+        end
+        
+        -- Calculate percentage of perimeter that is land
+        local landPerimeterRatio = 0;
+        if totalPerimeter > 0 then
+            landPerimeterRatio = landPerimeterCount / totalPerimeter;
+        end
+        
+        -- If this water body has more than 70% of its perimeter as land, it's considered enclosed
+        local isEnclosed = landPerimeterRatio > 0.7;
+        
+        -- Determine if this is a partially enclosed sea at map edge
+        local isPartiallyEnclosedEdgeSea = reachedTopBottomEdge and edgeRatio < 0.5 and landPerimeterRatio > 0.5;
+        
+        return waterBody, reachedTopBottomEdge, isLargeWaterBody, isEnclosed, isPartiallyEnclosedEdgeSea;
     end
     
     -- Visit all water plots and check if they're part of an inland sea
@@ -974,14 +1032,28 @@ function FillInlandSeas(plotTypes)
             local i = y * g_iW + x;
             
             if not visited[i] and plotTypes[i] == g_PLOT_TYPE_OCEAN then
-                local waterBody, reachedTopBottomEdge = FloodFill(x, y, visited);
+                local waterBody, reachedTopBottomEdge, isLargeWaterBody, isEnclosed, isPartiallyEnclosedEdgeSea = 
+                    FloodFill(x, y, visited);
                 
-                -- If this water body doesn't reach the top or bottom map edge, it's an inland sea
+                -- Fill inland seas and partially enclosed edge seas that aren't the main ocean
+                local shouldFill = false;
+                
                 if not reachedTopBottomEdge then
-                    -- Fill all inland seas - don't worry about size in a Pangaea map
+                    -- Traditional inland seas completely surrounded by land
                     print("Found inland sea with " .. #waterBody .. " water tiles");
-                    
-                    -- Convert all water tiles in this inland sea to land
+                    shouldFill = true;
+                elseif isPartiallyEnclosedEdgeSea and not isLargeWaterBody then
+                    -- Smaller seas that touch map edge but are mostly enclosed by land
+                    print("Found partially enclosed edge sea with " .. #waterBody .. " water tiles");
+                    shouldFill = true;
+                elseif isEnclosed and not isLargeWaterBody then
+                    -- Small seas that are mostly enclosed, regardless of edge contact
+                    print("Found mostly enclosed sea with " .. #waterBody .. " water tiles");
+                    shouldFill = true;
+                end
+                
+                if shouldFill then
+                    -- Convert all water tiles in this sea to land
                     for _, waterPlotIndex in ipairs(waterBody) do
                         plotTypes[waterPlotIndex] = g_PLOT_TYPE_LAND;
                         waterPlotsConverted = waterPlotsConverted + 1;
@@ -995,7 +1067,7 @@ function FillInlandSeas(plotTypes)
     end
     
     print("Water plots detected: " .. waterPlotCount);
-    print("Inland sea water plots converted to land: " .. waterPlotsConverted);
+    print("Water plots converted to land: " .. waterPlotsConverted);
     
     return plotTypes;
 end
