@@ -988,7 +988,7 @@ function SpawnBalancing:CheckLuxThreshold()
             self.OuterRingLuxCount = self.MinLuxOuterRingThreshold;
         end
     end
-    print("CheckLuxThreshold DONE", self.Civ.CivilizationLeader, self.InnerRingLuxCount)
+    print("CheckLuxThreshold DONE", self.Civ.CivilizationLeader)
 end
 
 
