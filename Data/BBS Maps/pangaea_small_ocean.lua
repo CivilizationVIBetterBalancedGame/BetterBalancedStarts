@@ -186,12 +186,6 @@ function GenerateMap()
 	
 	AreaBuilder.Recalculate();
 	TerrainBuilder.AnalyzeChokepoints();
-
-    
-    -- Calculate differences
-    print("=== TERRAIN CHANGES SUMMARY ===");
-    print("Settleable changes from normalization to final: " .. (finalStats.settleable - normalizeStats.settleable));
-    print("===============================");
     
 	-- write map stats to the log
     local mapStats = PrintMapStatistics();
