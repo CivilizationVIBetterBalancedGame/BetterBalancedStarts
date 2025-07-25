@@ -342,6 +342,10 @@ function GeneratePlotTypes(world_age)
 	-- Apply pre-tectonic smoothing to create a better landmass shape
 	plotTypes = PreTectonicSmoothing(plotTypes);
 
+	-- after general smoothing, refine coastlines to get rid of 'lonley coast land'
+	plotTypes = SmoothLonelyCoastlines(plotTypes);
+	
+
 	plotTypes = ApplyTectonics(args, plotTypes);
 	if (MapConfiguration.GetValue("BBSRidge") == 1) then
 		local mountainRatio = 8 + world_age * 3;
@@ -751,6 +755,81 @@ function PreTectonicSmoothing(plotTypes)
 end
 -------------------------------------------------------------------------------
 
+function SmoothLonelyCoastlines(plotTypes)
+    print("Performing ultra-aggressive coastline smoothing");
+    
+    local g_iW, g_iH = Map.GetGridSize();
+    local lonelyLandRemoved = 0;
+    
+    -- Do multiple passes for maximum thoroughness
+    for pass = 1, 3 do
+        local changes = {};
+        local passRemoved = 0;
+        
+        -- Process the entire map including edges
+        for y = 0, g_iH - 1 do
+            for x = 0, g_iW - 1 do
+                local i = y * g_iW + x;
+                
+                -- Only process land tiles
+                if plotTypes[i] ~= g_PLOT_TYPE_OCEAN then
+                    -- Count hexagonal water neighbors (more accurate than 8-way)
+                    local waterNeighbors = 0;
+                    
+                    for direction = 0, 5 do
+                        local newX, newY;
+                        
+                        if direction == 0 then -- NE
+                            newX, newY = x + 1, y - 1;
+                        elseif direction == 1 then -- E
+                            newX, newY = x + 1, y;
+                        elseif direction == 2 then -- SE
+                            newX, newY = x, y + 1;
+                        elseif direction == 3 then -- SW
+                            newX, newY = x - 1, y + 1;
+                        elseif direction == 4 then -- W
+                            newX, newY = x - 1, y;
+                        elseif direction == 5 then -- NW
+                            newX, newY = x, y - 1;
+                        end
+                        
+                        if newX >= 0 and newX < g_iW and newY >= 0 and newY < g_iH then
+                            local ni = newY * g_iW + newX;
+                            if plotTypes[ni] == g_PLOT_TYPE_OCEAN then
+                                waterNeighbors = waterNeighbors + 1;
+                            end
+                        end
+                    end
+                    
+                    -- ULTRA-aggressive - Even tiles with just 3+ water neighbors are converted to water
+                    if waterNeighbors >= 3 then
+                        changes[i] = g_PLOT_TYPE_OCEAN;
+                        passRemoved = passRemoved + 1;
+                    end
+                end
+            end
+        end
+        
+        -- Apply changes
+        for i, plotType in pairs(changes) do
+            plotTypes[i] = plotType;
+            g_iNumTotalLandTiles = g_iNumTotalLandTiles - 1;
+        end
+        
+        lonelyLandRemoved = lonelyLandRemoved + passRemoved;
+        print("Pass " .. pass .. ": Removed " .. passRemoved .. " lonely coastline tiles");
+        
+        -- If we didn't find many tiles to fix, we can stop
+        if passRemoved < 10 then
+            break;
+        end
+    end
+    
+    print("Ultra-aggressive coastline smoothing complete: Removed " .. lonelyLandRemoved .. " lonely coastline tiles");
+    
+    return plotTypes;
+end
+
 function AddExtraHills(plotTypes)
     print("Adding extra hills to the map");
     
@@ -851,7 +930,7 @@ function FillInlandSeas(plotTypes)
     local function FloodFill(x, y, visited)
         local stack = {{x = x, y = y}};
         local waterBody = {};
-        local reachedMapEdge = false;
+        local reachedTopBottomEdge = false;
         
         while #stack > 0 do
             local curr = table.remove(stack);
@@ -863,9 +942,9 @@ function FillInlandSeas(plotTypes)
                 if plotTypes[i] == g_PLOT_TYPE_OCEAN then
                     table.insert(waterBody, i);
                     
-                    -- Check if we reached the map edge
-                    if curr.x == 0 or curr.x == g_iW - 1 or curr.y == 0 or curr.y == g_iH - 1 then
-                        reachedMapEdge = true;
+                    -- Only check top and bottom edges for a cylindrical map
+                    if curr.y == 0 or curr.y == g_iH - 1 then
+                        reachedTopBottomEdge = true;
                     end
                     
                     -- Add adjacent water tiles to the stack
@@ -885,7 +964,7 @@ function FillInlandSeas(plotTypes)
             end
         end
         
-        return waterBody, reachedMapEdge;
+        return waterBody, reachedTopBottomEdge;
     end
     
     -- Visit all water plots and check if they're part of an inland sea
@@ -895,10 +974,10 @@ function FillInlandSeas(plotTypes)
             local i = y * g_iW + x;
             
             if not visited[i] and plotTypes[i] == g_PLOT_TYPE_OCEAN then
-                local waterBody, reachedMapEdge = FloodFill(x, y, visited);
+                local waterBody, reachedTopBottomEdge = FloodFill(x, y, visited);
                 
-                -- If this water body doesn't reach the map edge, it's an inland sea
-                if not reachedMapEdge then
+                -- If this water body doesn't reach the top or bottom map edge, it's an inland sea
+                if not reachedTopBottomEdge then
                     -- Fill all inland seas - don't worry about size in a Pangaea map
                     print("Found inland sea with " .. #waterBody .. " water tiles");
                     
@@ -920,7 +999,6 @@ function FillInlandSeas(plotTypes)
     
     return plotTypes;
 end
-
 -------------------------------------------------------------------------------
 -- Function to print detailed map statistics
 -- This function collects and prints statistics about the map, including terrain distribution and water coverage.
