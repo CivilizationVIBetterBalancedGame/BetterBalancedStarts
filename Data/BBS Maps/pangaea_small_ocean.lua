@@ -108,10 +108,10 @@ function GenerateMap()
 	end
 	ApplyBaseTerrain(plotTypes, terrainTypes, g_iW, g_iH);
 	
-	-- optimize terrain to limit desert
+	-- -- optimize terrain to limit desert
     OptimizeDesert();
 
-	-- normalize settleable tiles to reach ~2700
+	-- -- normalize settleable tiles to reach ~2700
 	NormalizeSettleableTiles();
 
 	AreaBuilder.Recalculate();
@@ -137,6 +137,9 @@ function GenerateMap()
 	-- Lakes would interfere with rivers, causing them to stop and not reach the ocean, if placed any sooner.
 	local numLargeLakes = math.ceil(GameInfo.Maps[Map.GetMapSize()].Continents * 1.5);
 	AddLakes(numLargeLakes);
+
+	-- get rid of snow
+	ReduceSnowCoverage();
 
 	AddFeatures();
 	TerrainBuilder.AnalyzeChokepoints();
@@ -332,14 +335,10 @@ function GeneratePlotTypes(world_age)
 	args.blendFract = 1;
 	args.extra_mountains = 4;
 
-	-- Call our ocean conversion function before applying tectonics, so that the tectonic plates are not too small.
-	-- this function is aimed to get rid of small bays an inlets so the map is more Pangaea-like.
-	plotTypes = ConvertOceanToLand(plotTypes);
-
-	-- Fill inland seas to create a true Pangaea with no interior water bodies
+	-- --Fill inland seas to create a true Pangaea with no interior water bodies
 	plotTypes = FillInlandSeas(plotTypes);
 
-	-- Apply pre-tectonic smoothing to create a better landmass shape
+	--Apply pre-tectonic smoothing to create a better landmass shape
 	plotTypes = PreTectonicSmoothing(plotTypes);
 
 	-- after general smoothing, refine coastlines to get rid of 'lonley coast land'
@@ -462,52 +461,6 @@ function GeneratePlotTypes(world_age)
 	
 	return plotTypes;
 end
-
-function ConvertOceanToLand(plotTypes)
-    print("Post-processing to convert more ocean to land");
-    
-    local g_iW, g_iH = Map.GetGridSize();
-    
-    -- First pass: identify isolated ocean tiles and small bays to convert
-    local oceanToLandPlots = {};
-    for y = 1, g_iH - 2 do
-        for x = 1, g_iW - 2 do
-            local i = y * g_iW + x;
-            
-            if plotTypes[i] == g_PLOT_TYPE_OCEAN then
-                local landNeighbors = 0;
-                
-                -- Check 8 surrounding tiles
-                for dy = -1, 1 do
-                    for dx = -1, 1 do
-                        if not (dx == 0 and dy == 0) then
-                            local ni = (y + dy) * g_iW + (x + dx);
-                            if ni >= 0 and ni < #plotTypes and plotTypes[ni] ~= g_PLOT_TYPE_OCEAN then
-                                landNeighbors = landNeighbors + 1;
-                            end
-                        end
-                    end
-                end
-
-                -- Convert ocean to land if it's mostly surrounded by land (4+ land neighbors)
-                if landNeighbors >= 4 then
-                    table.insert(oceanToLandPlots, i);
-                end
-            end
-        end
-    end
-    
-    -- Apply the changes
-    for _, i in ipairs(oceanToLandPlots) do
-        plotTypes[i] = g_PLOT_TYPE_LAND;
-        g_iNumTotalLandTiles = g_iNumTotalLandTiles + 1;
-    end
-    
-    print("Converted " .. #oceanToLandPlots .. " ocean plots to land");
-    
-    return plotTypes;
-end
-
 
 -- custom function to extend coastal waters with a minimal approach (single layer)
 function ExtendCoastTiles()
@@ -650,108 +603,6 @@ function OptimizeDesert()
     else
         print("No desert conversion needed - already at or below target count");
     end
-end
--------------------------------------------------------------------------------
---
-function PreTectonicSmoothing(plotTypes)
-    print("Pre-tectonic smoothing to remove thin peninsulas and fill coastal bites");
-    
-    local g_iW, g_iH = Map.GetGridSize();
-    local peninsulasRemoved = 0;
-    local baysFilledIn = 0;
-    
-    -- Do multiple passes for better smoothing
-    for pass = 1, 3 do -- Increased to 3 passes for more thorough smoothing
-        local changes = {};
-        
-        for y = 1, g_iH - 2 do
-            for x = 1, g_iW - 2 do
-                local i = y * g_iW + x;
-                
-                -- Process land tiles - remove thin peninsulas
-                if plotTypes[i] ~= g_PLOT_TYPE_OCEAN then
-                    -- Count water neighbors
-                    local waterCount = 0;
-                    for dy = -1, 1 do
-                        for dx = -1, 1 do
-                            if not (dx == 0 and dy == 0) then
-                                local ni = (y + dy) * g_iW + (x + dx);
-                                if ni >= 0 and ni < #plotTypes and plotTypes[ni] == g_PLOT_TYPE_OCEAN then
-                                    waterCount = waterCount + 1;
-                                end
-                            end
-                        end
-                    end
-                    
-                    -- More aggressive removal - reduce from 5 to 4 water neighbors
-                    if waterCount >= 4 then
-                        changes[i] = g_PLOT_TYPE_OCEAN;
-                    end
-                -- Process water tiles - fill in bays and bites
-                else
-                    -- Count land neighbors
-                    local landCount = 0;
-                    local hasNorthLand = false;
-                    local hasSouthLand = false;
-                    local hasEastLand = false;
-                    local hasWestLand = false;
-                    
-                    for dy = -1, 1 do
-                        for dx = -1, 1 do
-                            if not (dx == 0 and dy == 0) then
-                                local ni = (y + dy) * g_iW + (x + dx);
-                                if ni >= 0 and ni < #plotTypes and plotTypes[ni] ~= g_PLOT_TYPE_OCEAN then
-                                    landCount = landCount + 1;
-                                    
-                                    -- Track cardinal directions
-                                    if dx == 0 and dy == -1 then hasNorthLand = true; end
-                                    if dx == 0 and dy == 1 then hasSouthLand = true; end
-                                    if dx == 1 and dy == 0 then hasEastLand = true; end
-                                    if dx == -1 and dy == 0 then hasWestLand = true; end
-                                end
-                            end
-                        end
-                    end
-                    
-                    -- Fill in water with 3+ land neighbors (more aggressive)
-                    if landCount >= 3 then
-                        changes[i] = g_PLOT_TYPE_LAND;
-                    -- More aggressively detect and fill U-shapes
-                    elseif landCount >= 2 then
-                        -- Check for U-shapes (land on opposite sides)
-                        if (hasNorthLand and hasSouthLand) or (hasEastLand and hasWestLand) then
-                            changes[i] = g_PLOT_TYPE_LAND;
-                        end
-                    end
-                end
-            end
-        end
-        
-        -- Apply changes
-        local passRemoved = 0;
-        local passFilled = 0;
-        
-        for i, plotType in pairs(changes) do
-            if plotType == g_PLOT_TYPE_OCEAN then
-                passRemoved = passRemoved + 1;
-                g_iNumTotalLandTiles = g_iNumTotalLandTiles - 1;
-            else
-                passFilled = passFilled + 1;
-                g_iNumTotalLandTiles = g_iNumTotalLandTiles + 1;
-            end
-            plotTypes[i] = plotType;
-        end
-        
-        peninsulasRemoved = peninsulasRemoved + passRemoved;
-        baysFilledIn = baysFilledIn + passFilled;
-        
-        print("Pass " .. pass .. ": Removed " .. passRemoved .. " peninsulas and filled " .. passFilled .. " bays/bites");
-    end
-    
-    print("Pre-tectonic smoothing complete: Removed " .. peninsulasRemoved .. 
-          " peninsula tiles and filled " .. baysFilledIn .. " bay/bite tiles");
-    
-    return plotTypes;
 end
 -------------------------------------------------------------------------------
 
@@ -919,13 +770,34 @@ end
 
 ------------------------------------------------------------------------------
 function FillInlandSeas(plotTypes)
-    print("Filling inland seas to maintain true Pangaea shape");
+    print("Filling inland seas to maintain true Pangaea shape (with climate-appropriate terrain)");
     
     local g_iW, g_iH = Map.GetGridSize();
     local waterPlotCount = 0;
     local waterPlotsConverted = 0;
     
-    -- First, create a floodfill function to detect isolated water bodies
+    -- Define terrain constants
+    local TERRAIN_TYPE_GRASS = 0;
+    local TERRAIN_TYPE_GRASS_HILLS = 1;
+    local TERRAIN_TYPE_PLAINS = 3;
+    local TERRAIN_TYPE_PLAINS_HILLS = 4;
+    local TERRAIN_TYPE_DESERT = 6;
+    local TERRAIN_TYPE_DESERT_HILLS = 7;
+    local TERRAIN_TYPE_TUNDRA = 9;
+    local TERRAIN_TYPE_TUNDRA_HILLS = 10;
+    local TERRAIN_TYPE_SNOW = 12;
+    local TERRAIN_TYPE_SNOW_HILLS = 13;
+    local TERRAIN_TYPE_COAST = 15;
+    local TERRAIN_TYPE_OCEAN = 16;
+    
+    -- Climate band parameters from BBS_GenerateTerrainTypes
+    local fSnowLatitude = 0.86;
+    local fTundraLatitude = 0.66;
+    local fGrassLatitude = 0.1;
+    local fDesertBottomLatitude = 0.4;
+    local fDesertTopLatitude = 0.6;
+    
+    -- Create a floodfill function to detect isolated water bodies
     local function FloodFill(x, y, visited)
         local stack = {{x = x, y = y}};
         local waterBody = {};
@@ -933,7 +805,7 @@ function FillInlandSeas(plotTypes)
         local touchesLeftRightEdge = false;
         local isLargeWaterBody = false;
         local edgeCount = 0;
-        local MAX_SIZE_TO_FILL = 400; -- Don't fill water bodies larger than this
+        local MAX_SIZE_TO_FILL = 400;
         
         while #stack > 0 do
             local curr = table.remove(stack);
@@ -943,7 +815,7 @@ function FillInlandSeas(plotTypes)
                 visited[i] = true;
                 
                 if plotTypes[i] == g_PLOT_TYPE_OCEAN then
-                    table.insert(waterBody, i);
+                    table.insert(waterBody, {index = i, x = curr.x, y = curr.y});
                     
                     -- Check if this water body is getting too large
                     if #waterBody > MAX_SIZE_TO_FILL then
@@ -989,9 +861,9 @@ function FillInlandSeas(plotTypes)
         local edgePerimeterCount = 0;
         local totalPerimeter = 0;
         
-        for _, plotIndex in ipairs(waterBody) do
-            local y = math.floor(plotIndex / g_iW);
-            local x = plotIndex % g_iW;
+        for _, plotData in ipairs(waterBody) do
+            local x = plotData.x;
+            local y = plotData.y;
             
             for direction = 0, 5 do
                 local adjPlot = Map.GetAdjacentPlot(x, y, direction);
@@ -1025,6 +897,27 @@ function FillInlandSeas(plotTypes)
         return waterBody, reachedTopBottomEdge, isLargeWaterBody, isEnclosed, isPartiallyEnclosedEdgeSea;
     end
     
+    -- Helper function to get appropriate terrain type based on latitude
+    local function GetClimateAppropriateTerrainType(y, isHills)
+        -- Calculate distance from equator as percentage
+        local equatorY = math.floor(g_iH / 2);
+        local distFromEquator = math.abs(y - equatorY);
+        local latitudePercent = distFromEquator / (g_iH * 0.5);
+        
+        -- Select appropriate terrain based on latitude
+        if latitudePercent >= fSnowLatitude then
+            return isHills and TERRAIN_TYPE_SNOW_HILLS or TERRAIN_TYPE_SNOW;
+        elseif latitudePercent >= fTundraLatitude then
+            return isHills and TERRAIN_TYPE_TUNDRA_HILLS or TERRAIN_TYPE_TUNDRA;
+        elseif latitudePercent < fGrassLatitude then
+            return isHills and TERRAIN_TYPE_GRASS_HILLS or TERRAIN_TYPE_GRASS;
+        elseif latitudePercent >= fDesertBottomLatitude and latitudePercent < fDesertTopLatitude then
+            return isHills and TERRAIN_TYPE_DESERT_HILLS or TERRAIN_TYPE_DESERT;
+        else
+            return isHills and TERRAIN_TYPE_PLAINS_HILLS or TERRAIN_TYPE_PLAINS;
+        end
+    end
+    
     -- Visit all water plots and check if they're part of an inland sea
     local visited = {};
     for y = 0, g_iH - 1 do
@@ -1053,11 +946,25 @@ function FillInlandSeas(plotTypes)
                 end
                 
                 if shouldFill then
-                    -- Convert all water tiles in this sea to land
-                    for _, waterPlotIndex in ipairs(waterBody) do
-                        plotTypes[waterPlotIndex] = g_PLOT_TYPE_LAND;
+                    -- Convert all water tiles in this sea to land with appropriate terrain
+                    for _, plotData in ipairs(waterBody) do
+                        -- Convert water to land
+                        plotTypes[plotData.index] = g_PLOT_TYPE_LAND;
                         waterPlotsConverted = waterPlotsConverted + 1;
                         g_iNumTotalLandTiles = g_iNumTotalLandTiles + 1;
+                        
+                        -- Set climate-appropriate terrain type
+                        local plot = Map.GetPlot(plotData.x, plotData.y);
+                        if plot then
+                            -- Randomly decide if this should be hills (15% chance)
+                            local isHills = TerrainBuilder.GetRandomNumber(100, "Hill Chance") < 15;
+                            
+                            -- Get appropriate terrain type for this latitude
+                            local newTerrainType = GetClimateAppropriateTerrainType(plotData.y, isHills);
+                            
+                            -- Set the terrain
+                            TerrainBuilder.SetTerrainType(plot, newTerrainType);
+                        end
                     end
                 end
                 
@@ -1067,10 +974,259 @@ function FillInlandSeas(plotTypes)
     end
     
     print("Water plots detected: " .. waterPlotCount);
-    print("Water plots converted to land: " .. waterPlotsConverted);
+    print("Water plots converted to land with climate-appropriate terrain: " .. waterPlotsConverted);
     
     return plotTypes;
 end
+-------------------------------------------------------------------------------
+
+function PreTectonicSmoothing(plotTypes)
+    print("Pre-tectonic smoothing with climate-appropriate terrain");
+    
+    local g_iW, g_iH = Map.GetGridSize();
+    local peninsulasRemoved = 0;
+    local baysFilledIn = 0;
+    
+    -- Define terrain constants
+    local TERRAIN_TYPE_GRASS = 0;
+    local TERRAIN_TYPE_GRASS_HILLS = 1;
+    local TERRAIN_TYPE_PLAINS = 3;
+    local TERRAIN_TYPE_PLAINS_HILLS = 4;
+    local TERRAIN_TYPE_DESERT = 6;
+    local TERRAIN_TYPE_DESERT_HILLS = 7;
+    local TERRAIN_TYPE_TUNDRA = 9;
+    local TERRAIN_TYPE_TUNDRA_HILLS = 10;
+    local TERRAIN_TYPE_SNOW = 12;
+    local TERRAIN_TYPE_SNOW_HILLS = 13;
+    local TERRAIN_TYPE_COAST = 15;
+    local TERRAIN_TYPE_OCEAN = 16;
+    
+    -- Climate band parameters from BBS_GenerateTerrainTypes
+    local fSnowLatitude = 0.86;
+    local fTundraLatitude = 0.66;
+    local fGrassLatitude = 0.1;
+    local fDesertBottomLatitude = 0.4;
+    local fDesertTopLatitude = 0.6;
+    
+    -- Helper function to get appropriate terrain type based on latitude
+    local function GetClimateAppropriateTerrainType(y, isHills)
+        -- Calculate distance from equator as percentage
+        local equatorY = math.floor(g_iH / 2);
+        local distFromEquator = math.abs(y - equatorY);
+        local latitudePercent = distFromEquator / (g_iH * 0.5);
+        
+        -- Select appropriate terrain based on latitude
+        if latitudePercent >= fSnowLatitude then
+            return isHills and TERRAIN_TYPE_SNOW_HILLS or TERRAIN_TYPE_SNOW;
+        elseif latitudePercent >= fTundraLatitude then
+            return isHills and TERRAIN_TYPE_TUNDRA_HILLS or TERRAIN_TYPE_TUNDRA;
+        elseif latitudePercent < fGrassLatitude then
+            return isHills and TERRAIN_TYPE_GRASS_HILLS or TERRAIN_TYPE_GRASS;
+        elseif latitudePercent >= fDesertBottomLatitude and latitudePercent < fDesertTopLatitude then
+            return isHills and TERRAIN_TYPE_DESERT_HILLS or TERRAIN_TYPE_DESERT;
+        else
+            return isHills and TERRAIN_TYPE_PLAINS_HILLS or TERRAIN_TYPE_PLAINS;
+        end
+    end
+    
+    -- Do multiple passes for better smoothing
+    for pass = 1, 3 do
+        local changes = {};
+        
+        for y = 1, g_iH - 2 do
+            for x = 1, g_iW - 2 do
+                local i = y * g_iW + x;
+                
+                -- Process land tiles - remove thin peninsulas
+                if plotTypes[i] ~= g_PLOT_TYPE_OCEAN then
+                    -- Count water neighbors
+                    local waterCount = 0;
+                    for dy = -1, 1 do
+                        for dx = -1, 1 do
+                            if not (dx == 0 and dy == 0) then
+                                local ni = (y + dy) * g_iW + (x + dx);
+                                if ni >= 0 and ni < #plotTypes and plotTypes[ni] == g_PLOT_TYPE_OCEAN then
+                                    waterCount = waterCount + 1;
+                                end
+                            end
+                        end
+                    end
+                    
+                    -- More aggressive removal - reduce from 5 to 4 water neighbors
+                    if waterCount >= 4 then
+                        changes[i] = {newType = g_PLOT_TYPE_OCEAN, x = x, y = y};
+                    end
+                -- Process water tiles - fill in bays and bites
+                else
+                    -- Count land neighbors
+                    local landCount = 0;
+                    local hasNorthLand = false;
+                    local hasSouthLand = false;
+                    local hasEastLand = false;
+                    local hasWestLand = false;
+                    
+                    for dy = -1, 1 do
+                        for dx = -1, 1 do
+                            if not (dx == 0 and dy == 0) then
+                                local ni = (y + dy) * g_iW + (x + dx);
+                                if ni >= 0 and ni < #plotTypes and plotTypes[ni] ~= g_PLOT_TYPE_OCEAN then
+                                    landCount = landCount + 1;
+                                    
+                                    -- Track cardinal directions
+                                    if dx == 0 and dy == -1 then hasNorthLand = true; end
+                                    if dx == 0 and dy == 1 then hasSouthLand = true; end
+                                    if dx == 1 and dy == 0 then hasEastLand = true; end
+                                    if dx == -1 and dy == 0 then hasWestLand = true; end
+                                end
+                            end
+                        end
+                    end
+                    
+                    -- Fill in water with 3+ land neighbors (more aggressive)
+                    if landCount >= 3 then
+                        changes[i] = {newType = g_PLOT_TYPE_LAND, x = x, y = y};
+                    -- More aggressively detect and fill U-shapes
+                    elseif landCount >= 2 then
+                        -- Check for U-shapes (land on opposite sides)
+                        if (hasNorthLand and hasSouthLand) or (hasEastLand and hasWestLand) then
+                            changes[i] = {newType = g_PLOT_TYPE_LAND, x = x, y = y};
+                        end
+                    end
+                end
+            end
+        end
+        
+        -- Apply changes
+        local passRemoved = 0;
+        local passFilled = 0;
+        
+        for i, changeData in pairs(changes) do
+            if changeData.newType == g_PLOT_TYPE_OCEAN then
+                passRemoved = passRemoved + 1;
+                g_iNumTotalLandTiles = g_iNumTotalLandTiles - 1;
+                plotTypes[i] = g_PLOT_TYPE_OCEAN;
+                
+                -- Set ocean terrain type for this plot
+                local plot = Map.GetPlot(changeData.x, changeData.y);
+                if plot then
+                    TerrainBuilder.SetTerrainType(plot, TERRAIN_TYPE_OCEAN);
+                end
+            else
+                passFilled = passFilled + 1;
+                g_iNumTotalLandTiles = g_iNumTotalLandTiles + 1;
+                plotTypes[i] = g_PLOT_TYPE_LAND;
+                
+                -- Set climate-appropriate terrain type for this plot
+                local plot = Map.GetPlot(changeData.x, changeData.y);
+                if plot then
+                    -- Randomly decide if this should be hills (15% chance)
+                    local isHills = TerrainBuilder.GetRandomNumber(100, "Hill Chance") < 15;
+                    
+                    -- Get appropriate terrain type for this latitude
+                    local newTerrainType = GetClimateAppropriateTerrainType(changeData.y, isHills);
+                    
+                    -- Set the terrain
+                    TerrainBuilder.SetTerrainType(plot, newTerrainType);
+                end
+            end
+        end
+        
+        peninsulasRemoved = peninsulasRemoved + passRemoved;
+        baysFilledIn = baysFilledIn + passFilled;
+        
+        print("Pass " .. pass .. ": Removed " .. passRemoved .. " peninsulas and filled " .. passFilled .. " bays/bites");
+    end
+    
+    print("Pre-tectonic smoothing complete: Removed " .. peninsulasRemoved .. 
+          " peninsula tiles and filled " .. baysFilledIn .. " bay/bite tiles");
+    
+    return plotTypes;
+end
+-------------------------------------------------------------------------------
+-- Function to convert most snow to tundra for better playability
+function ReduceSnowCoverage()
+    print("Converting most snow to tundra (keeping just 5% of snow)");
+    
+    local g_iW, g_iH = Map.GetGridSize();
+    local snowTiles = {};
+    local initialSnowCount = 0;
+    
+    -- Terrain type constants
+    local TERRAIN_TYPE_SNOW = 12;
+    local TERRAIN_TYPE_SNOW_HILLS = 13;
+    local TERRAIN_TYPE_TUNDRA = 9;
+    local TERRAIN_TYPE_TUNDRA_HILLS = 10;
+    
+    -- First just count the snow tiles to see if we need to do anything
+    for y = 0, g_iH - 1 do
+        for x = 0, g_iW - 1 do
+            local plot = Map.GetPlot(x, y);
+            if plot and not plot:IsWater() and not plot:IsMountain() then
+                local terrainType = plot:GetTerrainType();
+                if terrainType == TERRAIN_TYPE_SNOW or terrainType == TERRAIN_TYPE_SNOW_HILLS then
+                    initialSnowCount = initialSnowCount + 1;
+                    
+                    -- Only store non-mountain, non-water snow tiles
+                    table.insert(snowTiles, {
+                        x = x,
+                        y = y,
+                        isHills = (terrainType == TERRAIN_TYPE_SNOW_HILLS)
+                    });
+                end
+            end
+        end
+    end
+    
+    -- Early exit if no snow or very little snow
+    if initialSnowCount < 10 then
+        print("Not enough snow tiles found (" .. initialSnowCount .. "), skipping snow reduction.");
+        return;
+    end
+    
+    -- Calculate how many to keep (5%)
+    local snowToKeep = math.max(1, math.floor(initialSnowCount * 0.05));
+    local snowToConvert = initialSnowCount - snowToKeep;
+    
+    print("Initial snow count: " .. initialSnowCount);
+    print("Snow tiles to keep: " .. snowToKeep);
+    print("Snow tiles to convert to tundra: " .. snowToConvert);
+    
+    -- Shuffle the snow tiles to ensure random selection
+    for i = #snowTiles, 2, -1 do
+        local j = TerrainBuilder.GetRandomNumber(i, "Shuffle snow tiles") + 1;
+        snowTiles[i], snowTiles[j] = snowTiles[j], snowTiles[i];
+    end
+    
+    -- Convert the first N tiles in our shuffled list
+    local converted = 0;
+    for i = 1, math.min(snowToConvert, #snowTiles) do
+        local tile = snowTiles[i];
+        local plot = Map.GetPlot(tile.x, tile.y);
+        
+        -- Extra check to make sure this is still a snow tile
+        local currentType = plot:GetTerrainType();
+        if (currentType == TERRAIN_TYPE_SNOW or currentType == TERRAIN_TYPE_SNOW_HILLS) 
+           and not plot:IsWater() and not plot:IsMountain() then
+            
+            -- Convert to equivalent tundra terrain
+            local newType = tile.isHills and TERRAIN_TYPE_TUNDRA_HILLS or TERRAIN_TYPE_TUNDRA;
+            TerrainBuilder.SetTerrainType(plot, newType);
+            
+            converted = converted + 1;
+            
+            -- Progress update every 25 tiles
+            if converted % 25 == 0 then
+                print("  - Converted " .. converted .. " snow tiles to tundra");
+            end
+        end
+    end
+    
+    print("Snow reduction complete - converted " .. converted .. " tiles to tundra");
+    print("Final snow count: " .. (initialSnowCount - converted));
+end
+
+
+
 -------------------------------------------------------------------------------
 -- Function to print detailed map statistics
 -- This function collects and prints statistics about the map, including terrain distribution and water coverage.
@@ -1277,7 +1433,7 @@ function NormalizeSettleableTiles()
     print("Normalizing settleable tiles (plains and grassland) to around 2700");
     
     local g_iW, g_iH = Map.GetGridSize();
-    local targetSettleableTiles = 2700;
+    local targetSettleableTiles = 2680;
     local acceptableVariance = 50;
     
     -- Terrain type constants - flats, hills and mountains
@@ -1299,11 +1455,20 @@ function NormalizeSettleableTiles()
     local TERRAIN_TYPE_COAST = 15;
     local TERRAIN_TYPE_OCEAN = 16;
     
+    -- Climate band parameters from BBS_GenerateTerrainTypes
+    local fSnowLatitude = 0.86;
+    local fTundraLatitude = 0.66;
+    local fGrassLatitude = 0.1;
+    local fDesertBottomLatitude = 0.4;
+    local fDesertTopLatitude = 0.6;
+    
+    local equatorY = math.floor(g_iH / 2);
+    
     -- Count both flat and hills versions of each terrain type
-    local grasslandCount = 0;  -- flat grass
-    local grassHillsCount = 0; -- grass hills
-    local plainsCount = 0;     -- flat plains
-    local plainsHillsCount = 0; -- plains hills
+    local grasslandCount = 0;
+    local grassHillsCount = 0;
+    local plainsCount = 0;
+    local plainsHillsCount = 0;
     local desertCount = 0;
     local desertHillsCount = 0;
     local tundraCount = 0;
@@ -1312,15 +1477,24 @@ function NormalizeSettleableTiles()
     local snowHillsCount = 0;
     local waterCount = 0;
     
-    -- Create lists for all terrain types
-    local grassPlots = {};
-    local grassHillsPlots = {};
-    local plainsPlots = {};
-    local plainsHillsPlots = {};
-    local desertPlots = {};
-    local desertHillsPlots = {};
-    local tundraPlots = {};
-    local tundraHillsPlots = {};
+    -- Create lists for all terrain types, organized by latitudinal bands
+    local plotsByLatitude = {};
+    
+    -- Initialize plot arrays for each climate band
+    for i = 0, g_iH-1 do
+        plotsByLatitude[i] = {
+            grass = {},
+            grassHills = {},
+            plains = {},
+            plainsHills = {},
+            desert = {},
+            desertHills = {},
+            tundra = {},
+            tundraHills = {},
+            snow = {},
+            snowHills = {}
+        };
+    end
     
     -- Gather all terrain information
     for y = 0, g_iH - 1 do
@@ -1328,54 +1502,47 @@ function NormalizeSettleableTiles()
             local plot = Map.GetPlot(x, y);
             if plot then
                 local terrainType = plot:GetTerrainType();
+                local isRiver = plot:IsRiver();
                 
-                -- Count grass (both flat and hills)
+                -- Add plot to appropriate list by terrain type and latitude
                 if terrainType == TERRAIN_TYPE_GRASS then
                     grasslandCount = grasslandCount + 1;
-                    if not plot:IsRiver() then
-                        table.insert(grassPlots, {x = x, y = y, type = terrainType});
+                    if not isRiver then
+                        table.insert(plotsByLatitude[y].grass, {x = x, y = y, type = terrainType});
                     end
                 elseif terrainType == TERRAIN_TYPE_GRASS_HILLS then
                     grassHillsCount = grassHillsCount + 1;
-                    if not plot:IsRiver() then
-                        table.insert(grassHillsPlots, {x = x, y = y, type = terrainType});
+                    if not isRiver then
+                        table.insert(plotsByLatitude[y].grassHills, {x = x, y = y, type = terrainType});
                     end
-                
-                -- Count plains (both flat and hills)
                 elseif terrainType == TERRAIN_TYPE_PLAINS then
                     plainsCount = plainsCount + 1;
-                    if not plot:IsRiver() then
-                        table.insert(plainsPlots, {x = x, y = y, type = terrainType});
+                    if not isRiver then
+                        table.insert(plotsByLatitude[y].plains, {x = x, y = y, type = terrainType});
                     end
                 elseif terrainType == TERRAIN_TYPE_PLAINS_HILLS then
                     plainsHillsCount = plainsHillsCount + 1;
-                    if not plot:IsRiver() then
-                        table.insert(plainsHillsPlots, {x = x, y = y, type = terrainType});
+                    if not isRiver then
+                        table.insert(plotsByLatitude[y].plainsHills, {x = x, y = y, type = terrainType});
                     end
-                
-                -- Count desert (both flat and hills)
                 elseif terrainType == TERRAIN_TYPE_DESERT then
                     desertCount = desertCount + 1;
-                    table.insert(desertPlots, {x = x, y = y, type = terrainType});
+                    table.insert(plotsByLatitude[y].desert, {x = x, y = y, type = terrainType});
                 elseif terrainType == TERRAIN_TYPE_DESERT_HILLS then
                     desertHillsCount = desertHillsCount + 1;
-                    table.insert(desertHillsPlots, {x = x, y = y, type = terrainType});
-                
-                -- Count tundra (both flat and hills)
+                    table.insert(plotsByLatitude[y].desertHills, {x = x, y = y, type = terrainType});
                 elseif terrainType == TERRAIN_TYPE_TUNDRA then
                     tundraCount = tundraCount + 1;
-                    table.insert(tundraPlots, {x = x, y = y, type = terrainType});
+                    table.insert(plotsByLatitude[y].tundra, {x = x, y = y, type = terrainType});
                 elseif terrainType == TERRAIN_TYPE_TUNDRA_HILLS then
                     tundraHillsCount = tundraHillsCount + 1;
-                    table.insert(tundraHillsPlots, {x = x, y = y, type = terrainType});
-                
-                -- Count snow
+                    table.insert(plotsByLatitude[y].tundraHills, {x = x, y = y, type = terrainType});
                 elseif terrainType == TERRAIN_TYPE_SNOW then
                     snowCount = snowCount + 1;
+                    table.insert(plotsByLatitude[y].snow, {x = x, y = y, type = terrainType});
                 elseif terrainType == TERRAIN_TYPE_SNOW_HILLS then
                     snowHillsCount = snowHillsCount + 1;
-                
-                -- Count water
+                    table.insert(plotsByLatitude[y].snowHills, {x = x, y = y, type = terrainType});
                 elseif terrainType == TERRAIN_TYPE_COAST or terrainType == TERRAIN_TYPE_OCEAN then
                     waterCount = waterCount + 1;
                 end
@@ -1409,7 +1576,7 @@ function NormalizeSettleableTiles()
         return;
     end
     
-    -- Shuffle plot lists for more natural conversions
+    -- Helper function to shuffle plots in place
     local function ShuffleList(list)
         for i = #list, 2, -1 do
             local j = TerrainBuilder.GetRandomNumber(i, "Shuffle plots") + 1;
@@ -1424,182 +1591,238 @@ function NormalizeSettleableTiles()
         print("EXTREME difference detected (" .. tileDifference .. "), using drastic measures");
     end
     
+    -- Function to get the next appropriate terrain type based on latitude and conversion direction
+    local function GetNextTerrainType(y, currentType, convertingTo)
+        local isHills = (currentType == TERRAIN_TYPE_GRASS_HILLS or 
+                        currentType == TERRAIN_TYPE_PLAINS_HILLS or
+                        currentType == TERRAIN_TYPE_DESERT_HILLS or
+                        currentType == TERRAIN_TYPE_TUNDRA_HILLS or
+                        currentType == TERRAIN_TYPE_SNOW_HILLS);
+        
+        -- Calculate distance from equator as percentage
+        local distFromEquator = math.abs(y - equatorY) / (g_iH * 0.5);
+        
+        -- Determine next terrain type based on latitude and conversion direction
+        if convertingTo == "settleable" then
+            -- Converting to settleable (desert/tundra/snow -> plains/grass)
+            if distFromEquator >= fTundraLatitude then
+                -- In tundra/snow zone, convert to grassland
+                return isHills and TERRAIN_TYPE_GRASS_HILLS or TERRAIN_TYPE_GRASS;
+            elseif distFromEquator >= fDesertBottomLatitude and distFromEquator < fDesertTopLatitude then
+                -- In desert zone, convert to plains
+                return isHills and TERRAIN_TYPE_PLAINS_HILLS or TERRAIN_TYPE_PLAINS;
+            else
+                -- In other zones, decide based on distance from equator
+                if distFromEquator < 0.3 then
+                    return isHills and TERRAIN_TYPE_GRASS_HILLS or TERRAIN_TYPE_GRASS;
+                else
+                    return isHills and TERRAIN_TYPE_PLAINS_HILLS or TERRAIN_TYPE_PLAINS;
+                end
+            end
+        else
+            -- Converting from settleable (plains/grass -> desert/tundra)
+            if distFromEquator >= fTundraLatitude then
+                -- In tundra zone, convert to tundra
+                return isHills and TERRAIN_TYPE_TUNDRA_HILLS or TERRAIN_TYPE_TUNDRA;
+            elseif distFromEquator >= fDesertBottomLatitude and distFromEquator < fDesertTopLatitude then
+                -- In desert zone, convert to desert
+                return isHills and TERRAIN_TYPE_DESERT_HILLS or TERRAIN_TYPE_DESERT;
+            else
+                -- In other zones, pick based on distance from equator
+                if distFromEquator > 0.5 then
+                    return isHills and TERRAIN_TYPE_TUNDRA_HILLS or TERRAIN_TYPE_TUNDRA;
+                else
+                    return isHills and TERRAIN_TYPE_DESERT_HILLS or TERRAIN_TYPE_DESERT;
+                end
+            end
+        end
+    end
+    
+    -- Order latitudes to process - start from equator and move outward to maintain natural transitions
+    local latitudeOrder = {};
+    for offset = 0, math.ceil(g_iH/2) do
+        if equatorY - offset >= 0 then
+            table.insert(latitudeOrder, equatorY - offset);
+        end
+        if equatorY + offset < g_iH and offset > 0 then
+            table.insert(latitudeOrder, equatorY + offset);
+        end
+    end
+    
     -- Process based on whether we need more or fewer settleable tiles
     if tileDifference > 0 then
         -- Need MORE settleable tiles
         print("Need to ADD " .. tileDifference .. " settleable tiles");
         
-        -- Pool all non-settleable terrain plots
-        local nonSettleablePlots = {};
-        
-        -- Add flat desert plots
-        for _, plot in ipairs(desertPlots) do
-            table.insert(nonSettleablePlots, plot);
-        end
-        
-        -- Add desert hills plots
-        for _, plot in ipairs(desertHillsPlots) do
-            table.insert(nonSettleablePlots, plot);
-        end
-        
-        -- Add flat tundra plots
-        for _, plot in ipairs(tundraPlots) do
-            table.insert(nonSettleablePlots, plot);
-        end
-        
-        -- Add tundra hills plots
-        for _, plot in ipairs(tundraHillsPlots) do
-            table.insert(nonSettleablePlots, plot);
-        end
-        
-        -- Shuffle for more natural distribution
-        ShuffleList(nonSettleablePlots);
-        
-        -- Convert plots one by one, verifying each conversion
         local converted = 0;
-        for i, plotData in ipairs(nonSettleablePlots) do
-            if converted >= tileDifference then
-                break;
-            end
-            
-            local plot = Map.GetPlot(plotData.x, plotData.y);
-            local isHills = (plotData.type == TERRAIN_TYPE_DESERT_HILLS or plotData.type == TERRAIN_TYPE_TUNDRA_HILLS);
-            local isMountain = plot:IsMountain();
-            
-            -- Convert desert to plains, tundra to grass
-            local newType;
-            if plotData.type == TERRAIN_TYPE_DESERT or plotData.type == TERRAIN_TYPE_DESERT_HILLS then
-                newType = isHills and TERRAIN_TYPE_PLAINS_HILLS or TERRAIN_TYPE_PLAINS;
-            else
-                newType = isHills and TERRAIN_TYPE_GRASS_HILLS or TERRAIN_TYPE_GRASS;
-            end
-            
-            -- Direct terrain type conversion
-            TerrainBuilder.SetTerrainType(plot, newType);
-            
-            -- Debug info
-            print("Converting terrain at " .. plotData.x .. "," .. plotData.y .. 
-                  " from " .. plotData.type .. " to " .. newType);
-            
-            -- Immediately verify the conversion worked
-            if plot:GetTerrainType() == newType then
-                converted = converted + 1;
-                if converted % 20 == 0 then
-                    print("  - Converted " .. converted .. " tiles so far");
-                end
-            end
-        end
+        local northConverted = 0; 
+        local southConverted = 0;
         
-        -- If we haven't converted enough tiles, try more desperate measures
-        if converted < tileDifference and extremeCase then
-            print("Still need " .. (tileDifference - converted) .. " more tiles, using snow plots too");
+        -- First pass: convert desert and tundra in alternating north/south bands
+        for _, y in ipairs(latitudeOrder) do
+            -- Check if we need to balance north/south conversions
+            local isNorth = (y < equatorY);
+            local canConvertHere = true;
             
-            -- Try converting snow tiles too
-            for y = 0, g_iH - 1 do
-                for x = 0, g_iW - 1 do
+            if northConverted > southConverted + 20 and isNorth then
+                canConvertHere = false; -- Skip northern conversions to balance
+            elseif southConverted > northConverted + 20 and not isNorth then
+                canConvertHere = false; -- Skip southern conversions to balance
+            end
+            
+            if canConvertHere then
+                -- Shuffle the non-settleable plots at this latitude for more natural distribution
+                local nonSettleablePlots = {};
+                
+                -- Combine desert and tundra plots at this latitude
+                for _, plot in ipairs(plotsByLatitude[y].desert) do
+                    table.insert(nonSettleablePlots, plot);
+                end
+                for _, plot in ipairs(plotsByLatitude[y].desertHills) do
+                    table.insert(nonSettleablePlots, plot);
+                end
+                for _, plot in ipairs(plotsByLatitude[y].tundra) do
+                    table.insert(nonSettleablePlots, plot);
+                end
+                for _, plot in ipairs(plotsByLatitude[y].tundraHills) do
+                    table.insert(nonSettleablePlots, plot);
+                end
+                
+                -- If extreme case, also consider snow
+                if extremeCase then
+                    for _, plot in ipairs(plotsByLatitude[y].snow) do
+                        table.insert(nonSettleablePlots, plot);
+                    end
+                    for _, plot in ipairs(plotsByLatitude[y].snowHills) do
+                        table.insert(nonSettleablePlots, plot);
+                    end
+                end
+                
+                ShuffleList(nonSettleablePlots);
+                
+                -- Convert plots at this latitude
+                for _, plotData in ipairs(nonSettleablePlots) do
                     if converted >= tileDifference then
                         break;
                     end
                     
-                    local plot = Map.GetPlot(x, y);
-                    if plot and (plot:GetTerrainType() == TERRAIN_TYPE_SNOW or plot:GetTerrainType() == TERRAIN_TYPE_SNOW_HILLS) then
-                        local isHills = (plot:GetTerrainType() == TERRAIN_TYPE_SNOW_HILLS);
-                        local newType = isHills and TERRAIN_TYPE_TUNDRA_HILLS or TERRAIN_TYPE_TUNDRA;
+                    local plot = Map.GetPlot(plotData.x, plotData.y);
+                    local newType = GetNextTerrainType(plotData.y, plotData.type, "settleable");
+                    
+                    -- Direct terrain type conversion
+                    TerrainBuilder.SetTerrainType(plot, newType);
+                    
+                    -- Verify the conversion worked
+                    if plot:GetTerrainType() == newType then
+                        converted = converted + 1;
+                        if isNorth then
+                            northConverted = northConverted + 1;
+                        else
+                            southConverted = southConverted + 1;
+                        end
                         
-                        -- Convert snow to tundra
-                        TerrainBuilder.SetTerrainType(plot, newType);
-                        
-                        -- Verify snow → tundra conversion worked
-                        if plot:GetTerrainType() == newType then
-                            -- Now convert tundra to grass
-                            newType = isHills and TERRAIN_TYPE_GRASS_HILLS or TERRAIN_TYPE_GRASS;
-                            TerrainBuilder.SetTerrainType(plot, newType);
-                            
-                            -- Verify tundra → grass conversion worked
-                            if plot:GetTerrainType() == newType then
-                                converted = converted + 1;
-                            end
+                        if converted % 20 == 0 then
+                            print("  - Converted " .. converted .. " tiles (North: " .. northConverted .. ", South: " .. southConverted .. ")");
                         end
                     end
+                    
+                    if converted >= tileDifference then
+                        break;
+                    end
                 end
+            end
+            
+            if converted >= tileDifference then
+                break;
             end
         end
         
         print("Successfully converted " .. converted .. " tiles to settleable terrain");
-        if converted < tileDifference then
-            print("WARNING: Could only convert " .. converted .. " of " .. tileDifference .. " needed tiles");
-        end
+        print("North/South balance: " .. northConverted .. "/" .. southConverted);
         
     else
         -- Need FEWER settleable tiles
         local toRemove = math.abs(tileDifference);
         print("Need to REMOVE " .. toRemove .. " settleable tiles");
         
-        -- Combine all grass and plains plots
-        local settleablePlots = {};
-        
-        -- Flat grass
-        for _, plot in ipairs(grassPlots) do
-            table.insert(settleablePlots, plot);
-        end
-        
-        -- Grass hills
-        for _, plot in ipairs(grassHillsPlots) do
-            table.insert(settleablePlots, plot);
-        end
-        
-        -- Flat plains
-        for _, plot in ipairs(plainsPlots) do
-            table.insert(settleablePlots, plot);
-        end
-        
-        -- Plains hills
-        for _, plot in ipairs(plainsHillsPlots) do
-            table.insert(settleablePlots, plot);
-        end
-        
-        -- Shuffle for more natural distribution
-        ShuffleList(settleablePlots);
-        
-        -- Convert plots one by one, verifying each conversion
         local converted = 0;
-        for i, plotData in ipairs(settleablePlots) do
-            if converted >= toRemove then
-                break;
+        local northConverted = 0;
+        local southConverted = 0;
+        
+        -- First pass: convert plains and grass in alternating north/south bands
+        for _, y in ipairs(latitudeOrder) do
+            -- Check if we need to balance north/south conversions
+            local isNorth = (y < equatorY);
+            local canConvertHere = true;
+            
+            if northConverted > southConverted + 20 and isNorth then
+                canConvertHere = false; -- Skip northern conversions to balance
+            elseif southConverted > northConverted + 20 and not isNorth then
+                canConvertHere = false; -- Skip southern conversions to balance
             end
             
-            local plot = Map.GetPlot(plotData.x, plotData.y);
-            -- Skip river tiles unless this is an extreme case
-            if plot and (not plot:IsRiver() or extremeCase) then
-                local isHills = (plotData.type == TERRAIN_TYPE_GRASS_HILLS or plotData.type == TERRAIN_TYPE_PLAINS_HILLS);
+            if canConvertHere then
+                -- Shuffle the settleable plots at this latitude for more natural distribution
+                local settleablePlots = {};
                 
-                -- Determine what to convert to based on latitude
-                local newType;
-                local distFromEquator = math.abs((g_iH / 2) - plotData.y) / (g_iH * 0.5);
-                
-                if distFromEquator > 0.5 then
-                    newType = isHills and TERRAIN_TYPE_TUNDRA_HILLS or TERRAIN_TYPE_TUNDRA;
-                else
-                    newType = isHills and TERRAIN_TYPE_DESERT_HILLS or TERRAIN_TYPE_DESERT;
+                -- Combine grass and plains plots at this latitude
+                for _, plot in ipairs(plotsByLatitude[y].grass) do
+                    table.insert(settleablePlots, plot);
+                end
+                for _, plot in ipairs(plotsByLatitude[y].grassHills) do
+                    table.insert(settleablePlots, plot);
+                end
+                for _, plot in ipairs(plotsByLatitude[y].plains) do
+                    table.insert(settleablePlots, plot);
+                end
+                for _, plot in ipairs(plotsByLatitude[y].plainsHills) do
+                    table.insert(settleablePlots, plot);
                 end
                 
-                -- Direct terrain type conversion
-                TerrainBuilder.SetTerrainType(plot, newType);
+                ShuffleList(settleablePlots);
                 
-                -- Immediately verify the conversion worked
-                if plot:GetTerrainType() == newType then
-                    converted = converted + 1;
-                    if converted % 20 == 0 then
-                        print("  - Converted " .. converted .. " tiles so far");
+                -- Convert plots at this latitude
+                for _, plotData in ipairs(settleablePlots) do
+                    if converted >= toRemove then
+                        break;
+                    end
+                    
+                    local plot = Map.GetPlot(plotData.x, plotData.y);
+                    -- Skip river tiles unless this is an extreme case
+                    if not plot:IsRiver() or extremeCase then
+                        local newType = GetNextTerrainType(plotData.y, plotData.type, "non-settleable");
+                        
+                        -- Direct terrain type conversion
+                        TerrainBuilder.SetTerrainType(plot, newType);
+                        
+                        -- Verify the conversion worked
+                        if plot:GetTerrainType() == newType then
+                            converted = converted + 1;
+                            if isNorth then
+                                northConverted = northConverted + 1;
+                            else
+                                southConverted = southConverted + 1;
+                            end
+                            
+                            if converted % 20 == 0 then
+                                print("  - Converted " .. converted .. " tiles (North: " .. northConverted .. ", South: " .. southConverted .. ")");
+                            end
+                        end
+                    end
+                    
+                    if converted >= toRemove then
+                        break;
                     end
                 end
+            end
+            
+            if converted >= toRemove then
+                break;
             end
         end
         
         print("Successfully converted " .. converted .. " tiles from settleable terrain");
-        if converted < toRemove then
-            print("WARNING: Could only convert " .. converted .. " of " .. toRemove .. " needed tiles");
-        end
+        print("North/South balance: " .. northConverted .. "/" .. southConverted);
     end
     
     -- Verify final result with more detailed breakdown
@@ -1636,8 +1859,6 @@ function NormalizeSettleableTiles()
     print("Plains (hills): " .. finalPlainsHills);
     print("Total settleable: " .. finalSettleable);
     print("Final difference from target: " .. finalDifference);
-    
-    -- No need for a second pass - the validation function will confirm if we're in range
 end
 -------------------------------------------------------------------------------
 function ValidateTerrainCounts(label)
