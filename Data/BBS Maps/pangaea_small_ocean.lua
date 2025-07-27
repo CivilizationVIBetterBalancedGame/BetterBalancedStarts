@@ -259,10 +259,10 @@ function GeneratePlotTypes(world_age)
 				--if (val > iWaterThreshold or ((g_iW * 0.3 < x and x < g_iW * 0.7) and (g_iH * 0.3 < y and y < g_iH * 0.7))) then
 				-- Inside the for x/y loop where land is determined add more land in center regions
 				if (val > iWaterThreshold or 
-					-- Force more land in center regions
-					((g_iW * 0.25 < x and x < g_iW * 0.75) and 
-					 (g_iH * 0.25 < y and y < g_iH * 0.75) and 
-					 val > iWaterThreshold * 0.9)) then
+					-- Force more land in center regions (more aggressive parameters)
+					((g_iW * 0.15 < x and x < g_iW * 0.85) and 
+					 (g_iH * 0.15 < y and y < g_iH * 0.85) and 
+					 val > iWaterThreshold * 0.75)) then
 					plotTypes[i] = g_PLOT_TYPE_LAND;
 					TerrainBuilder.SetTerrainType(pPlot, g_TERRAIN_TYPE_DESERT);  -- temporary setting so can calculate areas
 					g_iNumTotalLandTiles = g_iNumTotalLandTiles + 1;
@@ -282,9 +282,9 @@ function GeneratePlotTypes(world_age)
 			end
 		end
 
-		-- Relax water restrictions to allow for more land
-		local maxWaterCenter = 0.15 * g_iH * 0.8 * 0.1 * g_iW; -- Reduced from 0.2
-		local maxWaterNextToCenter = 0.4 * g_iH * 0.8 * 0.1 * g_iW; -- Reduced from 0.5
+		-- Further restrict water in center regions for a more consistent Pangaea
+		local maxWaterCenter = 0.1 * g_iH * 0.8 * 0.1 * g_iW; -- Reduced from 0.15
+		local maxWaterNextToCenter = 0.25 * g_iH * 0.8 * 0.1 * g_iW; -- Reduced from 0.4
 		-- Increase allowable land on border
 		local maxLandBorder = 0.2 * g_iH * 0.1 * g_iW; -- Increased from 0.15
 		local isLandmassOnBordersOK = landmassOnBordersCount < maxLandBorder;
@@ -338,7 +338,7 @@ function GeneratePlotTypes(world_age)
 	-- --Fill inland seas to create a true Pangaea with no interior water bodies
 	plotTypes = FillInlandSeas(plotTypes);
 
-	--Apply pre-tectonic smoothing to create a better landmass shape
+	-- --Apply pre-tectonic smoothing to create a better landmass shape
 	plotTypes = PreTectonicSmoothing(plotTypes);
 
 	-- after general smoothing, refine coastlines to get rid of 'lonley coast land'
@@ -503,55 +503,34 @@ end
 
 -- Simplified function to optimize terrain with better climate distribution
 function OptimizeDesert()
-    print("Optimizing desert - reducing to 50-70 tiles and breaking up patches");
-    
+    print("Optimizing desert - randomly converting excess desert tiles");
+
     local g_iW, g_iH = Map.GetGridSize();
     local desertTiles = {};
     local initialDesertCount = 0;
     
     -- Define terrain class constants
-    local TERRAIN_CLASS_GRASS = 0;
-    local TERRAIN_CLASS_MOUNTAIN = 1;
-    local TERRAIN_CLASS_PLAINS = 2;
     local TERRAIN_CLASS_DESERT = 3;
-    local TERRAIN_CLASS_TUNDRA = 4;
-    local TERRAIN_CLASS_SNOW = 5;
-    local TERRAIN_CLASS_WATER = 6;
     
-    -- First, gather all desert tiles and count them
+    -- Define terrain types needed for conversion
+    local TERRAIN_TYPE_PLAINS = 3;
+    local TERRAIN_TYPE_GRASS = 0;
+    
+    -- First, identify all desert tiles
     for y = 0, g_iH - 1 do
         for x = 0, g_iW - 1 do
             local plot = Map.GetPlot(x, y);
-            if plot and not plot:IsWater() then
-                local terrainClass = plot:GetTerrainClassType();
-                if terrainClass == TERRAIN_CLASS_DESERT then
+            if plot and not plot:IsWater() and not plot:IsMountain() then
+                if plot:GetTerrainClassType() == TERRAIN_CLASS_DESERT then
                     initialDesertCount = initialDesertCount + 1;
-                    
-                    -- Count adjacent desert tiles to identify patches
-                    local adjacentDesertCount = 0;
-                    for direction = 0, 5 do
-                        local adjacentPlot = Map.GetAdjacentPlot(x, y, direction);
-                        if adjacentPlot and not adjacentPlot:IsWater() then
-                            local adjTerrainClass = adjacentPlot:GetTerrainClassType();
-                            if adjTerrainClass == TERRAIN_CLASS_DESERT then
-                                adjacentDesertCount = adjacentDesertCount + 1;
-                            end
-                        end
-                    end
-                    
-                    -- Add to our list with position and adjacency info
-                    table.insert(desertTiles, {
-                        x = x,
-                        y = y,
-                        adjacentDesert = adjacentDesertCount
-                    });
+                    table.insert(desertTiles, {x = x, y = y});
                 end
             end
         end
     end
     
-    -- Set target desert count (50-70 tiles)
-    local targetDesertCount = 50 + TerrainBuilder.GetRandomNumber(21, "Desert Count Variation");
+    -- Set target desert count (100-110 tiles)
+    local targetDesertCount = 100 + TerrainBuilder.GetRandomNumber(10, "Desert Count Variation");
     
     -- Calculate how many to convert
     local desertToKeep = math.min(initialDesertCount, targetDesertCount);
@@ -563,25 +542,22 @@ function OptimizeDesert()
     
     -- If we need to convert desert tiles
     if desertToConvert > 0 then
-        -- Sort desert tiles by adjacency (most connected first)
-        table.sort(desertTiles, function(a, b) 
-            return a.adjacentDesert > b.adjacentDesert 
-        end);
+        -- Shuffle the desert tiles to randomize which ones we'll convert
+        for i = #desertTiles, 2, -1 do
+            local j = TerrainBuilder.GetRandomNumber(i, "Shuffle desert tiles") + 1;
+            desertTiles[i], desertTiles[j] = desertTiles[j], desertTiles[i];
+        end
         
-        -- Convert desert tiles starting with most connected ones
+        -- Convert the required number of desert tiles
         local converted = 0;
-        for i = 1, #desertTiles do
-            if converted >= desertToConvert then
-                break;
-            end
+        for i = 1, math.min(desertToConvert, #desertTiles) do
+            local plotData = desertTiles[i];
+            local plot = Map.GetPlot(plotData.x, plotData.y);
             
-            local tile = desertTiles[i];
-            local plot = Map.GetPlot(tile.x, tile.y);
-            
-            local terrainClass = plot:GetTerrainClassType();
-            if terrainClass == TERRAIN_CLASS_DESERT then
+            -- Make sure it's still desert
+            if plot and plot:GetTerrainClassType() == TERRAIN_CLASS_DESERT then
                 -- Calculate normalized distance from equator
-                local distFromEquator = math.abs((g_iH / 2) - tile.y);
+                local distFromEquator = math.abs((g_iH / 2) - plotData.y);
                 local normalizedDist = distFromEquator / (g_iH * 0.5);
                 
                 -- Determine terrain type (more plains near equator, more grass away)
@@ -589,9 +565,9 @@ function OptimizeDesert()
                 
                 -- Convert to plains or grass
                 if TerrainBuilder.GetRandomNumber(100, "Desert Conversion") < plainsChance then
-                    TerrainBuilder.SetTerrainType(plot, g_TERRAIN_TYPE_PLAINS, plot:IsHills(), plot:IsMountain());
+                    TerrainBuilder.SetTerrainType(plot, TERRAIN_TYPE_PLAINS, plot:IsHills(), plot:IsMountain());
                 else
-                    TerrainBuilder.SetTerrainType(plot, g_TERRAIN_TYPE_GRASS, plot:IsHills(), plot:IsMountain());
+                    TerrainBuilder.SetTerrainType(plot, TERRAIN_TYPE_GRASS, plot:IsHills(), plot:IsMountain());
                 end
                 
                 converted = converted + 1;
@@ -599,7 +575,7 @@ function OptimizeDesert()
         end
         
         print("Desert optimization complete - converted " .. converted .. " desert tiles");
-        print("Final desert count: " .. (initialDesertCount - converted));
+        print("Final desert count: approximately " .. (initialDesertCount - converted));
     else
         print("No desert conversion needed - already at or below target count");
     end
@@ -1430,7 +1406,7 @@ end
 
 -------------------------------------------------------------------------------
 function NormalizeSettleableTiles()
-    print("Normalizing settleable tiles (plains and grassland) to around 2700");
+    print("Normalizing settleable tiles (plains and grassland) to around 2700 - EXCLUDING DESERT");
     
     local g_iW, g_iH = Map.GetGridSize();
     local targetSettleableTiles = 2680;
@@ -1604,13 +1580,10 @@ function NormalizeSettleableTiles()
         
         -- Determine next terrain type based on latitude and conversion direction
         if convertingTo == "settleable" then
-            -- Converting to settleable (desert/tundra/snow -> plains/grass)
+            -- Converting to settleable (tundra/snow -> plains/grass)
             if distFromEquator >= fTundraLatitude then
                 -- In tundra/snow zone, convert to grassland
                 return isHills and TERRAIN_TYPE_GRASS_HILLS or TERRAIN_TYPE_GRASS;
-            elseif distFromEquator >= fDesertBottomLatitude and distFromEquator < fDesertTopLatitude then
-                -- In desert zone, convert to plains
-                return isHills and TERRAIN_TYPE_PLAINS_HILLS or TERRAIN_TYPE_PLAINS;
             else
                 -- In other zones, decide based on distance from equator
                 if distFromEquator < 0.3 then
@@ -1620,21 +1593,9 @@ function NormalizeSettleableTiles()
                 end
             end
         else
-            -- Converting from settleable (plains/grass -> desert/tundra)
-            if distFromEquator >= fTundraLatitude then
-                -- In tundra zone, convert to tundra
-                return isHills and TERRAIN_TYPE_TUNDRA_HILLS or TERRAIN_TYPE_TUNDRA;
-            elseif distFromEquator >= fDesertBottomLatitude and distFromEquator < fDesertTopLatitude then
-                -- In desert zone, convert to desert
-                return isHills and TERRAIN_TYPE_DESERT_HILLS or TERRAIN_TYPE_DESERT;
-            else
-                -- In other zones, pick based on distance from equator
-                if distFromEquator > 0.5 then
-                    return isHills and TERRAIN_TYPE_TUNDRA_HILLS or TERRAIN_TYPE_TUNDRA;
-                else
-                    return isHills and TERRAIN_TYPE_DESERT_HILLS or TERRAIN_TYPE_DESERT;
-                end
-            end
+            -- Converting from settleable (plains/grass -> tundra)
+            -- Always convert to tundra regardless of location when removing settleable tiles
+            return isHills and TERRAIN_TYPE_TUNDRA_HILLS or TERRAIN_TYPE_TUNDRA;
         end
     end
     
@@ -1652,13 +1613,13 @@ function NormalizeSettleableTiles()
     -- Process based on whether we need more or fewer settleable tiles
     if tileDifference > 0 then
         -- Need MORE settleable tiles
-        print("Need to ADD " .. tileDifference .. " settleable tiles");
+        print("Need to ADD " .. tileDifference .. " settleable tiles (using only tundra/snow)");
         
         local converted = 0;
         local northConverted = 0; 
         local southConverted = 0;
         
-        -- First pass: convert desert and tundra in alternating north/south bands
+        -- First pass: convert tundra only in alternating north/south bands
         for _, y in ipairs(latitudeOrder) do
             -- Check if we need to balance north/south conversions
             local isNorth = (y < equatorY);
@@ -1674,13 +1635,7 @@ function NormalizeSettleableTiles()
                 -- Shuffle the non-settleable plots at this latitude for more natural distribution
                 local nonSettleablePlots = {};
                 
-                -- Combine desert and tundra plots at this latitude
-                for _, plot in ipairs(plotsByLatitude[y].desert) do
-                    table.insert(nonSettleablePlots, plot);
-                end
-                for _, plot in ipairs(plotsByLatitude[y].desertHills) do
-                    table.insert(nonSettleablePlots, plot);
-                end
+                -- ONLY include tundra plots (NOT desert) at this latitude
                 for _, plot in ipairs(plotsByLatitude[y].tundra) do
                     table.insert(nonSettleablePlots, plot);
                 end
@@ -1740,16 +1695,22 @@ function NormalizeSettleableTiles()
         print("Successfully converted " .. converted .. " tiles to settleable terrain");
         print("North/South balance: " .. northConverted .. "/" .. southConverted);
         
+        -- If we couldn't convert enough tundra/snow tiles, notify the user
+        if converted < tileDifference then
+            print("WARNING: Could only convert " .. converted .. " of " .. tileDifference .. " needed tiles");
+            print("Not enough tundra/snow to reach the target settleable count.");
+        end
     else
-        -- Need FEWER settleable tiles
+        -- Need FEWER settleable tiles - CONVERT FROM EQUATOR TO POLE, still creating tundra
         local toRemove = math.abs(tileDifference);
-        print("Need to REMOVE " .. toRemove .. " settleable tiles");
+        print("Need to REMOVE " .. toRemove .. " settleable tiles (converting to tundra, processing equator to pole)");
         
         local converted = 0;
         local northConverted = 0;
         local southConverted = 0;
         
-        -- First pass: convert plains and grass in alternating north/south bands
+        -- Process in equator-to-pole order (use the original latitudeOrder, not reversed)
+        -- This keeps the proper climate banding
         for _, y in ipairs(latitudeOrder) do
             -- Check if we need to balance north/south conversions
             local isNorth = (y < equatorY);
@@ -1821,7 +1782,7 @@ function NormalizeSettleableTiles()
             end
         end
         
-        print("Successfully converted " .. converted .. " tiles from settleable terrain");
+        print("Successfully converted " .. converted .. " tiles from settleable terrain to tundra");
         print("North/South balance: " .. northConverted .. "/" .. southConverted);
     end
     
@@ -1830,6 +1791,8 @@ function NormalizeSettleableTiles()
     local finalGrassHills = 0;
     local finalPlains = 0;
     local finalPlainsHills = 0;
+    local finalTundra = 0;
+    local finalTundraHills = 0;
     
     for y = 0, g_iH - 1 do
         for x = 0, g_iW - 1 do
@@ -1844,6 +1807,10 @@ function NormalizeSettleableTiles()
                     finalPlains = finalPlains + 1;
                 elseif terrainType == TERRAIN_TYPE_PLAINS_HILLS then
                     finalPlainsHills = finalPlainsHills + 1;
+                elseif terrainType == TERRAIN_TYPE_TUNDRA then
+                    finalTundra = finalTundra + 1;
+                elseif terrainType == TERRAIN_TYPE_TUNDRA_HILLS then
+                    finalTundraHills = finalTundraHills + 1;
                 end
             end
         end
@@ -1857,6 +1824,8 @@ function NormalizeSettleableTiles()
     print("Grass (hills): " .. finalGrassHills);
     print("Plains (flat): " .. finalPlains);
     print("Plains (hills): " .. finalPlainsHills);
+    print("Tundra (flat): " .. finalTundra);
+    print("Tundra (hills): " .. finalTundraHills);
     print("Total settleable: " .. finalSettleable);
     print("Final difference from target: " .. finalDifference);
 end
