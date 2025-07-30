@@ -82,6 +82,13 @@ g_RESOURCE_TURTLES              = GetGameInfoIndex("Resources", "RESOURCE_TURTLE
 -- Resources were added with Mayan DLC so we should not set them to nil if they not exist in database
 g_RESOURCE_MAIZE                = GetGameInfoIndex("Resources", "RESOURCE_MAIZE") or 52;
 g_RESOURCE_HONEY                = GetGameInfoIndex("Resources", "RESOURCE_HONEY") or 53;
+g_RESOURCE_PENGUINS             = GetGameInfoIndex("Resources", "RESOURCE_P0K_PENGUINS") or 54;
+g_RESOURCE_POMEGRANATES         = GetGameInfoIndex("Resources", "RESOURCE_CVS_POMEGRANATES") or 55;
+g_RESOURCE_PAPYRUS              = GetGameInfoIndex("Resources", "RESOURCE_P0K_PAPYRUS") or 56;
+g_RESOURCE_MAPLE                = GetGameInfoIndex("Resources", "RESOURCE_P0K_MAPLE") or 57;
+g_RESOURCE_OPAL                 = GetGameInfoIndex("Resources", "RESOURCE_P0K_OPAL") or 58;
+g_RESOURCE_PLUMS                = GetGameInfoIndex("Resources", "RESOURCE_P0K_PLUMS") or 59;
+
 
 
 
@@ -120,6 +127,12 @@ g_RESOURCES_LUX_LIST[g_RESOURCE_AMBER]= true;
 g_RESOURCES_LUX_LIST[g_RESOURCE_OLIVES]= true;
 g_RESOURCES_LUX_LIST[g_RESOURCE_TURTLES]= true;
 g_RESOURCES_LUX_LIST[g_RESOURCE_HONEY]= true;
+g_RESOURCES_LUX_LIST[g_RESOURCE_PENGUINS]= true;
+g_RESOURCES_LUX_LIST[g_RESOURCE_POMEGRANATES]= true;
+g_RESOURCES_LUX_LIST[g_RESOURCE_PAPYRUS]= true;
+g_RESOURCES_LUX_LIST[g_RESOURCE_MAPLE]= true;
+g_RESOURCES_LUX_LIST[g_RESOURCE_OPAL]= true;
+g_RESOURCES_LUX_LIST[g_RESOURCE_PLUMS]= true;
 
 -- List of lux with bonus culture, science or faith
 g_RESOURCES_LUX_EXTRA_YIELD = {}
@@ -129,15 +142,21 @@ g_RESOURCES_LUX_EXTRA_YIELD[g_RESOURCE_COFFEE]= true;
 g_RESOURCES_LUX_EXTRA_YIELD[g_RESOURCE_JADE]= true;
 g_RESOURCES_LUX_EXTRA_YIELD[g_RESOURCE_MARBLE]= true;
 g_RESOURCES_LUX_EXTRA_YIELD[g_RESOURCE_SILK]= true;
+g_RESOURCES_LUX_EXTRA_YIELD[g_RESOURCE_PLUMS]= true;
+
 -- Science
 g_RESOURCES_LUX_EXTRA_YIELD[g_RESOURCE_MERCURY]= true;
 g_RESOURCES_LUX_EXTRA_YIELD[g_RESOURCE_TEA]= true;
 g_RESOURCES_LUX_EXTRA_YIELD[g_RESOURCE_TURTLES]= true;
+g_RESOURCES_LUX_EXTRA_YIELD[g_RESOURCE_PENGUINS]= true;
+g_RESOURCES_LUX_EXTRA_YIELD[g_RESOURCE_PAPYRUS]= true;
+
 -- Faith
 g_RESOURCES_LUX_EXTRA_YIELD[g_RESOURCE_DYES]= true;
 g_RESOURCES_LUX_EXTRA_YIELD[g_RESOURCE_INCENSE]= true;
 g_RESOURCES_LUX_EXTRA_YIELD[g_RESOURCE_PEARLS]= true;
 g_RESOURCES_LUX_EXTRA_YIELD[g_RESOURCE_TOBACCO]= true;
+g_RESOURCES_LUX_EXTRA_YIELD[g_RESOURCE_POMEGRANATES]= true;
 
 g_RESOURCES_BONUS_LIST = {}
 g_RESOURCES_BONUS_LIST[g_RESOURCE_BANANAS]= true;
@@ -170,6 +189,7 @@ g_RESOURCES_MINE_LIST[g_RESOURCE_NITER]= true;
 g_RESOURCES_MINE_LIST[g_RESOURCE_COAL]= true;
 g_RESOURCES_MINE_LIST[g_RESOURCE_ALUMINUM]= true;
 g_RESOURCES_MINE_LIST[g_RESOURCE_URANIUM]= true;
+g_RESOURCES_MINE_LIST[g_RESOURCE_OPAL]= true;
 
 g_RESOURCES_QUARRY_LIST = {};
 g_RESOURCES_QUARRY_LIST[g_RESOURCE_STONE] = true;
@@ -187,6 +207,7 @@ g_RESOURCES_CAMP_LIST[g_RESOURCE_TRUFFLES]= true;
 g_RESOURCES_CAMP_LIST[g_RESOURCE_IVORY]= true;
 g_RESOURCES_CAMP_LIST[g_RESOURCE_HONEY]= true;
 g_RESOURCES_CAMP_LIST[g_RESOURCE_FURS]= true;
+g_RESOURCES_CAMP_LIST[g_RESOURCE_PENGUINS]= true;
 
 
 g_RESOURCES_PLANTATION_LIST = {}
@@ -204,6 +225,10 @@ g_RESOURCES_PLANTATION_LIST[g_RESOURCE_SUGAR]= true;
 g_RESOURCES_PLANTATION_LIST[g_RESOURCE_TEA]= true;
 g_RESOURCES_PLANTATION_LIST[g_RESOURCE_TOBACCO]= true;
 g_RESOURCES_PLANTATION_LIST[g_RESOURCE_WINE]= true;
+g_RESOURCES_PLANTATION_LIST[g_RESOURCE_POMEGRANATES]= true;
+g_RESOURCES_PLANTATION_LIST[g_RESOURCE_MAPLE]= true;
+g_RESOURCES_PLANTATION_LIST[g_RESOURCE_PLUMS]= true;
+g_RESOURCES_PLANTATION_LIST[g_RESOURCE_PAPYRUS]= true;
 
 g_RESOURCES_FISHINGBOAT_LIST = {}
 g_RESOURCES_FISHINGBOAT_LIST[g_RESOURCE_CRABS]= true;
@@ -2012,7 +2037,7 @@ function HexMap:TerraformSetResource(hex, resourceId, forced)
             end
         end
         -- Forcing to do try on desert, tundra if it can not have the resource
-        if ResourceBuilder.CanHaveResource(hex.Plot, resourceId)
+        if self:CanHaveResource(hex, resourceId)
             or (forced and hex:IsWater() == false and hex:IsDesertLand() == false and hex:IsSnowLand() == false) then
             _Debug("From TerraformSetResource ", hex:PrintXY(), hex.TerrainType, hex.FeatureType, hex.ResourceType);
             ResourceBuilder.SetResourceType(hex.Plot, g_RESOURCE_NONE);
@@ -2030,8 +2055,15 @@ function HexMap:TerraformSetResource(hex, resourceId, forced)
     return false;
 end
 
+function HexMap:CanHaveResource(hex, resourceId) 
+    if resourceId == g_RESOURCE_PENGUINS then
+        return hex.IsCoastal
+    end
+    return ResourceBuilder.CanHaveResource(hex.Plot, resourceId)
+end
+
 function HexMap:TerraformSetResourceRequirements(hex, resourceId)
-    return (resourceId == g_RESOURCE_NONE or ResourceBuilder.CanHaveResource(hex.Plot, resourceId)) and hex.IsTaggedAsMinimum == false;
+    return (resourceId == g_RESOURCE_NONE or self:CanHaveResource(hex, resourceId)) and hex.IsTaggedAsMinimum == false;
 end
 
 function HexMap:TerraformAddRandomLux(hex, canAddOnWater)

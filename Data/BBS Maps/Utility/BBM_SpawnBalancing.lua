@@ -1104,7 +1104,7 @@ function SpawnBalancing:GetCoastalScoreHex()
                 elseif hex.ResourceType == g_RESOURCE_WHALES then
                     coastalScore = coastalScore + CoastalScoring.WHALES_R2
                     _Debug("WHALES_R2 "..tostring(CoastalScoring.WHALES_R2))
-                elseif hex.ResourceType == g_RESOURCE_PEARLS then
+                elseif hex.ResourceType == g_RESOURCE_PEARLS or hex.ResourceType == g_RESOURCE_PENGUINS then
                     coastalScore = coastalScore + CoastalScoring.PEARLS_R2
                     _Debug("PEARLS_R2 "..tostring(CoastalScoring.PEARLS_R2))
                 elseif hex.ResourceType == g_RESOURCE_AMBER then
@@ -1131,7 +1131,7 @@ function SpawnBalancing:GetCoastalScoreHex()
                 elseif hex.ResourceType == g_RESOURCE_WHALES then
                     coastalScore = coastalScore + CoastalScoring.WHALES_R3
                     _Debug("WHALES_R3 "..tostring(CoastalScoring.WHALES_R3))
-                elseif hex.ResourceType == g_RESOURCE_PEARLS then
+                elseif hex.ResourceType == g_RESOURCE_PEARLS or hex.ResourceType == g_RESOURCE_PENGUINS then
                     coastalScore = coastalScore + CoastalScoring.PEARLS_R3
                     _Debug("PEARLS_R3 "..tostring(CoastalScoring.PEARLS_R3))
                 elseif hex.ResourceType == g_RESOURCE_AMBER then

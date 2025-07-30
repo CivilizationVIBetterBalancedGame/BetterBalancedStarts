@@ -45,6 +45,7 @@ function BBS_ResourceGenerator.Create(args)
 		__RemoveDuplicateResources		= BBS_ResourceGenerator.__RemoveDuplicateResources,
 		__ScorePlots			= BBS_ResourceGenerator.__ScorePlots,
 		__ScoreWaterPlots			= BBS_ResourceGenerator.__ScoreWaterPlots,
+		AdjacentToWater			= BBS_ResourceGenerator.AdjacentToWater,
 
 		-- data
 		iWaterLux = args.iWaterLux or 3;
@@ -174,7 +175,6 @@ function BBS_ResourceGenerator:__GetLuxuryResources()
 
 	for _, eContinent in ipairs(continentsInUse) do 
 
-		--print ("Retrieved plots for continent: " .. tostring(eContinent));
 
 		self:__ValidLuxuryPlots(eContinent);
 
@@ -233,12 +233,18 @@ function BBS_ResourceGenerator:__ValidLuxuryPlots(eContinent)
 				end
 			
 				if (ResourceBuilder.CanHaveResource(pPlot, self.eResourceType[self.aLuxuryType[iI]]) and bIce == false) then
-					row = {};
-					row.MapIndex = plot;
-					row.Score = iBaseScore;
+					print("__ValidLuxuryPlots CanHaveResource",  self.aLuxuryType[iI], iI)
+					local lux = self.aLuxuryType[iI]
+					if lux ~= 54 or (lux == 54 and self:AdjacentToWater(pPlot)) then
+						row = {};
+						row.MapIndex = plot;
+						row.Score = iBaseScore;
 
-					table.insert (self.aaPossibleLuxLocs[self.aLuxuryType[iI]], row);
-					bCanHaveSomeResource = true;
+						table.insert (self.aaPossibleLuxLocs[self.aLuxuryType[iI]], row);
+						bCanHaveSomeResource = true;
+					else
+						
+					end
 				end
 			end
 
@@ -260,13 +266,27 @@ function BBS_ResourceGenerator:__ValidLuxuryPlots(eContinent)
 	self.iOccurencesPerFrequency = self.iTargetPercentage / 100 * iNumPlots * self.iLuxuryPercentage / 100 / self.iLuxuriesPerRegion;
 end
 
+function BBS_ResourceGenerator:AdjacentToWater(plot)
+	if not plot:IsWater() then -- This plot is land, process it.
+		for direction = 0, DirectionTypes.NUM_DIRECTION_TYPES - 1, 1 do
+			local testPlot = Map.GetAdjacentPlot(plot:GetX(), plot:GetY(), direction);
+			if testPlot ~= nil then
+				if testPlot:IsWater() or testPlot:IsLake() then -- Adjacent plot is water
+					return true
+				end
+			end
+		end
+	end
+	-- Current plot is itself water, or else no salt water found among adjacent plots.
+	return false
+end
 ------------------------------------------------------------------------------
 function BBS_ResourceGenerator:__PlaceLuxuryResources(eChosenLux, eContinent)
 	-- Go through continent placing the chosen luxuries
 	
 	plots = Map.GetContinentPlots(eContinent);
-	--print ("Occurrences per frequency: " .. tostring(self.iOccurencesPerFrequency));
-	--print("Resource: ", eChosenLux);
+	print ("Occurrences per frequency: " .. tostring(self.iOccurencesPerFrequency));
+	print("Resource: ", eChosenLux);
 
 	local iTotalPlaced = 0;
 
@@ -313,15 +333,19 @@ function BBS_ResourceGenerator:__ScoreLuxuryPlots(iResourceIndex, eContinent)
 		end
 
 		if (ResourceBuilder.CanHaveResource(pPlot, self.eResourceType[iResourceIndex]) and bIce == false) then
-			row = {};
-			row.MapIndex = plot;
-			row.Score = 500;
-			row.Score = row.Score / ((ResourceBuilder.GetAdjacentResourceCount(pPlot) + 1) * 3.5);
-			row.Score = row.Score + TerrainBuilder.GetRandomNumber(100, "Resource Placement Score Adjust");
-			
-			if(ResourceBuilder.GetAdjacentResourceCount(pPlot) <= 1 or #self.aaPossibleLuxLocs == 0) then
-					table.insert (self.aaPossibleLuxLocs[iResourceIndex], row);
+			if iResourceIndex ~= 54 or (iResourceIndex == 54 and self:AdjacentToWater(pPlot)) then
+
+				row = {};
+				row.MapIndex = plot;
+				row.Score = 500;
+				row.Score = row.Score / ((ResourceBuilder.GetAdjacentResourceCount(pPlot) + 1) * 3.5);
+				row.Score = row.Score + TerrainBuilder.GetRandomNumber(100, "Resource Placement Score Adjust");
+				
+				if(ResourceBuilder.GetAdjacentResourceCount(pPlot) <= 1 or #self.aaPossibleLuxLocs == 0) then
+						table.insert (self.aaPossibleLuxLocs[iResourceIndex], row);
+				end
 			end
+			
 		end
 	end
 end
