@@ -1406,12 +1406,12 @@ end
 
 -------------------------------------------------------------------------------
 function NormalizeSettleableTiles()
-    print("Normalizing settleable tiles (plains and grassland) to around 2700 - EXCLUDING DESERT");
-    
     local g_iW, g_iH = Map.GetGridSize();
-    local targetSettleableTiles = 2680;
-    local acceptableVariance = 50;
-    
+    local targetSettleableTiles = g_iW * g_iH * 0.46;
+    local acceptableVariance = g_iW * g_iH * 0.01;
+    local extremeCaseThreshold = g_iW * g_iH * 0.035
+    print("Normalizing settleable tiles (plains and grassland) to around "..targetSettleableTiles.." - EXCLUDING DESERT");
+
     -- Terrain type constants - flats, hills and mountains
     local TERRAIN_TYPE_GRASS = 0;
     local TERRAIN_TYPE_GRASS_HILLS = 1;
@@ -1561,11 +1561,12 @@ function NormalizeSettleableTiles()
     end
     
     -- Force a more drastic approach for large differences
+    -- Had weird terraforming in tundra in some cases with extreme, disabled for now
     local extremeCase = false;
-    if math.abs(tileDifference) > 200 then
-        extremeCase = true;
-        print("EXTREME difference detected (" .. tileDifference .. "), using drastic measures");
-    end
+    --if math.abs(tileDifference) > extremeCaseThreshold then
+        --extremeCase = true;
+        --print("EXTREME difference detected (" .. tileDifference .. "), using drastic measures");
+   -- end
     
     -- Function to get the next appropriate terrain type based on latitude and conversion direction
     local function GetNextTerrainType(y, currentType, convertingTo)
@@ -1700,90 +1701,6 @@ function NormalizeSettleableTiles()
             print("WARNING: Could only convert " .. converted .. " of " .. tileDifference .. " needed tiles");
             print("Not enough tundra/snow to reach the target settleable count.");
         end
-    else
-        -- Need FEWER settleable tiles - CONVERT FROM EQUATOR TO POLE, still creating tundra
-        local toRemove = math.abs(tileDifference);
-        print("Need to REMOVE " .. toRemove .. " settleable tiles (converting to tundra, processing equator to pole)");
-        
-        local converted = 0;
-        local northConverted = 0;
-        local southConverted = 0;
-        
-        -- Process in equator-to-pole order (use the original latitudeOrder, not reversed)
-        -- This keeps the proper climate banding
-        for _, y in ipairs(latitudeOrder) do
-            -- Check if we need to balance north/south conversions
-            local isNorth = (y < equatorY);
-            local canConvertHere = true;
-            
-            if northConverted > southConverted + 20 and isNorth then
-                canConvertHere = false; -- Skip northern conversions to balance
-            elseif southConverted > northConverted + 20 and not isNorth then
-                canConvertHere = false; -- Skip southern conversions to balance
-            end
-            
-            if canConvertHere then
-                -- Shuffle the settleable plots at this latitude for more natural distribution
-                local settleablePlots = {};
-                
-                -- Combine grass and plains plots at this latitude
-                for _, plot in ipairs(plotsByLatitude[y].grass) do
-                    table.insert(settleablePlots, plot);
-                end
-                for _, plot in ipairs(plotsByLatitude[y].grassHills) do
-                    table.insert(settleablePlots, plot);
-                end
-                for _, plot in ipairs(plotsByLatitude[y].plains) do
-                    table.insert(settleablePlots, plot);
-                end
-                for _, plot in ipairs(plotsByLatitude[y].plainsHills) do
-                    table.insert(settleablePlots, plot);
-                end
-                
-                ShuffleList(settleablePlots);
-                
-                -- Convert plots at this latitude
-                for _, plotData in ipairs(settleablePlots) do
-                    if converted >= toRemove then
-                        break;
-                    end
-                    
-                    local plot = Map.GetPlot(plotData.x, plotData.y);
-                    -- Skip river tiles unless this is an extreme case
-                    if not plot:IsRiver() or extremeCase then
-                        local newType = GetNextTerrainType(plotData.y, plotData.type, "non-settleable");
-                        
-                        -- Direct terrain type conversion
-                        TerrainBuilder.SetTerrainType(plot, newType);
-                        
-                        -- Verify the conversion worked
-                        if plot:GetTerrainType() == newType then
-                            converted = converted + 1;
-                            if isNorth then
-                                northConverted = northConverted + 1;
-                            else
-                                southConverted = southConverted + 1;
-                            end
-                            
-                            if converted % 20 == 0 then
-                                print("  - Converted " .. converted .. " tiles (North: " .. northConverted .. ", South: " .. southConverted .. ")");
-                            end
-                        end
-                    end
-                    
-                    if converted >= toRemove then
-                        break;
-                    end
-                end
-            end
-            
-            if converted >= toRemove then
-                break;
-            end
-        end
-        
-        print("Successfully converted " .. converted .. " tiles from settleable terrain to tundra");
-        print("North/South balance: " .. northConverted .. "/" .. southConverted);
     end
     
     -- Verify final result with more detailed breakdown

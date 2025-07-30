@@ -3,8 +3,7 @@
         <!--  New DW Maps -->
         <Row Domain="Maps:Expansion2Maps" File="Tilted_Axis_Wrap.lua" Name="LOC_MAP_NAME_TILTED_WRAP" Description="LOC_MAP_DESC_TILTED_WRAP" Image="Map_Tilted" SortIndex="259"/>
         <Row Domain="Maps:Expansion2Maps" File="rich_highlands_xp2.lua" Name="LOC_MAP_RICH_HIGHLANDS_NAME" Description="LOC_MAP_RICH_HIGHLANDS_DESCRIPTION" Image="Map_Pangea" SortIndex="260"/>
-		<Row Domain="Maps:Expansion2Maps" File="pangaea_small_ocean.lua" Name="Pangaea (Small Ocean)" Description="A pangaea map with reduced ocean for more usable land" Image="Map_Pangea" SortIndex="262"/>
-
+		<Row Domain="Maps:Expansion2Maps" File="pangaea_small_ocean.lua" Name="LOC_MAP_PANGAEA_LESS_OCEAN_NAME" Description="LOC_MAP_PANGAEA_LESS_OCEAN_DESCRIPTION" Image="Map_Pangea" SortIndex="262"/>
     </Maps>
 	
 	<Parameters>

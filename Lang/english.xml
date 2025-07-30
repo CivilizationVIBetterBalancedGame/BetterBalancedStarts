@@ -28,6 +28,14 @@
 		<Replace Tag="LOC_MAP_DESC_TILTED_WRAP" Language="en_US">
 			<Text>A polar centered continents map (with circumnavigation).</Text>
 		</Replace>
+
+		<Replace Tag="LOC_MAP_PANGAEA_LESS_OCEAN_NAME" Language="en_US">
+            <Text>Pangaea (Less Ocean)</Text>
+        </Replace>
+        <Replace Tag="LOC_MAP_PANGAEA_LESS_OCEAN_DESCRIPTION" Language="en_US">
+            <Text>A pangaea map with reduced ocean for more usable land</Text>
+        </Replace>
+
 		<!-- === SETUP === -->
 		<!-- == Map features == -->
 		<Replace Tag="LOC_GAME_SPAWN_RECALCULATION" Language="en_US">

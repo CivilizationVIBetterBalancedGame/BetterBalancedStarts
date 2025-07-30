@@ -233,7 +233,6 @@ function BBS_ResourceGenerator:__ValidLuxuryPlots(eContinent)
 				end
 			
 				if (ResourceBuilder.CanHaveResource(pPlot, self.eResourceType[self.aLuxuryType[iI]]) and bIce == false) then
-					print("__ValidLuxuryPlots CanHaveResource",  self.aLuxuryType[iI], iI)
 					local lux = self.aLuxuryType[iI]
 					if lux ~= 54 or (lux == 54 and self:AdjacentToWater(pPlot)) then
 						row = {};
