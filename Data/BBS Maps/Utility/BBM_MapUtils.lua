@@ -83,6 +83,7 @@ g_RESOURCE_TURTLES              = GetGameInfoIndex("Resources", "RESOURCE_TURTLE
 -- Resources were added with Mayan DLC so we should not set them to nil if they not exist in database
 g_RESOURCE_MAIZE                = GetGameInfoIndex("Resources", "RESOURCE_MAIZE") or 52;
 g_RESOURCE_HONEY                = GetGameInfoIndex("Resources", "RESOURCE_HONEY") or 53;
+-- BBG Extended 
 g_RESOURCE_PENGUINS             = GetGameInfoIndex("Resources", "RESOURCE_P0K_PENGUINS") or 54;
 g_RESOURCE_POMEGRANATES         = GetGameInfoIndex("Resources", "RESOURCE_CVS_POMEGRANATES") or 55;
 g_RESOURCE_PAPYRUS              = GetGameInfoIndex("Resources", "RESOURCE_P0K_PAPYRUS") or 56;
@@ -273,6 +274,10 @@ WestTeam = "West";
 
 function _Debug(...)
     --print(...);
+end
+
+function IsWorldAgeOld()
+ return MapConfiguration.GetValue("world_age") == 1
 end
 
 ---------------------------------------
@@ -1142,7 +1147,7 @@ function HexMap:ComputeTerrainsScore(hex)
                 hex.IsCloseToDesert = true
             end
             local isCoastal = h.IsCoastal
-            
+            hex.TerrainsScore[g_HILLS] = 0
             -- Hills score
             if IsHill(h.TerrainType) then
                 local hillScore = hex.TerrainsScore[g_HILLS] or 0; --init
@@ -3621,43 +3626,87 @@ end
 function BalanceMap(hexMap)
     local iForestCounter = 0;
     local iNearFloodsCounter = 0;
+    local iHillsCounter = 0
+    local landTiles = {}
     for y = 0, hexMap.height - 1 do
         for x = 0, hexMap.width - 1 do
             local hex = hexMap:GetHexInMap(x, y);
             if hex:IsImpassable() == false and hex.ResourceType == g_RESOURCE_NONE then
-                local ring1 = hex.AllRing6Map[1];
-                local iForestScore = 0;
-                local iHillsScore = 0;
-                local iFloodplainsScore = 0;
-                for _, h in pairs(ring1) do
-                    if hex.FeatureType == g_FEATURE_NONE and h.FeatureType == g_FEATURE_FOREST or h.FeatureType == g_FEATURE_JUNGLE then
-                        iForestScore = iForestScore + 1;
-                    elseif (hex.FeatureType == g_FEATURE_FOREST or hex.FeatureType == g_FEATURE_JUNGLE) and h:IsFloodplains(true) then
-                        iFloodplainsScore = iFloodplainsScore + 1;                 
-                    end
-                end 
-                if hex.FeatureType == g_FEATURE_NONE and BalanceMapForests(hexMap, hex, iForestScore) then
-                    iForestCounter = iForestCounter + 1;
-                end
-                if (hex.FeatureType == g_FEATURE_NONE or hex.FeatureType == g_FEATURE_FOREST or hex.FeatureType == g_FEATURE_JUNGLE) 
-                    and BalanceNearFloodplainsYields(hexMap, hex, iFloodplainsScore) then
-                    iNearFloodsCounter = iNearFloodsCounter + 1;
-                end
-            elseif hex.FeatureType == g_FEATURE_VOLCANO then
-                -- Additionnal check to avoid volcanoes on lakes
-                if hex.Plot:IsLake() then 
-                    hexMap:TerraformSetTerrain(hex, g_TERRAIN_TYPE_GRASS_MOUNTAIN);
-                end
+                table.insert(landTiles, hex)
             end
         end
     end
+    landTiles = GetShuffledCopyOfTable(landTiles)
+
+    local countHills, _ = hexMap:LookForHills();
+    local countLandTiles, _ = hexMap:GetLandHexList();
+    local hillPercent = countHills / countLandTiles
+    print("Hills count : ", countHills, countLandTiles, hillPercent)
+
+    for k, hex in pairs(landTiles) do
+        local ring1 = hex.AllRing6Map[1];
+        local iForestScore = 0;
+        local iHillsScore = 0;
+        local iFloodplainsScore = 0;
+        for _, h in pairs(ring1) do
+            if hex.FeatureType == g_FEATURE_NONE and h.FeatureType == g_FEATURE_FOREST or h.FeatureType == g_FEATURE_JUNGLE then
+                iForestScore = iForestScore + 1;
+            elseif (hex.FeatureType == g_FEATURE_FOREST or hex.FeatureType == g_FEATURE_JUNGLE) and h:IsFloodplains(true) then
+                iFloodplainsScore = iFloodplainsScore + 1;
+            elseif h:IsHill() then
+                iHillsScore = iHillsScore + 1;
+            end
+        end 
+        local tt = (hex.TerrainsScore[g_HILLS] * 100 / 126) / (hex.PeninsulaScore / 100)--Total tiles on r6
+        local goalHills = math.ceil(countLandTiles * 0.4)
+        local underHillsGoal = IsWorldAgeOld() and (countHills + iHillsCounter <= goalHills)
+        print(hex:PrintXY(), " iHillScore = ", iHillsScore, " Hex6 = ", hex.TerrainsScore[g_HILLS], " PenScore = ", hex.PeninsulaScore, " %HillsR6 = ", tt, " Hill%Map = ", hillPercent, " Target = ", goalHills, underHillsGoal)
+        if hex:IsHill() == false and hex.ResourceType == g_RESOURCE_NONE and (hex.FeatureType == g_FEATURE_NONE or hex.FeatureType == g_FEATURE_FOREST or hex.FeatureType == g_FEATURE_JUNGLE)
+            and tt < hillPercent * 100 - 5 and underHillsGoal and BalanceMapHills(hexMap, hex, iHillsScore) then
+            -- and BalanceMapHills(hexMap, hex, iHillsScore) then
+            print("BalanceMapHills done for ", hex:PrintXY())
+            iHillsCounter = iHillsCounter + 1;
+        end
+        if hex.FeatureType == g_FEATURE_NONE and BalanceMapForests(hexMap, hex, iForestScore) then
+            iForestCounter = iForestCounter + 1;
+        end
+        if (hex.FeatureType == g_FEATURE_NONE or hex.FeatureType == g_FEATURE_FOREST or hex.FeatureType == g_FEATURE_JUNGLE) 
+            and BalanceNearFloodplainsYields(hexMap, hex, iFloodplainsScore) then
+            iNearFloodsCounter = iNearFloodsCounter + 1;
+        end
+    end
+
     print("Added "..tostring(iForestCounter).." Forest to the base map.")
+    print("Added "..tostring(countHills).." + "..tostring(iHillsCounter).." hills to the base map.")
     print("Changed "..tostring(iNearFloodsCounter).." near floods to add prod.")
 end
 
 ---------------------------------------
 -- MapBalancing
 ---------------------------------------
+function BalanceMapHills(hexMap, hex, iScore)
+    -- Check hills
+    local percentage = 0;
+    if iScore == 0 then
+        percentage = 30
+    elseif iScore == 1 then
+        percentage = 50
+    elseif iScore == 2 then
+        percentage = 10
+    elseif iScore == 3 then
+        percentage = 5
+    else
+        percentage = 0
+    end
+    local rng = TerrainBuilder.GetRandomNumber(100, "Terraform hills");
+    if rng < percentage then
+        if hexMap:TerraformToHill(hex, false) then
+            return true;
+        end
+    end
+    return false;
+end
+
 
 function BalanceMapForests(hexMap, hex, iScore)
     -- Check forest
