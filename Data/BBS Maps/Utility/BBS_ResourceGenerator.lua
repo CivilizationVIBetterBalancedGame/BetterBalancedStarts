@@ -70,6 +70,7 @@ function BBS_ResourceGenerator.Create(args)
 		iNumWaterLuxuries = 0;
 		iNumWaterStrategics = 0;
 		bOdd = false;
+		eResourceName 		= {},
 		eResourceType		= {},
 		eResourceClassType	= {},
 		iFrequency          = {},
@@ -142,6 +143,7 @@ function BBS_ResourceGenerator:__InitResourceData()
 
 
 	for row in GameInfo.Resources() do
+		self.eResourceName[self.iResourcesInDB] = row.ResourceType;
 		self.eResourceType[self.iResourcesInDB] = row.Hash;
 		self.aIndex[self.iResourcesInDB] = row.Index;
 		self.eResourceClassType[self.iResourcesInDB] = row.ResourceClassType;
@@ -233,16 +235,14 @@ function BBS_ResourceGenerator:__ValidLuxuryPlots(eContinent)
 				end
 			
 				if (ResourceBuilder.CanHaveResource(pPlot, self.eResourceType[self.aLuxuryType[iI]]) and bIce == false) then
-					local lux = self.aLuxuryType[iI]
-					if lux ~= 54 or (lux == 54 and self:AdjacentToWater(pPlot)) then
+					local luxName = self.eResourceName[self.aLuxuryType[iI]]
+					if luxName ~= "RESOURCE_P0K_PENGUINS" or (luxName == "RESOURCE_P0K_PENGUINS" and self:AdjacentToWater(pPlot)) then
 						row = {};
 						row.MapIndex = plot;
 						row.Score = iBaseScore;
 
 						table.insert (self.aaPossibleLuxLocs[self.aLuxuryType[iI]], row);
 						bCanHaveSomeResource = true;
-					else
-						
 					end
 				end
 			end
@@ -332,8 +332,12 @@ function BBS_ResourceGenerator:__ScoreLuxuryPlots(iResourceIndex, eContinent)
 		end
 
 		if (ResourceBuilder.CanHaveResource(pPlot, self.eResourceType[iResourceIndex]) and bIce == false) then
-			if iResourceIndex ~= 54 or (iResourceIndex == 54 and self:AdjacentToWater(pPlot)) then
-
+			local luxName = self.eResourceName[iResourceIndex]
+			print(iResourceIndex, luxName)
+			if luxName ~= "RESOURCE_P0K_PENGUINS" or (luxName == "RESOURCE_P0K_PENGUINS" and self:AdjacentToWater(pPlot)) then
+				if (luxName == "RESOURCE_P0K_PENGUINS" and self:AdjacentToWater(pPlot)) then
+					print("Pengouins!!!")
+				end
 				row = {};
 				row.MapIndex = plot;
 				row.Score = 500;
