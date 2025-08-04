@@ -15,6 +15,12 @@
 			<Text>Une carte où les pôles sont inversés (avec tour du monde).</Text>
 		</Replace>
 
+		<Replace Tag="LOC_MAP_PANGAEA_ULTIMA_NAME" Language="fr_FR">
+            <Text>Pangée Ultime</Text>
+        </Replace>
+        <Replace Tag="LOC_MAP_PANGAEA_ULTIMA_DESCRIPTION" Language="fr_FR">
+            <Text>Une pangée plus grande avec plus de terre</Text>
+        </Replace>
 		<!-- === SETTINGS - PARAMÈTRES	=== -->
 		<!-- = Map Sizes = -->
 		<Replace Tag="LOC_MAPSIZE_HUGE_NAME" Language="fr_FR">

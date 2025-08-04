@@ -29,11 +29,11 @@
 			<Text>A polar centered continents map (with circumnavigation).</Text>
 		</Replace>
 
-		<Replace Tag="LOC_MAP_PANGAEA_LESS_OCEAN_NAME" Language="en_US">
-            <Text>Pangaea (Less Ocean)</Text>
+		<Replace Tag="LOC_MAP_PANGAEA_ULTIMA_NAME" Language="en_US">
+            <Text>Pangaea Ultima</Text>
         </Replace>
-        <Replace Tag="LOC_MAP_PANGAEA_LESS_OCEAN_DESCRIPTION" Language="en_US">
-            <Text>A pangaea map with reduced ocean for more usable land</Text>
+        <Replace Tag="LOC_MAP_PANGAEA_ULTIMA_DESCRIPTION" Language="en_US">
+            <Text>A bigger pangaea map with more usable land</Text>
         </Replace>
 
 		<!-- === SETUP === -->

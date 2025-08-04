@@ -20,7 +20,7 @@ MapScripts.MAP_WETLANDS = "Wetlands_XP2.lua"
 MapScripts.MAP_CONTINENTS_ISLANDS = "Continents_Islands.lua"
 MapScripts.MAP_SPLINTERED_FRACTAL = "Splintered_Fractal.lua"
 MapScripts.MAP_TERRA = "Terra.lua"
-MapScripts.MAP_PANGAEA_SMALL_OCEAN = "pangaea_small_ocean.lua"
+MapScripts.MAP_PANGAEA_SMALL_OCEAN = "pangaea_ultima.lua"
 
 g_FEATURE_VOLCANO			    = GetGameInfoIndex("Features", "FEATURE_VOLCANO");
 g_FEATURE_VOLCANIC_SOIL			= GetGameInfoIndex("Features", "FEATURE_VOLCANIC_SOIL");
