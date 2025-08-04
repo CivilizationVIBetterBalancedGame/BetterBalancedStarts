@@ -3641,7 +3641,7 @@ function BalanceMap(hexMap)
     local countHills, _ = hexMap:LookForHills();
     local countLandTiles, _ = hexMap:GetLandHexList();
     local hillPercent = countHills / countLandTiles
-    print("Hills count : ", countHills, countLandTiles, hillPercent)
+    _Debug("Hills count : ", countHills, countLandTiles, hillPercent)
 
     for k, hex in pairs(landTiles) do
         local ring1 = hex.AllRing6Map[1];
@@ -3660,11 +3660,11 @@ function BalanceMap(hexMap)
         local tt = (hex.TerrainsScore[g_HILLS] * 100 / 126) / (hex.PeninsulaScore / 100)--Total tiles on r6
         local goalHills = math.ceil(countLandTiles * 0.4)
         local underHillsGoal = IsWorldAgeOld() and (countHills + iHillsCounter <= goalHills)
-        print(hex:PrintXY(), " iHillScore = ", iHillsScore, " Hex6 = ", hex.TerrainsScore[g_HILLS], " PenScore = ", hex.PeninsulaScore, " %HillsR6 = ", tt, " Hill%Map = ", hillPercent, " Target = ", goalHills, underHillsGoal)
+        _Debug(hex:PrintXY(), " iHillScore = ", iHillsScore, " Hex6 = ", hex.TerrainsScore[g_HILLS], " PenScore = ", hex.PeninsulaScore, " %HillsR6 = ", tt, " Hill%Map = ", hillPercent, " Target = ", goalHills, underHillsGoal)
         if hex:IsHill() == false and hex.ResourceType == g_RESOURCE_NONE and (hex.FeatureType == g_FEATURE_NONE or hex.FeatureType == g_FEATURE_FOREST or hex.FeatureType == g_FEATURE_JUNGLE)
             and tt < hillPercent * 100 - 5 and underHillsGoal and BalanceMapHills(hexMap, hex, iHillsScore) then
             -- and BalanceMapHills(hexMap, hex, iHillsScore) then
-            print("BalanceMapHills done for ", hex:PrintXY())
+            _Debug("BalanceMapHills done for ", hex:PrintXY())
             iHillsCounter = iHillsCounter + 1;
         end
         if hex.FeatureType == g_FEATURE_NONE and BalanceMapForests(hexMap, hex, iForestScore) then
@@ -3676,9 +3676,9 @@ function BalanceMap(hexMap)
         end
     end
 
-    print("Added "..tostring(iForestCounter).." Forest to the base map.")
-    print("Added "..tostring(countHills).." + "..tostring(iHillsCounter).." hills to the base map.")
-    print("Changed "..tostring(iNearFloodsCounter).." near floods to add prod.")
+    _Debug("Added "..tostring(iForestCounter).." Forest to the base map.")
+    _Debug("Added "..tostring(countHills).." + "..tostring(iHillsCounter).." hills to the base map.")
+    _Debug("Changed "..tostring(iNearFloodsCounter).." near floods to add prod.")
 end
 
 ---------------------------------------
