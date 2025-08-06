@@ -388,7 +388,7 @@ function CivilizationAssignSpawn:GetXPlacementCondition(BBM_HexMap, hex)
     BBM_HexMap.RTSContinentSetup = BBM_HexMap.RTSContinentSetup or {}
     if BBM_HexMap.mapScript == MapScripts.MAP_PANGAEA 
         or BBM_HexMap.mapScript == MapScripts.MAP_INLAND_SEA 
-        or BBM_HexMap.mapScript == MapScripts.MAP_PANGAEA_SMALL_OCEAN then
+        or BBM_HexMap.mapScript == MapScripts.MAP_PANGAEA_ULTIMA then
         if self.TeamerWar then
             local warSizeMax = BBM_HexMap.RTSPangaeaTeamerConfigWarMax
             if self.IsTundraBias then

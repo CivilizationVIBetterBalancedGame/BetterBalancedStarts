@@ -284,8 +284,8 @@ function BBS_ResourceGenerator:__PlaceLuxuryResources(eChosenLux, eContinent)
 	-- Go through continent placing the chosen luxuries
 	
 	plots = Map.GetContinentPlots(eContinent);
-	print ("Occurrences per frequency: " .. tostring(self.iOccurencesPerFrequency));
-	print("Resource: ", eChosenLux);
+	--print ("Occurrences per frequency: " .. tostring(self.iOccurencesPerFrequency));
+	--print("Resource: ", eChosenLux);
 
 	local iTotalPlaced = 0;
 
@@ -333,11 +333,7 @@ function BBS_ResourceGenerator:__ScoreLuxuryPlots(iResourceIndex, eContinent)
 
 		if (ResourceBuilder.CanHaveResource(pPlot, self.eResourceType[iResourceIndex]) and bIce == false) then
 			local luxName = self.eResourceName[iResourceIndex]
-			print(iResourceIndex, luxName)
 			if luxName ~= "RESOURCE_P0K_PENGUINS" or (luxName == "RESOURCE_P0K_PENGUINS" and self:AdjacentToWater(pPlot)) then
-				if (luxName == "RESOURCE_P0K_PENGUINS" and self:AdjacentToWater(pPlot)) then
-					print("Pengouins!!!")
-				end
 				row = {};
 				row.MapIndex = plot;
 				row.Score = 500;

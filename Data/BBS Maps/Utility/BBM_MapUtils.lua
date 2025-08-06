@@ -20,7 +20,7 @@ MapScripts.MAP_WETLANDS = "Wetlands_XP2.lua"
 MapScripts.MAP_CONTINENTS_ISLANDS = "Continents_Islands.lua"
 MapScripts.MAP_SPLINTERED_FRACTAL = "Splintered_Fractal.lua"
 MapScripts.MAP_TERRA = "Terra.lua"
-MapScripts.MAP_PANGAEA_SMALL_OCEAN = "pangaea_ultima.lua"
+MapScripts.MAP_PANGAEA_ULTIMA = "pangaea_ultima.lua"
 
 g_FEATURE_VOLCANO			    = GetGameInfoIndex("Features", "FEATURE_VOLCANO");
 g_FEATURE_VOLCANIC_SOIL			= GetGameInfoIndex("Features", "FEATURE_VOLCANIC_SOIL");
@@ -852,7 +852,7 @@ function HexMap:SetMinimumDistanceMajorToMajorCivs()
         or self.mapScript == MapScripts.MAP_RICH_HIGHLANDS then
             return 15;
         elseif self.mapScript == MapScripts.MAP_INLAND_SEA 
-        or self.mapScript == MapScripts.MAP_PANGAEA_SMALL_OCEAN then
+        or self.mapScript == MapScripts.MAP_PANGAEA_ULTIMA then
             return 14;
         elseif self.mapScript == MapScripts.MAP_SEVEN_SEAS
          then
@@ -1129,7 +1129,7 @@ function HexMap:ComputeTerrainsScore(hex)
         local ring = mapRing6[i]
         for j = 1, #ring do
             local h = ring[j]
-            if terrain ~= g_TERRAIN_TYPE_NONE then
+            if h.TerrainType ~= g_TERRAIN_TYPE_NONE then
                 local score = hex.TerrainsScore[h.TerrainType] or 0 --init
                 score = score + 1
                 hex.TerrainsScore[h.TerrainType] = score
@@ -1147,7 +1147,6 @@ function HexMap:ComputeTerrainsScore(hex)
                 hex.IsCloseToDesert = true
             end
             local isCoastal = h.IsCoastal
-            hex.TerrainsScore[g_HILLS] = 0
             -- Hills score
             if IsHill(h.TerrainType) then
                 local hillScore = hex.TerrainsScore[g_HILLS] or 0; --init
@@ -3641,7 +3640,7 @@ function BalanceMap(hexMap)
     local countHills, _ = hexMap:LookForHills();
     local countLandTiles, _ = hexMap:GetLandHexList();
     local hillPercent = countHills / countLandTiles
-    _Debug("Hills count : ", countHills, countLandTiles, hillPercent)
+    print("Hills count : ", countHills, countLandTiles, hillPercent)
 
     for k, hex in pairs(landTiles) do
         local ring1 = hex.AllRing6Map[1];
@@ -3657,12 +3656,12 @@ function BalanceMap(hexMap)
                 iHillsScore = iHillsScore + 1;
             end
         end 
-        local tt = (hex.TerrainsScore[g_HILLS] * 100 / 126) / (hex.PeninsulaScore / 100)--Total tiles on r6
+        local hillsByPeninsulaScore = (hex.TerrainsScore[g_HILLS] * 100 / 126) / (hex.PeninsulaScore / 100)--Total tiles on r6
         local goalHills = math.ceil(countLandTiles * 0.4)
         local underHillsGoal = IsWorldAgeOld() and (countHills + iHillsCounter <= goalHills)
         _Debug(hex:PrintXY(), " iHillScore = ", iHillsScore, " Hex6 = ", hex.TerrainsScore[g_HILLS], " PenScore = ", hex.PeninsulaScore, " %HillsR6 = ", tt, " Hill%Map = ", hillPercent, " Target = ", goalHills, underHillsGoal)
         if hex:IsHill() == false and hex.ResourceType == g_RESOURCE_NONE and (hex.FeatureType == g_FEATURE_NONE or hex.FeatureType == g_FEATURE_FOREST or hex.FeatureType == g_FEATURE_JUNGLE)
-            and tt < hillPercent * 100 - 5 and underHillsGoal and BalanceMapHills(hexMap, hex, iHillsScore) then
+            and hillsByPeninsulaScore < hillPercent * 100 - 5 and BalanceMapHills(hexMap, hex, iHillsScore, hillsByPeninsulaScore, underHillsGoal) then
             -- and BalanceMapHills(hexMap, hex, iHillsScore) then
             _Debug("BalanceMapHills done for ", hex:PrintXY())
             iHillsCounter = iHillsCounter + 1;
@@ -3676,31 +3675,42 @@ function BalanceMap(hexMap)
         end
     end
 
-    _Debug("Added "..tostring(iForestCounter).." Forest to the base map.")
-    _Debug("Added "..tostring(countHills).." + "..tostring(iHillsCounter).." hills to the base map.")
-    _Debug("Changed "..tostring(iNearFloodsCounter).." near floods to add prod.")
+    print("Added "..tostring(iForestCounter).." Forest to the base map.")
+    print("Added "..tostring(iHillsCounter).." hills to the base map.")
+    print("Changed "..tostring(iNearFloodsCounter).." near floods to add prod.")
 end
 
 ---------------------------------------
 -- MapBalancing
 ---------------------------------------
-function BalanceMapHills(hexMap, hex, iScore)
+function BalanceMapHills(hexMap, hex, iScore, hillsByPeninsulaScore, isUnderHillsGoal)
     -- Check hills
     local percentage = 0;
-    if iScore == 0 then
-        percentage = 30
-    elseif iScore == 1 then
-        percentage = 50
-    elseif iScore == 2 then
-        percentage = 10
-    elseif iScore == 3 then
-        percentage = 5
-    else
-        percentage = 0
+    if hillsByPeninsulaScore < 20 then  
+        if iScore == 0 then
+            percentage = 30
+        end
+    elseif isUnderHillsGoal then
+        if iScore == 0 then
+            percentage = 30
+        elseif iScore == 1 then
+            percentage = 50
+        elseif iScore == 2 then
+            percentage = 10
+        elseif iScore == 3 then
+            percentage = 5
+        else
+            percentage = 0
+        end
     end
+    
     local rng = TerrainBuilder.GetRandomNumber(100, "Terraform hills");
     if rng < percentage then
         if hexMap:TerraformToHill(hex, false) then
+            if hillsByPeninsulaScore < 20 and isUnderHillsGoal == false then
+                hexMap:TerraformSetResource(hex, g_RESOURCE_PENGUINS, true)
+            end
+            
             return true;
         end
     end
