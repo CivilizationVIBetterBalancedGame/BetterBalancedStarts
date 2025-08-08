@@ -3708,10 +3708,6 @@ function BalanceMapHills(hexMap, hex, iScore, hillsByPeninsulaScore, isUnderHill
     local rng = TerrainBuilder.GetRandomNumber(100, "Terraform hills");
     if rng < percentage then
         if hexMap:TerraformToHill(hex, false) then
-            if hillsByPeninsulaScore < 20 and isUnderHillsGoal == false then
-                hexMap:TerraformSetResource(hex, g_RESOURCE_PENGUINS, true)
-            end
-            
             return true;
         end
     end
