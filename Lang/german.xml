@@ -68,7 +68,7 @@
 			<Text>Große Öffnungen</Text>
 		</Replace>
 		<Replace Tag="BBS_RIDGE_VLESS_DESC" Language="de_DE">
-			<Text>Erschafft breitere Engpässe in den Gebirgsketten mit mehr Raum für angreifende Einheiten</Text>
+			<Text>Erschafft breitere Engpässe in den Gebirgsketten mit mehr Raum für angreifende [ICON_UNIT] Einheiten</Text>
 		</Replace>
 		<Replace Tag="BBS_RIDGE_NONE_NAME" Language="de_DE">
 			<Text>"Flache Erde"</Text>
@@ -423,7 +423,7 @@
 			<Text>Berg Sinai</Text>
 		</Replace>
 		<Replace Tag="LOC_FEATURE_SINAI_DESCRIPTION" Language="de_DE">
-			<Text>Unpassierbares Naturwunder auf einem Feld:[NEWLINE][NEWLINE]• Erscheint als Bergfeld auf einem Ebenenberg- oder Wüstenbergfeld.[NEWLINE]• +2 [ICON_FAITH] Glauben für angrenzende Felder.[NEWLINE]• Religiöse Einheiten, die ein angrenzendes Feld betreten, erhalten die [ICON_ABILITY] Fähigkeit "Zehn Gebote" (+15 [ICON_RELIGION] Religiöse Stärke).[NEWLINE]• +2 Anziehungskraft für angrenzende Felder.</Text>
+			<Text>Unpassierbares Naturwunder auf einem Feld:[NEWLINE][NEWLINE]• Erscheint als Bergfeld auf einem Ebenenberg- oder Wüstenbergfeld.[NEWLINE]• +2 [ICON_FAITH] Glauben für angrenzende Felder.[NEWLINE]• Religiöse [ICON_UNIT] Einheiten, die ein angrenzendes Feld betreten, erhalten die [ICON_ABILITY] Fähigkeit "Zehn Gebote" (+15 [ICON_RELIGION] Religiöse Stärke).[NEWLINE]• +2 Anziehungskraft für angrenzende Felder.</Text>
 		</Replace>
 		<Replace Tag="LOC_FEATURE_SINAI_QUOTE" Language="de_DE">
 			<Text>"Als der Herr mit Mose auf dem Berg Sinai zu Ende sprach, gab er ihm die beiden Tafeln des Gesetzes, die Steintafeln, die mit dem Finger Gottes beschrieben waren."[NEWLINE]- Exodus 31:18</Text>
@@ -610,7 +610,7 @@
 			<Text>Namib-Sandmeer</Text>
 		</Replace>
 		<Replace Tag="LOC_FEATURE_NAMIB_DESCRIPTION" Language="de_DE">
-			<Text>Naturwunder auf 3 Feldern:[NEWLINE][NEWLINE]• Erscheint als Wüstenhügelfeld auf Wüsten- oder Wüstenhügelfeldern, angrenzend an Wüsten- oder Wüstenhügelfeldern.[NEWLINE]• +2 [ICON_PRODUCTION] Produktion, +2 [ICON_GOLD] Gold und +2 [ICON_CULTURE] Kultur.[NEWLINE]• Aufklärungs-Einheiten, die Namib-Sandmeer-Felder betreten, erhalten die [ICON_ABILITY] Fähigkeit "Wüsten-Nomaden" (+1 [ICON_Movement] Bewegung).[NEWLINE]• +2 Anziehungskraft für angrenzende Felder.</Text>
+			<Text>Naturwunder auf 3 Feldern:[NEWLINE][NEWLINE]• Erscheint als Wüstenhügelfeld auf Wüsten- oder Wüstenhügelfeldern, angrenzend an Wüsten- oder Wüstenhügelfeldern.[NEWLINE]• +2 [ICON_PRODUCTION] Produktion, +2 [ICON_GOLD] Gold und +2 [ICON_CULTURE] Kultur.[NEWLINE]• Aufklärungs-[ICON_UNIT] Einheiten, die Namib-Sandmeer-Felder betreten, erhalten die [ICON_ABILITY] Fähigkeit "Wüsten-Nomaden" (+1 [ICON_Movement] Bewegung).[NEWLINE]• +2 Anziehungskraft für angrenzende Felder.</Text>
 		</Replace>
 		<Replace Tag="LOC_FEATURE_NAMIB_QUOTE" Language="de_DE">
 			<Text>"Ich liebe es, das Geräusch der Sanddünen zu hören. Ich bin einer von denen, die den Rhythmus einer Landschaft in vielen Gemälden erkennen, ich bin einer von Tausenden, die wissen, dass ich endlich zu Hause bin."[NEWLINE]- Mvula Ya Nangolo</Text>
