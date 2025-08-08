@@ -1127,6 +1127,7 @@ function HexMap:ComputeTerrainsScore(hex)
     local mapRing6 = hex.AllRing6Map
     for i = 1, #mapRing6 do
         local ring = mapRing6[i]
+        hex.TerrainsScore[g_HILLS] = 0 --init
         for j = 1, #ring do
             local h = ring[j]
             if h.TerrainType ~= g_TERRAIN_TYPE_NONE then
@@ -1149,7 +1150,7 @@ function HexMap:ComputeTerrainsScore(hex)
             local isCoastal = h.IsCoastal
             -- Hills score
             if IsHill(h.TerrainType) then
-                local hillScore = hex.TerrainsScore[g_HILLS] or 0; --init
+                local hillScore = hex.TerrainsScore[g_HILLS] or 0;
                 hillScore = hillScore + 1;
                 hex.TerrainsScore[g_HILLS] = hillScore
             end
