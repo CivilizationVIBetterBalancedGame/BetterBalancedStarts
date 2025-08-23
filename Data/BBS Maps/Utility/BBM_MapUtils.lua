@@ -1452,6 +1452,17 @@ function Hex:IsNextToVolcano()
     return false;
 end
 
+function Hex:IsNextToLake()
+    local ring1 = self.AllRing6Map[1];
+    for _, r1 in ipairs(ring1) do
+        if r1.Plot:IsLake() then
+            return true;
+        end
+    end
+    return false;
+end
+
+
 -- Avoid spawns on too many floodplains ring 1 and coastal on spawning
 function Hex:IsHexTooCloseToFloodTiles()
     local ring1 = self.AllRing6Map[1];
@@ -2109,7 +2120,7 @@ end
 
 function HexMap:CanHaveResource(hex, resourceId) 
     if resourceId == g_RESOURCE_PENGUINS then
-        return hex.IsCoastal
+        return (hex.IsCoastal or hex:IsNextToLake()) and ResourceBuilder.CanHaveResource(hex.Plot, resourceId)
     end
     return ResourceBuilder.CanHaveResource(hex.Plot, resourceId)
 end
@@ -3073,7 +3084,6 @@ function HexMap:GlobalMountainsTerraform()
                     end
                 elseif hex.FeatureType ~= g_FEATURE_VOLCANO  then 
                     -- Clear all mountains adjacents to lakes and store them in table
-                    local nextToLake = false
                     local ring1 = hex.AllRing6Map[1];
                     local impassableRing1 = 0
                     local mountainClusterSize = hex.Plot:GetArea():GetPlotCount()
