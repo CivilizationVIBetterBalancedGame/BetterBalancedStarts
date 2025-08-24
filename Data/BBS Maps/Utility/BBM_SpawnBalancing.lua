@@ -974,7 +974,15 @@ function SpawnBalancing:CheckLuxThreshold()
             randomHexLux:SetTaggedAsMinimum(true);
         else
             print("CheckLuxThresholdERROR - Could not add lux in ring 1-3 for ", self.Civ.CivilizationLeader)
-            self.InnerRingLuxCount = self.MinLuxInnerRingThreshold;
+            local randomHexLuxForced = self:TerraformInRingsRandomOrder(2, 3, TerraformType[11], 0, false, true, false);
+            if randomHexLuxForced ~= nil then
+                print("CheckLuxThresholdERROR - Forced success ", self.Civ.CivilizationLeader)
+                self.InnerRingLuxCount = self.InnerRingLuxCount + 1;
+                randomHexLuxForced:SetTaggedAsMinimum(true);
+            else
+                print("CheckLuxThresholdERROR - Forced failed ", self.Civ.CivilizationLeader)
+                self.InnerRingLuxCount = self.MinLuxInnerRingThreshold;
+            end
         end
     end
     while self.OuterRingLuxCount < self.MinLuxOuterRingThreshold do
@@ -2871,7 +2879,7 @@ function SpawnBalancing:Terraform(hex, type, id, forced, boolParam)
     elseif type == TerraformType[10] then
         return self.HexMap:TerraformMountainToHill(hex);
     elseif type == TerraformType[11] then
-        return self.HexMap:TerraformAddRandomLux(hex, boolParam);
+        return self.HexMap:TerraformAddRandomLux(hex, boolParam, forced);
     elseif type == TerraformType[12] then
         return self.HexMap:TerraformToStandardHighFoodYields(hex, boolParam);
     elseif type == TerraformType[13] then

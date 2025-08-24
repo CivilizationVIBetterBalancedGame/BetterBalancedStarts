@@ -95,46 +95,76 @@ g_RESOURCE_PLUMS                = GetGameInfoIndex("Resources", "RESOURCE_P0K_PL
 
 
 g_RESOURCES_LUX_LIST = {}
-g_RESOURCES_LUX_LIST[g_RESOURCE_CITRUS]= true;
-g_RESOURCES_LUX_LIST[g_RESOURCE_COCOA]= true;
-g_RESOURCES_LUX_LIST[g_RESOURCE_COFFEE]= true;
-g_RESOURCES_LUX_LIST[g_RESOURCE_COTTON]= true;
-g_RESOURCES_LUX_LIST[g_RESOURCE_DIAMONDS]= true;
-g_RESOURCES_LUX_LIST[g_RESOURCE_DYES]= true;
-g_RESOURCES_LUX_LIST[g_RESOURCE_FURS]= true;
-g_RESOURCES_LUX_LIST[g_RESOURCE_GYPSUM]= true;
-g_RESOURCES_LUX_LIST[g_RESOURCE_INCENSE]= true;
-g_RESOURCES_LUX_LIST[g_RESOURCE_IVORY]= true;
-g_RESOURCES_LUX_LIST[g_RESOURCE_JADE]= true;
-g_RESOURCES_LUX_LIST[g_RESOURCE_MARBLE]= true;
-g_RESOURCES_LUX_LIST[g_RESOURCE_MERCURY]= true;
-g_RESOURCES_LUX_LIST[g_RESOURCE_PEARLS]= true;
-g_RESOURCES_LUX_LIST[g_RESOURCE_SALT]= true;
-g_RESOURCES_LUX_LIST[g_RESOURCE_SILK]= true;
-g_RESOURCES_LUX_LIST[g_RESOURCE_SILVER]= true;
-g_RESOURCES_LUX_LIST[g_RESOURCE_SPICES]= true;
-g_RESOURCES_LUX_LIST[g_RESOURCE_SUGAR]= true;
-g_RESOURCES_LUX_LIST[g_RESOURCE_TEA]= true;
-g_RESOURCES_LUX_LIST[g_RESOURCE_TOBACCO]= true;
-g_RESOURCES_LUX_LIST[g_RESOURCE_TRUFFLES]= true;
-g_RESOURCES_LUX_LIST[g_RESOURCE_WHALES]= true;
-g_RESOURCES_LUX_LIST[g_RESOURCE_WINE]= true;
+g_RESOURCES_LUX_LIST[g_RESOURCE_CITRUS]= true;--Plains/Grass
+g_RESOURCES_LUX_LIST[g_RESOURCE_COCOA]= true;--Jungle
+g_RESOURCES_LUX_LIST[g_RESOURCE_COFFEE]= true;--Jungle/Grass
+g_RESOURCES_LUX_LIST[g_RESOURCE_COTTON]= true;--Plains/Grass/Flood
+g_RESOURCES_LUX_LIST[g_RESOURCE_DIAMONDS]= true;--Jungle / Hill
+g_RESOURCES_LUX_LIST[g_RESOURCE_DYES]= true;--Forest/Jungle
+g_RESOURCES_LUX_LIST[g_RESOURCE_FURS]= true;--Forest/Tundra
+g_RESOURCES_LUX_LIST[g_RESOURCE_GYPSUM]= true;--Plains/PlainsHills
+g_RESOURCES_LUX_LIST[g_RESOURCE_INCENSE]= true;--Desert/Plains
+g_RESOURCES_LUX_LIST[g_RESOURCE_IVORY]= true;--Forest/Jungle/Plains/PlainsHills/Desert
+g_RESOURCES_LUX_LIST[g_RESOURCE_JADE]= true;--Grass/Tundra
+g_RESOURCES_LUX_LIST[g_RESOURCE_MARBLE]= true;--Grass/GrassHills/PlainsHills
+g_RESOURCES_LUX_LIST[g_RESOURCE_MERCURY]= true;--Plains
+g_RESOURCES_LUX_LIST[g_RESOURCE_PEARLS]= true;--Coast
+g_RESOURCES_LUX_LIST[g_RESOURCE_SALT]= true;--Desert/Plains/Tundra
+g_RESOURCES_LUX_LIST[g_RESOURCE_SILK]= true;--Forest
+g_RESOURCES_LUX_LIST[g_RESOURCE_SILVER]= true;--DesertFlat+Hills/Tundra Flat+Hills
+g_RESOURCES_LUX_LIST[g_RESOURCE_SPICES]= true;--Forest/Jungle
+g_RESOURCES_LUX_LIST[g_RESOURCE_SUGAR]= true;--Flood/Marsh
+g_RESOURCES_LUX_LIST[g_RESOURCE_TEA]= true;--Grass/Grass Hills
+g_RESOURCES_LUX_LIST[g_RESOURCE_TOBACCO]= true;--Grass/Plains/Jungle/Forest
+g_RESOURCES_LUX_LIST[g_RESOURCE_TRUFFLES]= true;--Forest/Jungle/Marsh
+g_RESOURCES_LUX_LIST[g_RESOURCE_WHALES]= true;--Coast
+g_RESOURCES_LUX_LIST[g_RESOURCE_WINE]= true;--Forest/Plains/Grass
 g_RESOURCES_LUX_LIST[g_RESOURCE_JEANS]= true;
 g_RESOURCES_LUX_LIST[g_RESOURCE_PERFUME]= true;
 g_RESOURCES_LUX_LIST[g_RESOURCE_COSMETICS]= true;
 g_RESOURCES_LUX_LIST[g_RESOURCE_TOYS]= true;
 g_RESOURCES_LUX_LIST[g_RESOURCE_CINNAMON]= true;
 g_RESOURCES_LUX_LIST[g_RESOURCE_CLOVES]= true;
-g_RESOURCES_LUX_LIST[g_RESOURCE_AMBER]= true;
-g_RESOURCES_LUX_LIST[g_RESOURCE_OLIVES]= true;
-g_RESOURCES_LUX_LIST[g_RESOURCE_TURTLES]= true;
-g_RESOURCES_LUX_LIST[g_RESOURCE_HONEY]= true;
-g_RESOURCES_LUX_LIST[g_RESOURCE_PENGUINS]= true;
-g_RESOURCES_LUX_LIST[g_RESOURCE_POMEGRANATES]= true;
-g_RESOURCES_LUX_LIST[g_RESOURCE_PAPYRUS]= true;
-g_RESOURCES_LUX_LIST[g_RESOURCE_MAPLE]= true;
-g_RESOURCES_LUX_LIST[g_RESOURCE_OPAL]= true;
-g_RESOURCES_LUX_LIST[g_RESOURCE_PLUMS]= true;
+g_RESOURCES_LUX_LIST[g_RESOURCE_AMBER]= true;--Forest/Jungle/coast
+g_RESOURCES_LUX_LIST[g_RESOURCE_OLIVES]= true;--Plains
+g_RESOURCES_LUX_LIST[g_RESOURCE_TURTLES]= true;--Coast
+g_RESOURCES_LUX_LIST[g_RESOURCE_HONEY]= true;--Plains/Grass
+g_RESOURCES_LUX_LIST[g_RESOURCE_PENGUINS]= true;--AllFlat/AllHills
+g_RESOURCES_LUX_LIST[g_RESOURCE_POMEGRANATES]= true;--Plains/PlainsHills/Flood/Grass
+g_RESOURCES_LUX_LIST[g_RESOURCE_PAPYRUS]= true;--Marsh/Flood
+g_RESOURCES_LUX_LIST[g_RESOURCE_MAPLE]= true;--Plains/PlainsHills/Grass/GrassHills
+g_RESOURCES_LUX_LIST[g_RESOURCE_OPAL]= true;--DesertHills/Plains/PlainsHills/TundraHills
+g_RESOURCES_LUX_LIST[g_RESOURCE_PLUMS]= true;--Plains/Grass/GrassHills
+
+-- Lux placement forced requirements for adding lux purposes (flat, hill or forest)
+-- Only take most restrictives lux, not these that can be flat or hills, only flat lux or only forest
+g_LUX_ON_FLAT_PLAINS_LIST = {}
+g_LUX_ON_FLAT_PLAINS_LIST[g_RESOURCE_CITRUS]= true
+g_LUX_ON_FLAT_PLAINS_LIST[g_RESOURCE_COTTON]= true
+g_LUX_ON_FLAT_PLAINS_LIST[g_RESOURCE_INCENSE]= true
+g_LUX_ON_FLAT_PLAINS_LIST[g_RESOURCE_GYPSUM]= true
+g_LUX_ON_FLAT_PLAINS_LIST[g_RESOURCE_MERCURY]= true
+g_LUX_ON_FLAT_PLAINS_LIST[g_RESOURCE_SALT]= true
+g_LUX_ON_FLAT_PLAINS_LIST[g_RESOURCE_OLIVES]= true
+g_LUX_ON_FLAT_PLAINS_LIST[g_RESOURCE_HONEY]= true
+g_LUX_ON_FLAT_PLAINS_LIST[g_RESOURCE_PLUMS]= true
+
+g_LUX_ON_FLAT_GRASS_LIST = {}
+g_LUX_ON_FLAT_GRASS_LIST[g_RESOURCE_CITRUS]= true
+g_LUX_ON_FLAT_GRASS_LIST[g_RESOURCE_COFFEE]= true
+g_LUX_ON_FLAT_GRASS_LIST[g_RESOURCE_JADE]= true
+g_LUX_ON_FLAT_GRASS_LIST[g_RESOURCE_MARBLE]= true
+g_LUX_ON_FLAT_GRASS_LIST[g_RESOURCE_TEA]= true
+g_LUX_ON_FLAT_GRASS_LIST[g_RESOURCE_HONEY]= true
+
+g_LUX_ON_FOREST_LIST = {}
+g_LUX_ON_FOREST_LIST[g_RESOURCE_DYES] = true
+g_LUX_ON_FOREST_LIST[g_RESOURCE_FURS] = true
+g_LUX_ON_FOREST_LIST[g_RESOURCE_SILK] = true
+g_LUX_ON_FOREST_LIST[g_RESOURCE_TOBACCO] = true
+g_LUX_ON_FOREST_LIST[g_RESOURCE_TRUFFLES] = true
+g_LUX_ON_FOREST_LIST[g_RESOURCE_SPICES] = true
+g_LUX_ON_FOREST_LIST[g_RESOURCE_AMBER] = true
 
 -- List of lux with bonus culture, science or faith
 g_RESOURCES_LUX_EXTRA_YIELD = {}
@@ -2042,11 +2072,25 @@ function HexMap:TerraformSetResource(hex, resourceId, forced)
             elseif resourceId == g_RESOURCE_OIL and hex:IsWater() == false then
                 self:TerraformSetFeature(hex, g_FEATURE_NONE);
                 self:TerraformToFlat(hex, true);
+            -- Special force placement on lux, to help CheckLuxThreshold method to make room for most restrictives lux placements
+            elseif hex:IsFloodplains(true) == false then
+                print("Try force placement of lux ", resourceId, hex:PrintXY())
+                if g_LUX_ON_FLAT_GRASS_LIST[resourceId] then
+                    self:TerraformSetFeature(hex, g_FEATURE_NONE)
+                    self:TerraformSetTerrain(hex, g_TERRAIN_TYPE_GRASS);
+                elseif g_LUX_ON_FLAT_PLAINS_LIST[resourceId] then
+                    self:TerraformSetFeature(hex, g_FEATURE_NONE)
+                    self:TerraformSetTerrain(hex, g_TERRAIN_TYPE_PLAINS);
+                elseif g_LUX_ON_FOREST_LIST[resourceId] then
+                    self:TerraformSetFeature(hex, g_FEATURE_FOREST)
+                    self:TerraformSetTerrain(hex, g_TERRAIN_TYPE_GRASS);
+                end
             end
         end
         -- Forcing to do try on desert, tundra if it can not have the resource
+        -- In case of forcing lux, terraforming should have been done previously in forced method
         if self:CanHaveResource(hex, resourceId)
-            or (forced and hex:IsWater() == false and hex:IsDesertLand() == false and hex:IsSnowLand() == false) then
+            or (forced and hex:IsWater() == false and hex:IsDesertLand() == false and hex:IsSnowLand() == false and g_RESOURCES_LUX_LIST[resourceId] == false) then
             _Debug("From TerraformSetResource ", hex:PrintXY(), hex.TerrainType, hex.FeatureType, hex.ResourceType);
             ResourceBuilder.SetResourceType(hex.Plot, g_RESOURCE_NONE);
             ResourceBuilder.SetResourceType(hex.Plot, resourceId, 1);
@@ -2074,7 +2118,7 @@ function HexMap:TerraformSetResourceRequirements(hex, resourceId)
     return (resourceId == g_RESOURCE_NONE or self:CanHaveResource(hex, resourceId)) and hex.IsTaggedAsMinimum == false;
 end
 
-function HexMap:TerraformAddRandomLux(hex, canAddOnWater)
+function HexMap:TerraformAddRandomLux(hex, canAddOnWater, forced)
     if hex:IsWater() and canAddOnWater == false then
         return false;
     end
@@ -2082,7 +2126,7 @@ function HexMap:TerraformAddRandomLux(hex, canAddOnWater)
     local possiblesLux = self.LuxTable[continentId];
     possiblesLux = GetShuffledCopyOfTable(possiblesLux);
     for _, idLux in ipairs(possiblesLux) do
-        if self:TerraformSetResource(hex, idLux, false) then
+        if self:TerraformSetResource(hex, idLux, forced) then
             print("TerraformAddRandomLux - A lux has been added (id = ", idLux, ")")
             self:CleanHighYieldsOnFresh(hex)
             return true;
@@ -2536,7 +2580,7 @@ function HexMap:Terraform4YieldsToHighYields(hex, canChangeResource, canAddLux)
         self:TerraformSetFeature(hex, g_FEATURE_REEF, true);
         return self:TerraformSetResource(hex, g_RESOURCE_FISH, true);
     else
-        if canAddLux and hex.ResourceType == g_RESOURCE_NONE and self:TerraformAddRandomLux(hex, false) then
+        if canAddLux and hex.ResourceType == g_RESOURCE_NONE and self:TerraformAddRandomLux(hex, false, false) then
             _Debug("Terraform4YieldsToHighYields Added a lux from standard ", hex.ResourceType)
             return true;
         end
