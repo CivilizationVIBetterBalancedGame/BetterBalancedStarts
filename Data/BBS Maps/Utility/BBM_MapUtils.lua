@@ -3833,8 +3833,8 @@ function InitSpawnBalancing(hexMap, civ)
     balancing:RemoveRing1MountainsOnRiver();
     balancing:TerraformRing6Deserts();
     balancing:CleanSpawnTile();
-    balancing:CheckLuxThreshold();
     balancing:ApplyMinimalCoastalTiles();
+    balancing:CheckLuxThreshold();
     balancing:CheckInnerRingHighYieldsThreshold();
     balancing:GaranteedStandardHighFoodInnerRing();
     balancing:ApplyMinimalLandTiles(1, 6);
