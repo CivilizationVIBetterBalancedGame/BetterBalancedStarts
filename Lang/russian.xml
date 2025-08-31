@@ -1,7 +1,24 @@
 <?xml version="1.0" encoding="utf-8"?>
 <GameData>
-
 	<LocalizedText>		
+		<!-- Authors : 3JIO6HblU_Kycb, _vadya_queen -->
+		<!-- With the help of Apeul and players of GameRoom and Suh The Little Dictator servers -->
+		<!-- Special thanks to ZhenjaMax -->
+		<!-- Based on the work of Ancestors, who took care of the Russian translation before me -->
+		
+	<!-- Maps -->
+	<Replace Tag="LOC_MAP_RICH_HIGHLANDS_NAME" Language="ru_RU">
+        <Text>Rich Highlands</Text>
+    </Replace>
+    <Replace Tag="LOC_MAP_RICH_HIGHLANDS_DESCRIPTION" Language="ru_RU">
+        <Text>Карта с большим количеством холмов, гор, и ресурсов.</Text>
+    </Replace>
+	<Replace Tag="LOC_MAP_PANGAEA_ULTIMA_DESCRIPTION" Language="ru_RU">
+        <Text>Суперконтинент, с еще меньшим океаном, чем на Пангее</Text>
+    </Replace>
+	<Replace Tag="LOC_MAP_DESC_TILTED_WRAP" Language="ru_RU">
+		<Text>Карта материков с полярными центрами (с кругосветным плаванием).</Text>
+	</Replace>
 	<!-- Map Sizes -->
 	<!-- == Map features == -->
 	<Replace Tag="LOC_MAPSIZE_ENORMOUS_NAME" Language="ru_RU">
@@ -336,7 +353,37 @@
 		<Replace Tag="BBM_MIN_ATTEMPTS_TEN_DESC" Language="ru_RU">
 			<Text>10 попыток</Text>
 		</Replace>	
-	
+		<!-- Floodplains size -->
+		<Replace Tag="LOC_BBM_MAXFLOODPLAINS_SIZE" Language="ru_RU">
+			<Text>Максимальный размер речной поймы.</Text>
+		</Replace>
+		<Replace Tag="LOC_BBM_MAXFLOODPLAINS_SIZE_4_DESCRIPTION" Language="ru_RU">
+			<Text>4 клетки поймы на реке. Учитывайте, что число может увеличиваться на слияниях рек.</Text>
+		</Replace>
+		<Replace Tag="LOC_BBM_MAXFLOODPLAINS_SIZE_5_DESCRIPTION" Language="ru_RU">
+			<Text>5 клеток поймы на реке. Учитывайте, что число может увеличиваться на слияниях рек.</Text>
+		</Replace>
+		<Replace Tag="LOC_BBM_MAXFLOODPLAINS_SIZE_6_DESCRIPTION" Language="ru_RU">
+			<Text>6 клеток поймы на реке. Учитывайте, что число может увеличиваться на слияниях рек.</Text>
+		</Replace>
+		<Replace Tag="LOC_BBM_MAXFLOODPLAINS_SIZE_7_DESCRIPTION" Language="ru_RU">
+			<Text>7 клеток поймы на реке. Учитывайте, что число может увеличиваться на слияниях рек.</Text>
+		</Replace>
+		<Replace Tag="LOC_BBM_MAXFLOODPLAINS_SIZE_8_DESCRIPTION" Language="ru_RU">
+			<Text>8 клеток поймы на реке. Учитывайте, что число может увеличиваться на слияниях рек.</Text>
+		</Replace>
+		<Replace Tag="LOC_BBM_MAXFLOODPLAINS_SIZE_9_DESCRIPTION" Language="ru_RU">
+			<Text>9 клеток поймы на реке. Учитывайте, что число может увеличиваться на слияниях рек.</Text>
+		</Replace>
+		<Replace Tag="LOC_BBM_MAXFLOODPLAINS_SIZE_10_DESCRIPTION" Language="ru_RU">
+			<Text>10 клеток поймы на реке. Учитывайте, что число может увеличиваться на слияниях рек.</Text>
+		</Replace>
+		<Replace Tag="LOC_BBM_MAXFLOODPLAINS_SIZE_11_DESCRIPTION" Language="ru_RU">
+			<Text>11 клеток поймы на реке. Учитывайте, что число может увеличиваться на слияниях рек.</Text>
+		</Replace>
+		<Replace Tag="LOC_BBM_MAXFLOODPLAINS_SIZE_12_DESCRIPTION" Language="ru_RU">
+			<Text>12 клеток поймы на реке. Учитывайте, что число может увеличиваться на слияниях рек.</Text>
+		</Replace>
 	
 	<!-- Wonders -->
 			<!-- = Barringer Crater = -->
