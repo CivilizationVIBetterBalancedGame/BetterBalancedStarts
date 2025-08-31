@@ -300,7 +300,10 @@ TeamerConfigStandard = "Standard";
 TeamerConfigEastVsWest = "EastVsWest";
 EastTeam = "East";
 WestTeam = "West";
-
+Quadrant_NW = "North-West"
+Quadrant_NE = "North-East"
+Quadrant_SE = "South-East"
+Quadrant_SW = "South-West"
 
 function _Debug(...)
     --print(...);
@@ -952,6 +955,22 @@ function HexMap:FillHexMapDatas()
                         and (newHex.IdContinent ~= -1 and newHex:IsWater()) == false then
                     -- Lakes are attached to a continent so lux in lakes (amber) should not be attached to the continent
                     table.insert(luxTable[newHex.IdContinent], newHex.ResourceType)
+                end
+            end
+
+            local midX = math.floor(self.width / 2)
+            local midY = math.floor(self.height / 2)
+            if x < midX then
+                if y < midY then
+                    newHex.quadrant = Quadrant_SW
+                else
+                    newHex.quadrant = Quadrant_NW
+                end
+            else 
+                if y < midY then
+                    newHex.quadrant = Quadrant_SE
+                else
+                    newHex.quadrant = Quadrant_NE
                 end
             end
         end

@@ -342,22 +342,37 @@ function BBM_AssignStartingPlots.Create(args)
         BalanceAllCivYields(allSpawnBalancing)
         print("End InitSpawnBalancing",  os.date("%c"))
         
-        -- randomly place cs in free space
-        for i, cs in pairs(BBS_Citystates) do
-            local foundSpawn = false
-            local validspawnsleft = BBM_HexMap:GetAnyMinorSpawnablesTiles()
-            while foundSpawn == false do
-                local rng = TerrainBuilder.GetRandomNumber(#validspawnsleft - 1, "Random valid spawns");
-                local testedHex = validspawnsleft[rng+1]
-                if testedHex.IsCivStartingPlot == false then
-                    foundSpawn = true;
-                    cs:AssignMinorCivSpawn(BBM_HexMap, testedHex)
-                    cs.Player:SetStartingPlot(cs.StartingHex.Plot)
-                    _Debug("CS "..tostring(i).." - "..tostring(cs.CivilizationName).." spawn = "..tostring(cs.StartingHex:PrintXY()))
+        -- Check if we're using one of the maps that should use quadrant distribution
+        local useQuadrantDistribution = (
+            bbs_game_config.BBS_MAP_SCRIPT == MapScripts.MAP_PANGAEA_ULTIMA or
+            bbs_game_config.BBS_MAP_SCRIPT == MapScripts.MAP_RICH_HIGHLANDS or
+            bbs_game_config.BBS_MAP_SCRIPT == MapScripts.MAP_LAKES
+        )
+        
+        -- Place city states
+        if useQuadrantDistribution then
+            _Debug("Using quadrant distribution for city states on " .. bbs_game_config.BBS_MAP_SCRIPT)
+            -- Distribute city states across quadrants
+            DistributeCityStatesAcrossRegions(BBM_HexMap, BBS_Citystates)
+        else
+            _Debug("Using standard random placement for city states")
+            -- randomly place cs in free space (original method)
+            for i, cs in pairs(BBS_Citystates) do
+                local foundSpawn = false
+                local validspawnsleft = BBM_HexMap:GetAnyMinorSpawnablesTiles()
+                while foundSpawn == false do
+                    local rng = TerrainBuilder.GetRandomNumber(#validspawnsleft - 1, "Random valid spawns");
+                    local testedHex = validspawnsleft[rng+1]
+                    if testedHex.IsCivStartingPlot == false then
+                        foundSpawn = true;
+                        cs:AssignMinorCivSpawn(BBM_HexMap, testedHex)
+                        cs.Player:SetStartingPlot(cs.StartingHex.Plot)
+                        _Debug("CS "..tostring(i).." - "..tostring(cs.CivilizationName).." spawn = "..tostring(cs.StartingHex:PrintXY()))
+                    end
                 end
             end
-            
         end
+        
         Game:SetProperty("BBM_RESPAWN", true)
         print("End Assign Centroid",  os.date("%c"))
     else
@@ -507,4 +522,138 @@ end
 function CallFiraxisPlacement(args)
     Game:SetProperty("BBM_RESPAWN", false)
     local argSPlot = AssignStartingPlots.Create(args)
+end
+
+function DistributeCityStatesAcrossRegions(BBM_HexMap, cityStates)
+    BBM_HexMap.minimumDistanceMinorToMinorCivs = 10;
+    local g_iW, g_iH = Map.GetGridSize()
+    local midX = math.floor(g_iW / 2)
+    local midY = math.floor(g_iH / 2)
+        
+    -- Get valid spawn tiles
+    local validTiles = BBM_HexMap:GetAnyMinorSpawnablesTiles()
+    local regionTiles = {{}, {}, {}, {}}
+    -- Sort tiles into regions
+    for _, tile in ipairs(validTiles) do
+        if not tile.IsCivStartingPlot then
+            local x, y = tile:GetX(), tile:GetY()
+            --for i, region in ipairs(regions) do 
+            if tile.quadrant == Quadrant_NW then
+                table.insert(regionTiles[1], tile)
+            elseif tile.quadrant == Quadrant_NE then
+                table.insert(regionTiles[2], tile)
+            elseif tile.quadrant == Quadrant_SE then
+                table.insert(regionTiles[3], tile)
+            elseif tile.quadrant == Quadrant_SW then
+                table.insert(regionTiles[4], tile)
+            end
+        end
+    end
+    
+    -- Track CS placements per region
+    local csPerRegion = {0, 0, 0, 0}
+    local placedCityStates = {}
+    
+    -- Function to get the next best region for placement
+    local function getNextRegion()
+        local bestRegion = 1
+        local lowestCount = 999
+        for i = 1, 4 do
+            if #regionTiles[i] > 0 and csPerRegion[i] < lowestCount then
+                lowestCount = csPerRegion[i]
+                bestRegion = i
+            end
+        end
+        return bestRegion
+    end
+        
+    -- Place city states
+    for i, cs in ipairs(cityStates) do
+        local foundSpawn = false
+        local attemptCount = 0
+        local maxAttempts = 3  -- Try each region up to 3 times before fallback
+        while not foundSpawn and attemptCount < maxAttempts do
+            attemptCount = attemptCount + 1
+            local regionIndex = getNextRegion()
+            local regionTileList = regionTiles[regionIndex]
+            
+            -- Find a suitable tile in the region that's not too close to other city-states
+            local validTilesInRegion = {}
+            for _, tile in ipairs(regionTileList) do
+                if tile.IsMinorSpawnable then
+                    table.insert(validTilesInRegion, tile)
+                end
+            end
+            
+            -- Try to place in the selected region
+            if #validTilesInRegion > 0 then
+                local rng = TerrainBuilder.GetRandomNumber(#validTilesInRegion, "CS region placement")
+                local testedHex = validTilesInRegion[rng]  
+                cs:AssignMinorCivSpawn(BBM_HexMap, testedHex)
+                cs.Player:SetStartingPlot(cs.StartingHex.Plot)
+                csPerRegion[regionIndex] = csPerRegion[regionIndex] + 1
+                foundSpawn = true
+                table.insert(placedCityStates, testedHex)
+                
+                _Debug("CS " .. tostring(i) .. " - " .. tostring(cs.CivilizationName) .. 
+                      " placed in " .. regions[regionIndex].name .. 
+                      " at " .. tostring(cs.StartingHex:PrintXY()))       
+            end
+        end
+        
+        -- Fallback: place anywhere if we couldn't place in the target regions
+        if not foundSpawn then
+            print("Using fallback placement for CS " .. tostring(i) .. " - " .. tostring(cs.CivilizationName))
+            -- Collect all remaining valid tiles that aren't too close to other CSs
+            local allRemaining = {}
+            for r = 1, 4 do
+                for _, tile in ipairs(regionTiles[r]) do
+                    if tile.IsMinorSpawnable then
+                        table.insert(allRemaining, {tile = tile, region = r})
+                    end
+                end
+            end
+            
+            -- If no tiles satisfy our spacing requirement, collect all remaining tiles
+            if #allRemaining == 0 then
+                _Debug("WARNING: No tiles satisfy spacing requirements, using any available tile")
+                for r = 1, 4 do
+                    for _, tile in ipairs(regionTiles[r]) do
+                        table.insert(allRemaining, {tile = tile, region = r})
+                    end
+                end
+            end
+            
+            if #allRemaining > 0 then
+                local rng = TerrainBuilder.GetRandomNumber(#allRemaining, "CS fallback placement")
+                local selection = allRemaining[rng]
+                
+                cs:AssignMinorCivSpawn(BBM_HexMap, selection.tile)
+                cs.Player:SetStartingPlot(cs.StartingHex.Plot)
+                csPerRegion[selection.region] = csPerRegion[selection.region] + 1
+                table.insert(placedCityStates, selection.tile)
+                
+                _Debug("CS " .. tostring(i) .. " - " .. tostring(cs.CivilizationName) .. 
+                      " placed in " .. regions[selection.region].name .. 
+                      " at " .. tostring(cs.StartingHex:PrintXY()) .. " (fallback)")
+                
+                -- Remove nearby tiles
+                for r = 1, 4 do
+                    for t = #regionTiles[r], 1, -1 do
+                        if regionTiles[r][t] and selection.tile:DistanceTo(regionTiles[r][t]) <= 5 then
+                            table.remove(regionTiles[r], t)
+                        end
+                    end
+                end
+            else
+                print("ERROR: Could not place city-state " .. tostring(cs.CivilizationName))
+            end
+        end
+    end
+    
+    -- Print distribution summary
+    _Debug("City states distribution:")
+    for i = 1, 4 do
+        _Debug("  " .. regions[i].name .. ": " .. csPerRegion[i])
+    end
 end
