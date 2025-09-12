@@ -304,7 +304,7 @@ function GeneratePlotTypes(world_age)
 		local totalTiles =  g_iW * g_iH
 		local landPercent = (g_iNumTotalLandTiles / totalTiles) * 100;
 		-- Now test the biggest landmass to see if it is large enough.
-		if iNumBiggestAreaTiles >= g_iNumTotalLandTiles * 0.98 and isLandmassOnBordersOK and hasEnoughLandMiddle then
+		if iNumBiggestAreaTiles >= g_iNumTotalLandTiles * 0.99 and isLandmassOnBordersOK and hasEnoughLandMiddle then
 			done = true;
 			iBiggestID = biggest_area:GetID();
 		end

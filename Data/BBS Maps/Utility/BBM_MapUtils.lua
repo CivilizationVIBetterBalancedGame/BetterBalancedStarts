@@ -306,7 +306,7 @@ Quadrant_SE = "South-East"
 Quadrant_SW = "South-West"
 
 function _Debug(...)
-    --print(...);
+    print(...);
 end
 
 function IsWorldAgeOld()

@@ -276,6 +276,33 @@ end
 -- If a resource or feature prevents terraforming, it is removed and relocated to the next ring if possible
 -- Standard yields balance (avoiding only 1/3 spawns for example) is in BalanceAllCivYields
 function SpawnBalancing:ApplyMinimalLandTiles(iMin, iMax)
+    -- Check if there is at least a non tagged as minimal ring 1 -minimal lux already added
+    local availableTile = false
+    print(#self.RingTables[1].HexRings)
+    for _, h in pairs(self.RingTables[1].HexRings) do
+        print("h", h)
+        print("hprint", h:PrintXY())
+        if h:IsImpassable() == false and h.IsTaggedAsMinimum == false then
+            availableTile = true
+        end
+    end
+    if availableTile == false then
+        for _, h in pairs(self.RingTables[1].HexRings) do
+            local wasTagged = false
+            if h:IsImpassable() == false then
+                if h.IsTaggedAsMinimum then
+                    wasTagged = true;
+                    h:SetTaggedAsMinimum(false);
+                end
+                if self:ForceHexRelocateToRing(h, 1, 2) then
+                    if wasTagged then
+                        h:SetTaggedAsMinimum(true);
+                    end
+                end     
+            end
+        end
+    end
+
     -- Apply minimum yields tiles
     for i, _ in pairs(self.RingTables) do
         if i == iMax + 1 then
@@ -1010,7 +1037,6 @@ function SpawnBalancing:CheckInnerRingHighYieldsThreshold()
     AddToTable(ring2HighYields, self.RingTables[2].HIGH_YIELD_TILES);
     AddToTable(ring2HighYields, self.RingTables[2].HIGH_EXTRA_YIELDS);
     local highYieldsCount = #ring1HighYields + #ring2HighYields;
-    _Debug("CheckInnerRingHighYieldsThreshold highYieldsCount = ", highYieldsCount);
     if highYieldsCount >= self.MinHighYieldInnerRingThreshold and highYieldsCount <= self.MaxHighYieldInnerRingThreshold then
         _Debug("CheckInnerRingHighYieldsThreshold OK : highYieldsCount = ", highYieldsCount, self.MaxHighYieldInnerRingThreshold);
         return true;
@@ -1037,9 +1063,8 @@ function SpawnBalancing:CheckInnerRingHighYieldsThreshold()
     -- Try relocating a lux on ring 3 then replace by a standard 2/2
     -- First relocate ring 3 then further if needed     
     if highYieldsCount > self.MaxHighYieldInnerRingThreshold then
-        print("CheckInnerRingHighYieldsThreshold : over maximum of highyields")
         local relocateLeft = highYieldsCount - self.MaxHighYieldInnerRingThreshold;
-        print("CheckInnerRingHighYieldsThreshold relocateLeft = ", relocateLeft);
+        print("CheckInnerRingHighYieldsThreshold over maximum - relocateLeft = ", relocateLeft);
         for _, h1 in ipairs(ring1HighYields) do
             if relocateLeft > 0 and Contains(ringModifiedTiles, h1) == false then
                 local destinationRing = 4;

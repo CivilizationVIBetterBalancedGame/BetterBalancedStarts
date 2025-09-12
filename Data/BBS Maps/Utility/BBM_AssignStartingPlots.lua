@@ -588,7 +588,8 @@ function DistributeCityStatesAcrossRegions(BBM_HexMap, cityStates)
             -- Try to place in the selected region
             if #validTilesInRegion > 0 then
                 local rng = TerrainBuilder.GetRandomNumber(#validTilesInRegion, "CS region placement")
-                local testedHex = validTilesInRegion[rng]  
+                print(rng)
+                local testedHex = validTilesInRegion[rng + 1]  
                 cs:AssignMinorCivSpawn(BBM_HexMap, testedHex)
                 cs.Player:SetStartingPlot(cs.StartingHex.Plot)
                 csPerRegion[regionIndex] = csPerRegion[regionIndex] + 1
@@ -596,7 +597,7 @@ function DistributeCityStatesAcrossRegions(BBM_HexMap, cityStates)
                 table.insert(placedCityStates, testedHex)
                 
                 _Debug("CS " .. tostring(i) .. " - " .. tostring(cs.CivilizationName) .. 
-                      " placed in " .. regions[regionIndex].name .. 
+                      " placed in " .. testedHex.quadrant .. 
                       " at " .. tostring(cs.StartingHex:PrintXY()))       
             end
         end
@@ -633,10 +634,6 @@ function DistributeCityStatesAcrossRegions(BBM_HexMap, cityStates)
                 csPerRegion[selection.region] = csPerRegion[selection.region] + 1
                 table.insert(placedCityStates, selection.tile)
                 
-                _Debug("CS " .. tostring(i) .. " - " .. tostring(cs.CivilizationName) .. 
-                      " placed in " .. regions[selection.region].name .. 
-                      " at " .. tostring(cs.StartingHex:PrintXY()) .. " (fallback)")
-                
                 -- Remove nearby tiles
                 for r = 1, 4 do
                     for t = #regionTiles[r], 1, -1 do
@@ -652,8 +649,8 @@ function DistributeCityStatesAcrossRegions(BBM_HexMap, cityStates)
     end
     
     -- Print distribution summary
-    _Debug("City states distribution:")
-    for i = 1, 4 do
-        _Debug("  " .. regions[i].name .. ": " .. csPerRegion[i])
-    end
+    --_Debug("City states distribution:")
+    --for i = 1, 4 do
+    --    _Debug("  " .. regionTiles[i] .. ": " .. csPerRegion[i])
+   -- end
 end
