@@ -556,15 +556,18 @@ function DistributeCityStatesAcrossRegions(BBM_HexMap, cityStates)
     
     -- Function to get the next best region for placement
     local function getNextRegion()
-        local bestRegion = 1
+        local bestRegion = {}
         local lowestCount = 999
         for i = 1, 4 do
-            if #regionTiles[i] > 0 and csPerRegion[i] < lowestCount then
-                lowestCount = csPerRegion[i]
-                bestRegion = i
+            if #regionTiles[i] > 0 and csPerRegion[i] <= lowestCount then
+                if csPerRegion[i] < lowestCount then
+                    lowestCount = csPerRegion[i]
+                    bestRegion = {}  
+                end
+                table.insert(bestRegion, i)  
             end
         end
-        return bestRegion
+        return bestRegion[math.random(#bestRegion)]
     end
         
     -- Place city states
@@ -648,9 +651,4 @@ function DistributeCityStatesAcrossRegions(BBM_HexMap, cityStates)
         end
     end
     
-    -- Print distribution summary
-    --_Debug("City states distribution:")
-    --for i = 1, 4 do
-    --    _Debug("  " .. regionTiles[i] .. ": " .. csPerRegion[i])
-   -- end
 end
