@@ -1034,13 +1034,8 @@ function CivilizationAssignSpawn:IsBiasRespected(hex, hexMap)
     if self.IsFloodplainsBias and hex:IsFloodplains(false) == false then
         return false;
     end
-    if self.IsTundraBias then
-        local nonTundraRing3 = self:GetNonTundraTilesCountRing3(hex)
-        if self.CivilizationLeader == "LEADER_LAURIER" and nonTundraRing3 > 3 then
-            return false
-        elseif self.CivilizationLeader == "LEADER_PETER_GREAT" and nonTundraRing3 <= 3 then
-            return false
-        end
+    if self.IsTundraBias and self:GetNonTundraTilesCountRing3(hex) <= 3 then
+        return false
     end
      -- Custom bias treated by valid tiles
     local isOneOfBiasRespected = false;

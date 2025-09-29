@@ -2103,7 +2103,7 @@ function HexMap:TerraformSetResource(hex, resourceId, forced)
                 self:TerraformSetFeature(hex, g_FEATURE_NONE);
                 self:TerraformToFlat(hex, true);
             -- Special force placement on lux, to help CheckLuxThreshold method to make room for most restrictives lux placements
-            elseif hex:IsFloodplains(true) == false then
+            elseif not hex:IsFloodplains(true) and not hex:IsTundraLand() then
                 print("Try force placement of lux ", resourceId, hex:PrintXY())
                 if g_LUX_ON_FLAT_GRASS_LIST[resourceId] then
                     self:TerraformSetFeature(hex, g_FEATURE_NONE)
@@ -2120,7 +2120,7 @@ function HexMap:TerraformSetResource(hex, resourceId, forced)
         -- Forcing to do try on desert, tundra if it can not have the resource
         -- In case of forcing lux, terraforming should have been done previously in forced method
         if self:CanHaveResource(hex, resourceId)
-            or (forced and hex:IsWater() == false and hex:IsDesertLand() == false and hex:IsSnowLand() == false and g_RESOURCES_LUX_LIST[resourceId] == false) then
+            or (forced and not hex:IsWater() and not hex:IsDesertLand() and not hex:IsSnowLand() and not hex:IsTundraLand() and not g_RESOURCES_LUX_LIST[resourceId]) then
             _Debug("From TerraformSetResource ", hex:PrintXY(), hex.TerrainType, hex.FeatureType, hex.ResourceType);
             ResourceBuilder.SetResourceType(hex.Plot, g_RESOURCE_NONE);
             ResourceBuilder.SetResourceType(hex.Plot, resourceId, 1);
