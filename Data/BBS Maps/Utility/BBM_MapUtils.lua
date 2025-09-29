@@ -2599,7 +2599,7 @@ end
 
 -- Possibles 4yields : without resource, stone, sheep, deer, lux
 function HexMap:Terraform4YieldsToHighYields(hex, canChangeResource, canAddLux)
-    if (hex.Food + hex.Prod ~= 4) or (IsTundraLand(hex.TerrainType) and hex.Food + hex.Prod ~= 3)
+    if ((not IsTundraLand(hex.TerrainType) and hex.Food + hex.Prod ~= 4) or (IsTundraLand(hex.TerrainType) and hex.Food + hex.Prod ~= 3))
             or g_RESOURCES_LUX_LIST[hex.ResourceType] or g_RESOURCES_STRATEGICS[hex.ResourceType] or IsDesertLand(hex.TerrainType) then
         return
     end

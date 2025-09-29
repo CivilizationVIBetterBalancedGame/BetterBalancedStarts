@@ -1903,6 +1903,8 @@ function HighYieldsTeamerBalancing(spawns)
     local team2HighYields = 0;
     local team1Civ = {};
     local team2Civ = {};
+    local team1CivNoHighYields = {}
+    local team2CivNoHighYields = {}
     local firstTeamIndex = spawns[1].Civ.CivilizationTeam;
     spawns = GetShuffledCopyOfTable(spawns);
     for _, spawn in pairs(spawns) do
@@ -1912,9 +1914,15 @@ function HighYieldsTeamerBalancing(spawns)
         if team == firstTeamIndex then
             team1HighYields = team1HighYields + #spawn.InnerRingHigh
             table.insert(team1Civ, spawn)
+            if #spawn.InnerRingHigh < spawn.MaxHighYieldInnerRingThreshold then
+                table.insert(team1CivNoHighYields, spawn)
+            end
         else
             team2HighYields = team2HighYields + #spawn.InnerRingHigh
             table.insert(team2Civ, spawn)
+             if #spawn.InnerRingHigh < spawn.MaxHighYieldInnerRingThreshold then
+                table.insert(team2CivNoHighYields, spawn)
+            end
         end
     end
     
@@ -1924,25 +1932,26 @@ function HighYieldsTeamerBalancing(spawns)
     local triesCount = 0;
     if team1HighYields < team2HighYields - highYieldsMargin then
         local team1HighYieldToUp = team2HighYields - highYieldsMargin - team1HighYields;
-        while upgradeDone < team1HighYieldToUp and triesCount <= 3 do
+        while upgradeDone < team1HighYieldToUp and triesCount <= 10 do
             _Debug("HighYieldsTeamerBalancing team1HighYieldToUp : ", team1HighYieldToUp, " upgradeDone ", upgradeDone);
-            team1Civ = GetShuffledCopyOfTable(team1Civ);
-            local terraformedHex = team1Civ[1]:AddHighYieldFromStandard();
+            team1CivNoHighYields = GetShuffledCopyOfTable(team1CivNoHighYields);
+            local terraformedHex = team1CivNoHighYields[1]:AddHighYieldFromStandard();
             if terraformedHex ~= nil then
                 upgradeDone = upgradeDone + 1;
                 team1HighYields = team1HighYields + 1;
-                _Debug("HighYieldsTeamerBalancing : Added HighYield to ", team1Civ[1].Civ.CivilizationLeader, " on ", terraformedHex:PrintXY());
+                _Debug("HighYieldsTeamerBalancing : Added HighYield to ", team1CivNoHighYields[1].Civ.CivilizationLeader, " on ", terraformedHex:PrintXY());
+                 
             else
-                _Debug("HighYieldsTeamerBalancing - Failed to add highyield");
+                _Debug("HighYieldsTeamerBalancing - Failed to add highyield", team1CivNoHighYields[1].Civ.CivilizationLeader);
                 triesCount = triesCount + 1;
             end
         end
     elseif team2HighYields < team1HighYields - highYieldsMargin  then
         local team2HighYieldToUp = team1HighYields - highYieldsMargin - team2HighYields;
         _Debug("HighYieldsTeamerBalancing team2HighYieldToUp : ", team2HighYieldToUp);
-        while upgradeDone < team2HighYieldToUp and triesCount <= 3 do
-            team2Civ = GetShuffledCopyOfTable(team2Civ);
-            local terraformedHex = team2Civ[1]:AddHighYieldFromStandard();
+        while upgradeDone < team2HighYieldToUp and triesCount <= 10 do
+            team2CivNoHighYields = GetShuffledCopyOfTable(team2CivNoHighYields);
+            local terraformedHex = team2CivNoHighYields[1]:AddHighYieldFromStandard();
             if terraformedHex ~= nil then
                 upgradeDone = upgradeDone + 1;
                 team2HighYields = team2HighYields + 1;
