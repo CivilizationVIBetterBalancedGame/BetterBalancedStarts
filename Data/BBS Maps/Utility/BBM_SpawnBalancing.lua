@@ -278,10 +278,7 @@ end
 function SpawnBalancing:ApplyMinimalLandTiles(iMin, iMax)
     -- Check if there is at least a non tagged as minimal ring 1 -minimal lux already added
     local availableTile = false
-    print(#self.RingTables[1].HexRings)
     for _, h in pairs(self.RingTables[1].HexRings) do
-        print("h", h)
-        print("hprint", h:PrintXY())
         if h:IsImpassable() == false and h.IsTaggedAsMinimum == false then
             availableTile = true
         end
@@ -378,7 +375,7 @@ function SpawnBalancing:ApplyMinimalLandTiles(iMin, iMax)
                         terraformedHex:SetTaggedAsMinimum(true);
                         nb22LeftToUp = math.max(0, minimumNb2f2p - #self:Find22TilesInRing(i));
                     else 
-                        print("ApplyMinimalLandTiles - Impossible to terraform to meet 22 minimum threshold", i, self.Civ.CivilizationLeader);
+                        _Debug("ApplyMinimalLandTiles - Impossible to terraform to meet 22 minimum threshold", i, self.Civ.CivilizationLeader);
                         nb22LeftToUp = 0;
                     end
                 end
@@ -614,7 +611,7 @@ function SpawnBalancing:ApplyMinimalCoastalTiles()
             while #self.RingTables[3].WATER_EMPTY > 0 and nbSeaResources < 2 do 
                 local newfish = self:TerraformRandomInRing(3, TerraformType[3], g_RESOURCE_FISH, false, false, false);
                 nbSeaResources = nbSeaResources + 1;
-                print("IsHexRing2FromCoast New fish ring 3 = ", self.Civ.CivilizationLeader, nbSeaResources);
+                _Debug("IsHexRing2FromCoast New fish ring 3 = ", self.Civ.CivilizationLeader, nbSeaResources);
                 _Debug(self.Civ.CivilizationLeader, newfish:PrintXY(), nbSeaResources)
             end
         end
@@ -673,7 +670,7 @@ function SpawnBalancing:ApplyMinimalCoastalTiles()
         local hex;
         if #self.RingTables[2].WATER_EMPTY > 0 then
             listWater = self.RingTables[2].WATER_EMPTY;
-            print("Number of empty water tiles r2 = ", #listWater, self.Civ.CivilizationLeader)
+            _Debug("Number of empty water tiles r2 = ", #listWater, self.Civ.CivilizationLeader)
         elseif #self.RingTables[2].WATER_RF > 0 then
             listWater = self.RingTables[2].WATER_RF;
             _Debug("Number of res or feat water tiles r2 = ", #listWater)
@@ -694,7 +691,7 @@ function SpawnBalancing:ApplyMinimalCoastalTiles()
                 listWater = GetShuffledCopyOfTable(listWater);
             end
         else
-            print("WATER_EMPTY r2 NO", self.Civ.CivilizationLeader)
+            _Debug("WATER_EMPTY r2 NO", self.Civ.CivilizationLeader)
         end
 
         hex = hex or listWater[1]; -- take previously selected hex if relocated, else just take random empty
@@ -972,12 +969,12 @@ function SpawnBalancing:CheckLuxThreshold()
     while i <= 6 do
         for _,h in pairs(self.RingTables[i].HexRings) do
             if h:HasLux()  then
-                print("CheckLuxThreshold found a lux on ", h:PrintXY(), i);
+                _Debug("CheckLuxThreshold found a lux on ", h:PrintXY(), i);
                 if i <= 3 then
                     self.InnerRingLuxCount = self.InnerRingLuxCount + 1;
                     if (self.InnerRingLuxCount > self.MaxLuxInnerRingThreshold) and h.IsTaggedAsMinimum == false then
                         self:TerraformHex(h, i, TerraformType[3], g_RESOURCE_NONE, false, false);
-                        print("CheckLuxThreshold deleted a lux on ", h:PrintXY(), " Ring = ", i)
+                        _Debug("CheckLuxThreshold deleted a lux on ", h:PrintXY(), " Ring = ", i)
                     else
                         h:SetTaggedAsMinimum(true);
                     end
@@ -985,18 +982,18 @@ function SpawnBalancing:CheckLuxThreshold()
                     self.OuterRingLuxCount = self.OuterRingLuxCount + 1;
                     if self.OuterRingLuxCount > self.MaxLuxOuterRingThreshold then
                         self:TerraformHex(h, i, TerraformType[3], g_RESOURCE_NONE, false, false);
-                        print("CheckLuxThreshold deleted a lux on ", h:PrintXY(), " Ring = ", i)
+                        _Debug("CheckLuxThreshold deleted a lux on ", h:PrintXY(), " Ring = ", i)
                     end
                 end
             end
         end
         i = i + 1;
     end
-    print("CheckLuxThreshold innerRing = ", self.InnerRingLuxCount, " outerRing = ", self.OuterRingLuxCount, " Threshold = ", self.InnerRingLuxCount < self.MaxLuxInnerRingThreshold)
+    _Debug("CheckLuxThreshold innerRing = ", self.InnerRingLuxCount, " outerRing = ", self.OuterRingLuxCount, " Threshold = ", self.InnerRingLuxCount < self.MaxLuxInnerRingThreshold)
     while self.InnerRingLuxCount < self.MinLuxInnerRingThreshold do
         local randomHexLux = self:TerraformInRingsRandomOrder(2, 3, TerraformType[11], 0, false, false, false);
         if randomHexLux ~= nil then
-            print("CheckLuxThreshold - Added lux ");
+            _Debug("CheckLuxThreshold - Added lux ");
             self.InnerRingLuxCount = self.InnerRingLuxCount + 1;
             randomHexLux:SetTaggedAsMinimum(true);
         else
@@ -1015,7 +1012,7 @@ function SpawnBalancing:CheckLuxThreshold()
     while self.OuterRingLuxCount < self.MinLuxOuterRingThreshold do
         local randomHexLux = self:TerraformInRingsRandomOrder(4, 6, TerraformType[11], 0, false, false, false);
         if randomHexLux ~= nil then
-            print("CheckLuxThreshold - Added lux ");
+            _Debug("CheckLuxThreshold - Added lux ");
             self.OuterRingLuxCount = self.OuterRingLuxCount + 1;
             randomHexLux:SetTaggedAsMinimum(true);
         else
@@ -1064,7 +1061,7 @@ function SpawnBalancing:CheckInnerRingHighYieldsThreshold()
     -- First relocate ring 3 then further if needed     
     if highYieldsCount > self.MaxHighYieldInnerRingThreshold then
         local relocateLeft = highYieldsCount - self.MaxHighYieldInnerRingThreshold;
-        print("CheckInnerRingHighYieldsThreshold over maximum - relocateLeft = ", relocateLeft);
+        _Debug("CheckInnerRingHighYieldsThreshold over maximum - relocateLeft = ", relocateLeft);
         for _, h1 in ipairs(ring1HighYields) do
             if relocateLeft > 0 and Contains(ringModifiedTiles, h1) == false then
                 local destinationRing = 4;

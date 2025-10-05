@@ -345,6 +345,7 @@ function BBM_AssignStartingPlots.Create(args)
         -- Check if we're using one of the maps that should use quadrant distribution
         local useQuadrantDistribution = (
             bbs_game_config.BBS_MAP_SCRIPT == MapScripts.MAP_PANGAEA_ULTIMA or
+            bbs_game_config.BBS_MAP_SCRIPT == MapScripts.MAP_HIGHLANDS or
             bbs_game_config.BBS_MAP_SCRIPT == MapScripts.MAP_RICH_HIGHLANDS or
             bbs_game_config.BBS_MAP_SCRIPT == MapScripts.MAP_LAKES
         )

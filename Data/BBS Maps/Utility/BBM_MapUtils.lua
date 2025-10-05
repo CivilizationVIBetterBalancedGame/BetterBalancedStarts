@@ -306,7 +306,7 @@ Quadrant_SE = "South-East"
 Quadrant_SW = "South-West"
 
 function _Debug(...)
-    print(...);
+    --print(...);
 end
 
 function IsWorldAgeOld()
@@ -2157,7 +2157,7 @@ function HexMap:TerraformAddRandomLux(hex, canAddOnWater, forced)
     possiblesLux = GetShuffledCopyOfTable(possiblesLux);
     for _, idLux in ipairs(possiblesLux) do
         if self:TerraformSetResource(hex, idLux, forced) then
-            print("TerraformAddRandomLux - A lux has been added (id = ", idLux, ")")
+            _Debug("TerraformAddRandomLux - A lux has been added (id = ", idLux, ")")
             self:CleanHighYieldsOnFresh(hex)
             return true;
         end
@@ -3714,7 +3714,7 @@ function BalanceMap(hexMap)
     local countHills, _ = hexMap:LookForHills();
     local countLandTiles, _ = hexMap:GetLandHexList();
     local hillPercent = countHills / countLandTiles
-    print("Hills count : ", countHills, countLandTiles, hillPercent)
+    _Debug("Hills count : ", countHills, countLandTiles, hillPercent)
 
     for k, hex in pairs(landTiles) do
         local ring1 = hex.AllRing6Map[1];
@@ -3749,9 +3749,9 @@ function BalanceMap(hexMap)
         end
     end
 
-    print("Added "..tostring(iForestCounter).." Forest to the base map.")
-    print("Added "..tostring(iHillsCounter).." hills to the base map.")
-    print("Changed "..tostring(iNearFloodsCounter).." near floods to add prod.")
+    _Debug("Added "..tostring(iForestCounter).." Forest to the base map.")
+    _Debug("Added "..tostring(iHillsCounter).." hills to the base map.")
+    _Debug("Changed "..tostring(iNearFloodsCounter).." near floods to add prod.")
 end
 
 ---------------------------------------
