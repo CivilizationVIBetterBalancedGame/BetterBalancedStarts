@@ -528,9 +528,9 @@ end
 -- ---------------------------------------------------------------------------
 --  Deterministic RNG helper
 -- ---------------------------------------------------------------------------
-function BBS_SafeRand(max, context)
+function BBM_SafeRand(max, context)
     -- Returns 1..max using the Civ-synchronized RNG
-    return TerrainBuilder.GetRandomNumber(max, context or "BBS Default") + 1
+    return TerrainBuilder.GetRandomNumber(max, context or "BBM Default") + 1
 end
 
 
@@ -576,7 +576,7 @@ function DistributeCityStatesAcrossRegions(BBM_HexMap, cityStates)
                 table.insert(bestRegion, i)  
             end
         end
-        return bestRegion[BBS_SafeRand(#bestRegion, "BBM CS Region Select")]
+        return bestRegion[BBM_SafeRand(#bestRegion, "BBM CS Region Select")]
     end
     
     -- Place city states
@@ -598,8 +598,8 @@ function DistributeCityStatesAcrossRegions(BBM_HexMap, cityStates)
             end
             
             if #validTilesInRegion > 0 then
-                -- Use BBS_SafeRand for synchronized random selection
-                local pick = BBS_SafeRand(#validTilesInRegion, "BBM CS Tile Select")
+                -- Use BBM_SafeRand for synchronized random selection
+                local pick = BBM_SafeRand(#validTilesInRegion, "BBM CS Tile Select")
                 local testedHex = validTilesInRegion[pick]
                 cs:AssignMinorCivSpawn(BBM_HexMap, testedHex)
                 cs.Player:SetStartingPlot(cs.StartingHex.Plot)
@@ -625,7 +625,7 @@ function DistributeCityStatesAcrossRegions(BBM_HexMap, cityStates)
             end
             
             if #allRemaining > 0 then
-                local pick = BBS_SafeRand(#allRemaining, "BBM CS Fallback Select")
+                local pick = BBM_SafeRand(#allRemaining, "BBM CS Fallback Select")
                 local selection = allRemaining[pick]
                 cs:AssignMinorCivSpawn(BBM_HexMap, selection.tile)
                 cs.Player:SetStartingPlot(cs.StartingHex.Plot)
