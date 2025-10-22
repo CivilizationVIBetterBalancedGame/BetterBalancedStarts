@@ -3891,3 +3891,218 @@ function RemoveFromTable(table1, valueToRemove)
     end
     return false;
 end
+
+---------------------------------------
+-- Continent normalization functions
+---------------------------------------
+function ContinentCheck(g_iW, g_iH)
+    print("ContinentsCheck")
+    local map = {}
+    local total_tiles = 0
+    for x = 0, g_iW - 1 do
+        for y = 0, g_iH - 1 do 
+            local i = y * g_iW + x;
+            local plot = Map.GetPlotByIndex(i);
+            local cont = plot:GetContinentType();
+            if cont ~= -1 then
+                map[cont] = map[cont] or 0
+                map[cont] = map[cont] + 1 
+                total_tiles = total_tiles + 1
+            end
+        end
+    end
+    print("Total size of each continent : ")
+    for k,v in pairs(map) do
+        if k ~= -1 then
+            print("Id : ", k, " size = ", v, " percent of total land = ", v / total_tiles * 100)    
+        end
+    end    
+    return map, total_tiles
+end
+
+function PrintContinentDistribution(contMap, total_tiles, message)
+    print("----------------------------------------")
+    print(message)
+    print("----------------------------------------")
+    -- Sort continents by ID for consistent output
+    local sortedContinents = {}
+    for contId, size in pairs(contMap) do
+        table.insert(sortedContinents, {id = contId, size = size})
+    end
+    table.sort(sortedContinents, function(a,b) return a.id < b.id end)
+    
+    for _, cont in ipairs(sortedContinents) do
+        local percent = (cont.size / total_tiles) * 100
+        print(string.format("Continent %2d: %4d tiles (%5.1f%%)", cont.id, cont.size, percent))
+    end
+    print("----------------------------------------")
+end
+
+function NormalizeContinents(g_iW, g_iH)
+    print("\nStarting continent normalization process...")
+    
+    -- First get current continent distribution
+    local initialContMap, initialTotal = ContinentCheck(g_iW, g_iH)
+    PrintContinentDistribution(initialContMap, initialTotal, "INITIAL CONTINENT DISTRIBUTION:")
+    
+    -- Count number of continents
+    local numContinents = 0
+    for _ in pairs(initialContMap) do
+        numContinents = numContinents + 1
+    end
+    
+    -- Make a copy of initial distribution for later comparison
+    local contMap = {}
+    for k,v in pairs(initialContMap) do
+        contMap[k] = v
+    end
+    local total_tiles = initialTotal
+    
+    if numContinents == 0 then
+        print("No continents found to normalize!")
+        return
+    end
+    
+    -- Calculate target size and simple ±7% range
+    local targetPercent = 100 / numContinents
+    local minPercent = targetPercent - 7  -- Simple 7% below target
+    local maxPercent = targetPercent + 7  -- Simple 7% above target
+
+    print(string.format("Target continent size: %.1f%% (%.1f%% - %.1f%%)", targetPercent, minPercent, maxPercent))
+    
+    -- Keep normalizing until all continents are within range or we hit max iterations
+    local maxIterations = 30  -- can redeuce if performance is an issue
+    local currentIteration = 0
+    local lastChangeIteration = 0 -- Track when we last made a change
+    
+    while currentIteration < maxIterations do
+        currentIteration = currentIteration + 1
+        print(string.format("\nNormalization iteration %d:", currentIteration))
+        
+        -- Get current state
+        contMap, total_tiles = ContinentCheck(g_iW, g_iH)
+        
+        -- Track which continents need adjustment
+        local toShrink = {}
+        local toGrow = {}
+        local needsWork = false
+        
+        -- Identify continents that need adjustment
+        for contId, size in pairs(contMap) do
+            local currentPercent = (size / total_tiles) * 100
+            if currentPercent > maxPercent then
+                toShrink[contId] = {size = size, percent = currentPercent}
+                needsWork = true
+            elseif currentPercent < minPercent then
+                toGrow[contId] = {size = size, percent = currentPercent}
+                needsWork = true
+            end
+        end
+        
+        -- Break if no work needed or we're stuck
+        if not needsWork or currentIteration - lastChangeIteration > 3 then
+            if not needsWork then
+                print("All continents within target range!")
+            else
+                print("No changes possible after 3 iterations, stopping")
+            end
+            break
+        end
+        
+        -- Process oversized continents first
+        for contId, data in pairs(toShrink) do
+            print(string.format("Shrinking continent %d from %.1f%%", contId, data.percent))
+            local plotsProcessed = 0
+            
+            -- Process up to 200 plots per iteration for shrinking
+            for x = 0, g_iW - 1 do
+                for y = 0, g_iH - 1 do
+                    local plot = Map.GetPlot(x, y)
+                    if plot:GetContinentType() == contId then
+                        -- Find any adjacent different continent and convert
+                        for direction = 0, 5 do
+                            local adjPlot = Map.GetAdjacentPlot(x, y, direction)
+                            if adjPlot then
+                                local adjContId = adjPlot:GetContinentType()
+                                if adjContId ~= contId and adjContId ~= -1 then
+                                    TerrainBuilder.SetContinentType(plot, adjContId)
+                                    plotsProcessed = plotsProcessed + 1
+                                    break
+                                end
+                            end
+                        end
+                        
+                        if plotsProcessed >= 200 then
+                            break
+                        end
+                    end
+                end
+                if plotsProcessed >= 200 then
+                    break
+                end
+            end
+            
+            if plotsProcessed > 0 then
+                lastChangeIteration = currentIteration
+            end
+        end
+        
+        -- Then process undersized continents
+        for contId, data in pairs(toGrow) do
+            print(string.format("Growing continent %d from %.1f%%", contId, data.percent))
+            local plotsProcessed = 0
+            
+            -- Process up to 200 plots per iteration for growing
+            for x = 0, g_iW - 1 do
+                for y = 0, g_iH - 1 do
+                    local plot = Map.GetPlot(x, y)
+                    -- Look for plots adjacent to this continent that we can claim
+                    if plot:GetContinentType() ~= contId then
+                        -- Check if this plot is adjacent to our continent
+                        for direction = 0, 5 do
+                            local adjPlot = Map.GetAdjacentPlot(x, y, direction)
+                            if adjPlot and adjPlot:GetContinentType() == contId then
+                                -- Only take from bigger continents or any if we're very small
+                                local currentContId = plot:GetContinentType()
+                                if currentContId ~= -1 and (toShrink[currentContId] or data.percent < minPercent - 2) then
+                                    TerrainBuilder.SetContinentType(plot, contId)
+                                    plotsProcessed = plotsProcessed + 1
+                                    break
+                                end
+                            end
+                        end
+                        
+                        if plotsProcessed >= 200 then
+                            break
+                        end
+                    end
+                end
+                if plotsProcessed >= 200 then
+                    break
+                end
+            end
+            
+            if plotsProcessed > 0 then
+                lastChangeIteration = currentIteration
+                print(string.format("Converted %d plots for continent %d", plotsProcessed, contId))
+            end
+        end
+    end
+    
+    -- Get and print final distribution
+    local finalContMap, finalTotal = ContinentCheck(g_iW, g_iH)
+    PrintContinentDistribution(finalContMap, finalTotal, "FINAL CONTINENT DISTRIBUTION AFTER NORMALIZATION:")
+    
+    -- Print summary of changes
+    print("\nNORMALIZATION SUMMARY:")
+    print("----------------------------------------")
+    for contId, size in pairs(finalContMap) do
+        local originalSize = initialContMap[contId]
+        local originalPercent = (originalSize / initialTotal) * 100
+        local finalPercent = (size / finalTotal) * 100
+        local change = finalPercent - originalPercent
+        print(string.format("Continent %2d: %5.1f%% -> %5.1f%% (Change: %+5.1f%%)", 
+            contId, originalPercent, finalPercent, change))
+    end
+    print("----------------------------------------")
+end

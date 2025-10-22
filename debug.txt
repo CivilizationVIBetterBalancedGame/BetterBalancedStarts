@@ -27,7 +27,7 @@ E_BBS_FEATURE_FLOODPLAIN = g_FEATURE_FLOODPLAINS = ? 32
 RessourceType:
 
 ####################
-#  Balancing part   #
+#  Balancing part  #
 ####################
 
 # Current

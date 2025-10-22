@@ -117,7 +117,12 @@ function GenerateMap()
 	AreaBuilder.Recalculate();
 	TerrainBuilder.AnalyzeChokepoints();
 	TerrainBuilder.StampContinents();
-
+	
+	-- Normalize continent sizes
+	print("Starting continent normalization process...")
+	NormalizeContinents(g_iW, g_iH)
+	print("Continent normalization complete")
+	
 	local iContinentBoundaryPlots = GetContinentBoundaryPlotCount(g_iW, g_iH);
 	local biggest_area = Areas.FindBiggestArea(false);
 	print("After Adding Hills: ", biggest_area:GetPlotCount());
@@ -168,6 +173,7 @@ function GenerateMap()
 	}
 	local resGen = BBS_ResourceGenerator.Create(args);
 
+
 	if (MapConfiguration.GetValue("BBSRidge") == 1) then
 		AddVolcanos(plotTypes,world_age,g_iW, g_iH)
 	end
@@ -193,8 +199,6 @@ function GenerateMap()
 	-- write map stats to the log
     local mapStats = PrintMapStatistics();
 
-    -- Add this line to validate continents
-    local continentData = ValidateContinents();	
 end
 
 -------------------------------------------------------------------------------
@@ -528,9 +532,9 @@ function OptimizeDesert()
             end
         end
     end
-    
-    -- Set target desert count (100-110 tiles)
-    local targetDesertCount = 100 + TerrainBuilder.GetRandomNumber(10, "Desert Count Variation");
+
+    -- Set target desert count (70-80 tiles)
+    local targetDesertCount = 70 + TerrainBuilder.GetRandomNumber(10, "Desert Count Variation");
     
     -- Calculate how many to convert
     local desertToKeep = math.min(initialDesertCount, targetDesertCount);
@@ -1372,34 +1376,6 @@ function PrintMapStatistics()
     };
     
     return stats;
-end
--------------------------------------------------------------------------------
--- Add this function after PrintMapStatistics
-
--------------------------------------------------------------------------------
--- Function to validate and output continent data
-function ValidateContinents()
-    print("Validating continent structure...");
-    
-    -- Simply get continents in use and print them
-    print("Getting continents using Map.GetContinentsInUse()...");
-    local continentsInUse = Map.GetContinentsInUse();
-    
-    if continentsInUse then
-        print("Number of continents found: " .. #continentsInUse);
-        print("Individual continent IDs:");
-        for i, continentID in ipairs(continentsInUse) do
-            print("  Continent #" .. i .. ": ID " .. continentID);
-        end
-    else
-        print("Map.GetContinentsInUse() returned nil - no continents found or function unavailable");
-    end
-    
-    -- Return an empty structure to avoid errors
-    return {
-        continentCount = continentsInUse and #continentsInUse or 0,
-        namedContinents = continentsInUse or {}
-    };
 end
 -------------------------------------------------------------------------------
 -- Function to initialize the fractal for Pangaea map generation
