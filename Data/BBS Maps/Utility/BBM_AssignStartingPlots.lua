@@ -514,7 +514,7 @@ function Is1v1OrTeamerConfig()
         end
         fixedIndex = fixedIndex + 1;
     end
-    local isTeamerConfig = teamCount == 2;
+    local isTeamerConfig = teamCount == 2 and team1Size == team2Size;
     _Debug("IsTeamerConfig : ", teamCount, team1Size, team2Size, isTeamerConfig);
     return isTeamerConfig;
 end
