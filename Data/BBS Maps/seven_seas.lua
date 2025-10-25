@@ -81,6 +81,11 @@ function GenerateMap()
 	TerrainBuilder.AnalyzeChokepoints();
 	TerrainBuilder.StampContinents();
 
+	-- Normalize continent sizes
+	print("Starting continent normalization process...")
+	NormalizeContinents(g_iW, g_iH)
+	print("Continent normalization complete")
+
 	local iContinentBoundaryPlots = GetContinentBoundaryPlotCount(g_iW, g_iH);
 	local biggest_area = Areas.FindBiggestArea(false);
 	print("After Adding Hills: ", biggest_area:GetPlotCount());

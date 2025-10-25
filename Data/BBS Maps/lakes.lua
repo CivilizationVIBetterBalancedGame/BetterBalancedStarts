@@ -82,6 +82,11 @@ function GenerateMap()
 	TerrainBuilder.AnalyzeChokepoints();
 	TerrainBuilder.StampContinents();
 
+	-- Normalize continent sizes
+	print("Starting continent normalization process...")
+	NormalizeContinents(g_iW, g_iH)
+	print("Continent normalization complete")
+
 	local iContinentBoundaryPlots = GetContinentBoundaryPlotCount(g_iW, g_iH);
 	local biggest_area = Areas.FindBiggestArea(false);
 	print("After Adding Hills: ", biggest_area:GetPlotCount());
@@ -126,7 +131,9 @@ function GenerateMap()
 		START_CONFIG = startConfig,
 	};
 	local resGen = BBS_ResourceGenerator.Create(args);
-		if (MapConfiguration.GetValue("BBSRidge") == 1) then
+
+
+	if (MapConfiguration.GetValue("BBSRidge") == 1) then
 		AddVolcanos(plotTypes,world_age,g_iW, g_iH)
 	end
 	print("Creating start plot database.");
