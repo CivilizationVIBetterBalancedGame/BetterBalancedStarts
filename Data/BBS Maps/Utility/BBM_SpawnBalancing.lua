@@ -45,6 +45,7 @@ function SpawnBalancing.new(hex, hexMap, civ)
     instance.MaxLuxOuterRingThreshold = 7;
     instance.MinHighYieldInnerRingThreshold = 0;
     instance.MaxHighYieldInnerRingThreshold = 1;
+    instance.MaxHighYieldR3Threshold = 2;
     instance.Min22TilesInRing2 = 3;
     instance.IsBCYActivated = isBCYActivated()
     _Debug("Init SpawnBalancing")
@@ -577,7 +578,7 @@ function SpawnBalancing:GaranteedStandardHighFoodInnerRing()
     AddToTable(ring1, self.RingTables[1].EMPTY_TILES);
     AddToTable(ring1, self.RingTables[1].LOW_YIELD_TILES);
     ring1 = GetShuffledCopyOfTable(ring1);
-    for _, h in ipairs(innerRing) do
+    for _, h in ipairs(ring1) do
         if self:TerraformHex(h, 1, TerraformType[12], 0, false, false) then
             _Debug("GaranteedStandardHighFoodInnerRing Added in ring 1");
             h:SetTaggedAsMinimum(true);
@@ -1023,6 +1024,26 @@ function SpawnBalancing:CheckLuxThreshold()
     print("CheckLuxThreshold DONE", self.Civ.CivilizationLeader)
 end
 
+function SpawnBalancing:CheckHighYieldsThreshold()
+
+    self:CheckInnerRingHighYieldsThreshold()
+    -- Extra moves high yields on non minimum on r3
+    local ring3HighYields = {};
+    AddToTable(ring3HighYields, self.RingTables[3].HIGH_YIELD_TILES);
+    AddToTable(ring3HighYields, self.RingTables[3].HIGH_EXTRA_YIELDS);
+    local leftR3HighYields = math.min(0, #ring3HighYields - self.MaxHighYieldR3Threshold)
+    if leftR3HighYields > 1 then
+        ring3HighYields = GetShuffledCopyOfTable(ring3HighYields)
+        for _, h3 in ipairs(ring3HighYields) do
+            if ring3HighYields > 0 and Contains(ringModifiedTiles, h3) == false and self:ForceHexRelocateToRing(h3, 3, 4) then
+                _Debug("CheckHighYieldsThreshold : ring 3 to ring 4 relocation ", h3:PrintXY())
+                table.insert(ringModifiedTiles, h3);
+                leftR3HighYields = leftR3HighYields - 1;
+            end 
+        end
+    end
+end
+    
 
 function SpawnBalancing:CheckInnerRingHighYieldsThreshold()
     _Debug("CheckInnerRingHighYieldsThreshold enter");
@@ -1064,16 +1085,12 @@ function SpawnBalancing:CheckInnerRingHighYieldsThreshold()
         _Debug("CheckInnerRingHighYieldsThreshold over maximum - relocateLeft = ", relocateLeft);
         for _, h1 in ipairs(ring1HighYields) do
             if relocateLeft > 0 and Contains(ringModifiedTiles, h1) == false then
-                local destinationRing = 4;
-                if g_RESOURCES_LUX_LIST[h1.ResourceType] then
-                    destinationRing = 3;
-                end
                 local wasTagged = false;
                 if h1.IsTaggedAsMinimum then
                     wasTagged = true;
                     h1:SetTaggedAsMinimum(false);
                 end
-                if self:ForceHexRelocateToRing(h1, 1, destinationRing) then
+                if self:ForceHexRelocateToRing(h1, 1, self:GetRelocationDestinationRing(h1)) then
                     _Debug("CheckInnerRingHighYieldsThreshold : ring 1 forced relocation ", h1:PrintXY())
                     relocateLeft = relocateLeft - 1;
                     table.insert(ringModifiedTiles, h1);
@@ -1086,16 +1103,12 @@ function SpawnBalancing:CheckInnerRingHighYieldsThreshold()
         _Debug("CheckInnerRingHighYieldsThreshold relocateLeft after r1 = ", relocateLeft);
         for _, h2 in ipairs(ring2HighYields) do
             if relocateLeft > 0 and Contains(ringModifiedTiles, h2) == false then
-                local destinationRing = 4;
-                if g_RESOURCES_LUX_LIST[h2.ResourceType] then
-                    destinationRing = 3;
-                end
                 local wasTagged = false;
                 if h2.IsTaggedAsMinimum then
                     wasTagged = true;
                     h2:SetTaggedAsMinimum(false);
                 end
-                if self:ForceHexRelocateToRing(h2, 2, destinationRing) then
+                if self:ForceHexRelocateToRing(h2, 2, self:GetRelocationDestinationRing(h2)) then
                     _Debug("CheckInnerRingHighYieldsThreshold : ring 2 forced relocation ", h2:PrintXY())
                     relocateLeft = relocateLeft - 1;
                     table.insert(ringModifiedTiles, h2);
@@ -1117,9 +1130,16 @@ function SpawnBalancing:CheckInnerRingHighYieldsThreshold()
             self.InnerRingLuxCount = self.MinLuxInnerRingThreshold;
         end
     end
+
+    
 end
 
-
+function SpawnBalancing:GetRelocationDestinationRing(hex)
+    if g_RESOURCES_LUX_LIST[hex.ResourceType] then
+        return 3;
+    end
+    return 4
+end
 
 function SpawnBalancing:GetCoastalScoreHex()
     local coastalScore = 0;
@@ -1315,31 +1335,29 @@ function SpawnBalancing:ForceHexRelocateToRing(hexToRelocate, ringTableHex, dest
             local canFeat = self.HexMap:TerraformSetFeatureRequirements(hex, hexData.FeatureId, false);
             local canRes = self.HexMap:TerraformSetResourceRequirements(hex, hexData.ResourceId);
             local canTerr = hex:IsSameTerrainCategory(hexData.TerrainId);
-            _Debug("ForceHexRelocateToRing - Try relocating on ", hex:PrintXY(), " canFeat ", canFeat, " canRes ", canRes)
-            if canTerr and canFeat and canRes then
+            if canTerr and canFeat and hex.ResourceType == g_RESOURCE_NONE and self.HexMap:LuxPlacementRequirement(hex, hex.ResourceType) then
                 self:TerraformHex(hex, destinationRing, TerraformType[1], hexData.TerrainId, true, false);
                 self:TerraformHex(hex, destinationRing, TerraformType[2], hexData.FeatureId, true, false);
                 if self:TerraformHex(hex, destinationRing, TerraformType[3], hexData.ResourceId, true, false) then
-                    print("Relocated to empty feat = "..tostring(hexData.FeatureId).." res = "..tostring(hexData.ResourceId).." on "..hex:PrintXY())
+                    print("Relocated " .. hexToRelocate:PrintXY() .. " to empty feat = "..tostring(hexData.FeatureId).." res = "..tostring(hexData.ResourceId).." on "..hex:PrintXY())
                     self:TerraformHex(hexToRelocate, ringTableHex, TerraformType[99], 0, false, false)
                     return true
                 end
             end
-            _Debug("ForceHexRelocateToRing - Cant terraform relocating")
+            _Debug("ForceHexRelocateToRing - Cant terraform relocating on empty")
         end
     end
     if #self.RingTables[destinationRing].LOW_YIELD_TILES > 0 then
         local randomLowYields = GetShuffledCopyOfTable(self.RingTables[destinationRing].LOW_YIELD_TILES);
         for _, hex in pairs(randomLowYields) do
-            if isRelocated or hex.IsTaggedAsMinimum then break end;
             local canFeat = self.HexMap:TerraformSetFeatureRequirements(hex, hexData.FeatureId, false);
             local canRes = self.HexMap:TerraformSetResourceRequirements(hex, hexData.ResourceId);
             local canTerr = hex:IsSameTerrainCategory(hexData.TerrainId);
-            if canTerr and canFeat and canRes then
+            if canTerr and canFeat and hex.ResourceType == g_RESOURCE_NONE and self.HexMap:LuxPlacementRequirement(hex, hex.ResourceType) then
                 self:TerraformHex(hex, destinationRing, TerraformType[1], hexData.TerrainId, true, false);
                 self:TerraformHex(hex, destinationRing, TerraformType[2], hexData.FeatureId, true, false);
                 if self:TerraformHex(hex, destinationRing, TerraformType[3], hexData.ResourceId, true, false) then
-                    _Debug("ForceHexRelocateToRing - Relocated to low feat = "..tostring(hexData.FeatureId).." res = "..tostring(hexData.ResourceId).." on "..hex:PrintXY())
+                    _Debug("ForceHexRelocateToRing - Relocated from " .. hexToRelocate:PrintXY() .. " to low feat = "..tostring(hexData.FeatureId).." res = "..tostring(hexData.ResourceId).." on "..hex:PrintXY())
                     self:TerraformHex(hexToRelocate, ringTableHex, TerraformType[99], 0, false, false)
                     return true
                 end

@@ -2104,14 +2104,16 @@ function HexMap:TerraformSetResource(hex, resourceId, forced)
                 self:TerraformToFlat(hex, true);
             -- Special force placement on lux, to help CheckLuxThreshold method to make room for most restrictives lux placements
             elseif not hex:IsFloodplains(true) and not hex:IsTundraLand() then
-                print("Try force placement of lux ", resourceId, hex:PrintXY())
                 if g_LUX_ON_FLAT_GRASS_LIST[resourceId] then
+                    _Debug("Try force placement of lux g_LUX_ON_FLAT_GRASS_LIST ", resourceId, hex:PrintXY())
                     self:TerraformSetFeature(hex, g_FEATURE_NONE)
                     self:TerraformSetTerrain(hex, g_TERRAIN_TYPE_GRASS);
                 elseif g_LUX_ON_FLAT_PLAINS_LIST[resourceId] then
+                    _Debug("Try force placement of lux g_LUX_ON_FLAT_PLAINS_LIST ", resourceId, hex:PrintXY())
                     self:TerraformSetFeature(hex, g_FEATURE_NONE)
                     self:TerraformSetTerrain(hex, g_TERRAIN_TYPE_PLAINS);
                 elseif g_LUX_ON_FOREST_LIST[resourceId] then
+                     _Debug("Try force placement of lux g_LUX_ON_FOREST_LIST ", resourceId, hex:PrintXY())
                     self:TerraformSetFeature(hex, g_FEATURE_FOREST)
                     self:TerraformSetTerrain(hex, g_TERRAIN_TYPE_GRASS);
                 end
@@ -2144,8 +2146,22 @@ function HexMap:CanHaveResource(hex, resourceId)
     return ResourceBuilder.CanHaveResource(hex.Plot, resourceId)
 end
 
+function HexMap:LuxPlacementRequirement(hex, resourceId)
+    -- Condition to place a lux - avoid in non original continent
+    if hex.IsTaggedAsMinimum then
+        return false
+    end
+    if g_RESOURCES_LUX_LIST[resourceId] then
+        local luxInCont = self.LuxTable[hex.IdContinent]
+        if not Contains(luxInCont, resourceId) then
+            return false
+        end
+    end
+    return true
+end
+
 function HexMap:TerraformSetResourceRequirements(hex, resourceId)
-    return (resourceId == g_RESOURCE_NONE or self:CanHaveResource(hex, resourceId)) and hex.IsTaggedAsMinimum == false;
+    return (resourceId == g_RESOURCE_NONE or self:CanHaveResource(hex, resourceId)) and hex.IsTaggedAsMinimum == false and self:LuxPlacementRequirement(hex, resourceId);
 end
 
 function HexMap:TerraformAddRandomLux(hex, canAddOnWater, forced)
@@ -2436,8 +2452,8 @@ function HexMap:TerraformTo4YieldsTundra(hex, garanteed22)
     self:TerraformSetTerrain(hex, g_TERRAIN_TYPE_TUNDRA_HILLS);
     if rng <= 10 then
         _Debug("TerraformTo4YieldsTundra - added deer hills forest ", rng, hex:PrintXY())
-        self:TerraformSetResource(hex, g_RESOURCE_DEER, true);
-        return self:TerraformSetFeature(hex, g_FEATURE_FOREST, true);
+        --self:TerraformSetFeature(hex, g_FEATURE_FOREST, true);
+        return self:TerraformSetResource(hex, g_RESOURCE_DEER, true);
     elseif rng <= 25 then
         _Debug("TerraformTo4YieldsTundra - added deer hills ", rng, hex:PrintXY())
         return self:TerraformSetResource(hex, g_RESOURCE_DEER, true);
@@ -2899,8 +2915,8 @@ function HexMap:TerraformToStandardHighFoodYields(hex, cleanTile)
             self:TerraformSetFeature(hex, g_FEATURE_JUNGLE, true);
             self:TerraformSetResource(hex, g_RESOURCE_BANANAS, true);
             return true;
-        elseif hex.FeatureType == g_FEATURE_JUNGLE and hex.ResourceType == g_RESOURCE_NONE then
-            _Debug("TerraformToStandardHighFoodYields - Add Banana to jungle")
+        elseif hex.TerrainType == g_TERRAIN_TYPE_PLAINS and hex.FeatureType == g_FEATURE_JUNGLE and hex.ResourceType == g_RESOURCE_NONE then
+            _Debug("TerraformToStandardHighFoodYields - Add Banana to jungle", hex:PrintXY())
             self:TerraformSetResource(hex, g_RESOURCE_BANANAS, true);
             return true;
         elseif hex.FeatureType == g_FEATURE_NONE then
@@ -3854,7 +3870,7 @@ function InitSpawnBalancing(hexMap, civ)
     balancing:CleanSpawnTile();
     balancing:ApplyMinimalCoastalTiles();
     balancing:CheckLuxThreshold();
-    balancing:CheckInnerRingHighYieldsThreshold();
+    balancing:CheckHighYieldsThreshold();
     balancing:GaranteedStandardHighFoodInnerRing();
     balancing:ApplyMinimalLandTiles(1, 6);
     balancing:ApplyGaranteedStrategics();
