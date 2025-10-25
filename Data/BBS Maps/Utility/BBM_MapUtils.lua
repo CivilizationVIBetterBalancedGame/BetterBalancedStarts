@@ -3947,10 +3947,20 @@ function NormalizeContinents(g_iW, g_iH)
     
     -- Count number of continents
     local numContinents = 0
-    for _ in pairs(initialContMap) do
+    local listContId = {}
+    for id, _ in pairs(initialContMap) do
+        table.insert(listContId, id)
+        print("Add continent Id ", id)
         numContinents = numContinents + 1
     end
-    
+    local contPairs = {}
+    for i = 1, numContinents do
+        for j = i + 1, numContinents do
+            local id1 = listContId[i]
+            local id2 = listContId[j]
+            table.insert(contPairs, {id1, id2})
+        end
+    end  
     -- Make a copy of initial distribution for later comparison
     local contMap = {}
     for k,v in pairs(initialContMap) do
@@ -4013,10 +4023,14 @@ function NormalizeContinents(g_iW, g_iH)
         for contId, data in pairs(toShrink) do
             print(string.format("Shrinking continent %d from %.1f%%", contId, data.percent))
             local plotsProcessed = 0
+            local candidates = {}
             
             -- Process up to 200 plots per iteration for shrinking
             for x = 0, g_iW - 1 do
                 for y = 0, g_iH - 1 do
+                    local adjMap = {}
+                    local sameContAdj = 0
+                    local nonContAdj = 0
                     local plot = Map.GetPlot(x, y)
                     if plot:GetContinentType() == contId then
                         -- Find any adjacent different continent and convert
@@ -4024,19 +4038,48 @@ function NormalizeContinents(g_iW, g_iH)
                             local adjPlot = Map.GetAdjacentPlot(x, y, direction)
                             if adjPlot then
                                 local adjContId = adjPlot:GetContinentType()
-                                if adjContId ~= contId and adjContId ~= -1 then
-                                    TerrainBuilder.SetContinentType(plot, adjContId)
-                                    plotsProcessed = plotsProcessed + 1
-                                    break
+                                if adjContId ~= -1 then
+                                    if adjContId ~= contId then
+                                        --TerrainBuilder.SetContinentType(plot, adjContId)
+                                        --plotsProcessed = plotsProcessed + 1
+                                        --break
+                                        --------------------
+                                        adjMap[adjContId] = adjMap[adjContId] or 0
+                                        adjMap[adjContId] = adjMap[adjContId] + 1
+                                        print("adjMap[adjContId]", contId, adjContId, adjMap[adjContId])
+                                    elseif adjContId == contId then
+                                        sameContAdj = sameContAdj + 1
+                                    end
+                                else
+                                    nonContAdj = nonContAdj + 1
                                 end
                             end
                         end
+                        local selectedContId = -1
+                        local maxNbAdj = 0
+                        for cId, nbContAdj in pairs(adjMap) do
+                            if nbContAdj > maxNbAdj then
+                                selectedContId = cId
+                                maxNbAdj = nbContAdj
+                            end 
+                            print(x, y, cId, nbContAdj)
+                        end
+                        local score = 60 - sameContAdj * (6 / (6 - nonContAdj)) * 10
                         
-                        if plotsProcessed >= 200 then
-                            break
+                        -- Analyze post neighbor
+                        if (selectedContId ~= -1) then
+                            table.insert(candidates, { plot = plot, selectedContId = selectedContId, score = score })
+                            table.sort(candidates, function(a, b) return a.score < b.score end)
+                             print("Score = ", score, sameContAdj, nonContAdj, selectedContId)
                         end
                     end
                 end
+            end
+
+            
+            for _, candidate in pairs(candidates) do
+                TerrainBuilder.SetContinentType(candidate.plot, candidate.selectedContId)
+                plotsProcessed = plotsProcessed + 1
                 if plotsProcessed >= 200 then
                     break
                 end
@@ -4051,10 +4094,13 @@ function NormalizeContinents(g_iW, g_iH)
         for contId, data in pairs(toGrow) do
             print(string.format("Growing continent %d from %.1f%%", contId, data.percent))
             local plotsProcessed = 0
-            
+            local candidates = {}
             -- Process up to 200 plots per iteration for growing
             for x = 0, g_iW - 1 do
                 for y = 0, g_iH - 1 do
+                    local adjMap = {}
+                    local sameContAdj = 0
+                    local nonContAdj = 0
                     local plot = Map.GetPlot(x, y)
                     -- Look for plots adjacent to this continent that we can claim
                     if plot:GetContinentType() ~= contId then
@@ -4065,20 +4111,25 @@ function NormalizeContinents(g_iW, g_iH)
                                 -- Only take from bigger continents or any if we're very small
                                 local currentContId = plot:GetContinentType()
                                 if currentContId ~= -1 and (toShrink[currentContId] or data.percent < minPercent - 2) then
-                                    TerrainBuilder.SetContinentType(plot, contId)
-                                    plotsProcessed = plotsProcessed + 1
-                                    break
+                                    sameContAdj = sameContAdj + 1
                                 end
                             end
                         end
-                        
-                        if plotsProcessed >= 200 then
-                            break
-                        end
+
+                        if (sameContAdj > 0) then
+                            local score = 60 - 10 * sameContAdj 
+                            table.insert(candidates, { plot = plot, selectedContId = contId, score = score })
+                            table.sort(candidates, function(a, b) return a.score < b.score end)
+                             print("Score grow = ", score, sameContAdj, nonContAdj, selectedContId)
+                        end                        
                     end
                 end
-                if plotsProcessed >= 200 then
-                    break
+                for _, candidate in pairs(candidates) do
+                    TerrainBuilder.SetContinentType(candidate.plot, candidate.selectedContId)
+                    plotsProcessed = plotsProcessed + 1
+                    if plotsProcessed >= 100 then
+                        break
+                    end
                 end
             end
             
@@ -4106,3 +4157,4 @@ function NormalizeContinents(g_iW, g_iH)
     end
     print("----------------------------------------")
 end
+
