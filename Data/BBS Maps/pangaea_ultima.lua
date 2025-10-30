@@ -206,7 +206,7 @@ function GeneratePlotTypes(world_age)
 	print("Generating Plot Types");
 	local plotTypes = {};
 
-	local sea_level_low = 44; -- 53
+	local sea_level_low = 43; -- 53
 	local sea_level_normal = 51;  -- 58
 	local sea_level_high = 57;  -- 63
 
