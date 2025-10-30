@@ -112,7 +112,7 @@ function GenerateMap()
     OptimizeDesert();
 
 	-- -- normalize settleable tiles to reach ~2700
-	NormalizeSettleableTiles();
+	--NormalizeSettleableTiles();
 
 	AreaBuilder.Recalculate();
 	TerrainBuilder.AnalyzeChokepoints();
@@ -144,7 +144,7 @@ function GenerateMap()
 	AddLakes(numLargeLakes);
 
 	-- get rid of snow
-	ReduceSnowCoverage();
+	--ReduceSnowCoverage();
 
 	AddFeatures();
 	TerrainBuilder.AnalyzeChokepoints();
@@ -206,9 +206,9 @@ function GeneratePlotTypes(world_age)
 	print("Generating Plot Types");
 	local plotTypes = {};
 
-	local sea_level_low = 36; -- 53
-	local sea_level_normal = 37;  -- 58
-	local sea_level_high = 40;  -- 63
+	local sea_level_low = 40; -- 53
+	local sea_level_normal = 51;  -- 58
+	local sea_level_high = 57;  -- 63
 
 	local grain_amount = 3;
 	local adjust_plates = 1.3;
