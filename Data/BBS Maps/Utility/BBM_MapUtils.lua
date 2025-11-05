@@ -161,7 +161,6 @@ g_LUX_ON_FOREST_LIST = {}
 g_LUX_ON_FOREST_LIST[g_RESOURCE_DYES] = true
 g_LUX_ON_FOREST_LIST[g_RESOURCE_FURS] = true
 g_LUX_ON_FOREST_LIST[g_RESOURCE_SILK] = true
-g_LUX_ON_FOREST_LIST[g_RESOURCE_TOBACCO] = true
 g_LUX_ON_FOREST_LIST[g_RESOURCE_TRUFFLES] = true
 g_LUX_ON_FOREST_LIST[g_RESOURCE_SPICES] = true
 g_LUX_ON_FOREST_LIST[g_RESOURCE_AMBER] = true
@@ -306,7 +305,7 @@ Quadrant_SE = "South-East"
 Quadrant_SW = "South-West"
 
 function _Debug(...)
-    --print(...);
+    print(...);
 end
 
 function IsWorldAgeOld()
@@ -2091,31 +2090,31 @@ function HexMap:TerraformSetResource(hex, resourceId, forced)
                 self:TerraformToHill(hex, true);
             elseif resourceId == g_RESOURCE_ALUMINUM then
                 if self:CanHaveJungle(hex) then
-                    self:TerraformSetTerrain(hex, g_TERRAIN_TYPE_PLAINS_HILLS);
-                    self:TerraformSetFeature(hex, g_FEATURE_JUNGLE);
+                    self:TerraformSetTerrain(hex, g_TERRAIN_TYPE_PLAINS_HILLS, true);
+                    self:TerraformSetFeature(hex, g_FEATURE_JUNGLE, true);
                 elseif hex.TerrainType == g_TERRAIN_TYPE_DESERT_HILLS then
                     self:TerraformToFlat(hex, true);
                 elseif IsTundraLand(hex.TerrainType) == false and IsSnowLand(hex.TerrainType) == false then
                     self:TerraformToFlat(hex, true);
-                    self:TerraformSetTerrain(hex, g_TERRAIN_TYPE_PLAINS);
+                    self:TerraformSetTerrain(hex, g_TERRAIN_TYPE_PLAINS, true);
                 end
             elseif resourceId == g_RESOURCE_OIL and hex:IsWater() == false then
-                self:TerraformSetFeature(hex, g_FEATURE_NONE);
+                self:TerraformSetFeature(hex, g_FEATURE_NONE, true);
                 self:TerraformToFlat(hex, true);
             -- Special force placement on lux, to help CheckLuxThreshold method to make room for most restrictives lux placements
             elseif not hex:IsFloodplains(true) and not hex:IsTundraLand() then
                 if g_LUX_ON_FLAT_GRASS_LIST[resourceId] then
                     _Debug("Try force placement of lux g_LUX_ON_FLAT_GRASS_LIST ", resourceId, hex:PrintXY())
-                    self:TerraformSetFeature(hex, g_FEATURE_NONE)
-                    self:TerraformSetTerrain(hex, g_TERRAIN_TYPE_GRASS);
+                    self:TerraformSetFeature(hex, g_FEATURE_NONE, true)
+                    self:TerraformSetTerrain(hex, g_TERRAIN_TYPE_GRASS, true);
                 elseif g_LUX_ON_FLAT_PLAINS_LIST[resourceId] then
                     _Debug("Try force placement of lux g_LUX_ON_FLAT_PLAINS_LIST ", resourceId, hex:PrintXY())
-                    self:TerraformSetFeature(hex, g_FEATURE_NONE)
-                    self:TerraformSetTerrain(hex, g_TERRAIN_TYPE_PLAINS);
+                    self:TerraformSetFeature(hex, g_FEATURE_NONE, true)
+                    self:TerraformSetTerrain(hex, g_TERRAIN_TYPE_PLAINS, true);
                 elseif g_LUX_ON_FOREST_LIST[resourceId] then
                      _Debug("Try force placement of lux g_LUX_ON_FOREST_LIST ", resourceId, hex:PrintXY())
-                    self:TerraformSetFeature(hex, g_FEATURE_FOREST)
-                    self:TerraformSetTerrain(hex, g_TERRAIN_TYPE_GRASS);
+                    self:TerraformSetFeature(hex, g_FEATURE_FOREST, true)
+                    self:TerraformSetTerrain(hex, g_TERRAIN_TYPE_GRASS, true);
                 end
             end
         end

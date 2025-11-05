@@ -1112,9 +1112,6 @@ function SpawnBalancing:CheckInnerRingHighYieldsThreshold()
                     _Debug("CheckInnerRingHighYieldsThreshold : ring 2 forced relocation ", h2:PrintXY())
                     relocateLeft = relocateLeft - 1;
                     table.insert(ringModifiedTiles, h2);
-                    if wasTagged then
-                        h2:SetTaggedAsMinimum(true);
-                    end
                 end  
             end
         end  
