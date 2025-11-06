@@ -8,14 +8,14 @@
 		<Authors>BaNiPouZ, Talasta</Authors>
 		<SpecialThanks>Keride, Vodairo, BBG Team, Trad team : Rafael Pinheiro (PT), Onyxum (DE), Ybanca (FR)</SpecialThanks>
 		<CompatibleVersions>1.2,2.0</CompatibleVersions>
-		<Version>1.34</Version>
+		<Version>1.35</Version>
 	</Properties>
 	
 		<LocalizedText>
 		<Text id="LOC_BBM_TITLE">
-			<en_US>Better Balanced Map 1.34</en_US>
-			<fr_FR>Better Balanced Map 1.34</fr_FR>
-			<de_DE>Better Balanced Map 1.34</de_DE>
+			<en_US>Better Balanced Map 1.35</en_US>
+			<fr_FR>Better Balanced Map 1.35</fr_FR>
+			<de_DE>Better Balanced Map 1.35</de_DE>
 		</Text>
 		<Text id="LOC_BBM_TEASER">
 			<en_US>Balanced spawn placement location and yields.</en_US>
