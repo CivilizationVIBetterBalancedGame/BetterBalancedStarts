@@ -727,7 +727,6 @@ function SpawnBalancing:ApplyMinimalCoastalTiles()
             _Debug("Added a fish ring 2 or 3 ")
         end
     end
-
     self:GetCoastalScoreHex();
     _Debug("ApplyMinimalCoastalTiles DONE")
 end
@@ -1155,7 +1154,7 @@ function SpawnBalancing:GetCoastalScoreHex()
                     end
                 elseif hex.ResourceType == g_RESOURCE_TURTLES then
                     coastalScore = coastalScore + CoastalScoring.TURTLES_R2
-                    _Debug("FISH_R2 "..tostring(CoastalScoring.FISH_R2))
+                    _Debug("TURTLES_R2 "..tostring(CoastalScoring.TURTLES_R2))
                 elseif hex.ResourceType == g_RESOURCE_WHALES then
                     coastalScore = coastalScore + CoastalScoring.WHALES_R2
                     _Debug("WHALES_R2 "..tostring(CoastalScoring.WHALES_R2))
