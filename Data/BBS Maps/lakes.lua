@@ -8,6 +8,7 @@
 
 include "MapEnums"
 include "DW_MapUtilities"
+include "BBM_MapUtils"
 include "BBS_MountainsCliffs"
 include "RiversLakes"
 include "BBM_FeatureGenerator"
@@ -252,6 +253,12 @@ function GeneratePlotTypes(world_age)
 	end
 	plotTypes = ApplyTectonics(args, plotTypes);
 	plotTypes = AddLonelyMountains(plotTypes, mountainRatio);
+	
+	-- Add extra hills if option is enabled
+	if (MapConfiguration.GetValue("BBSExtraHills") == true) then
+		print("Extra Hills option enabled");
+		plotTypes = AddExtraHills(plotTypes);
+	end
 
 	return  plotTypes;
 end
