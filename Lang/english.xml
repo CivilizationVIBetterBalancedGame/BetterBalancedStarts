@@ -51,6 +51,12 @@
 		<Replace Tag="LOC_GAME_BBS_RIDGE_DESC" Language="en_US">
 			<Text>Control how formidable the mountain ranges are in the game</Text>
 		</Replace>
+		<Replace Tag="LOC_GAME_BBS_EXTRA_HILLS_NAME" Language="en_US">
+			<Text>Extra Hills</Text>
+		</Replace>
+		<Replace Tag="LOC_GAME_BBS_EXTRA_HILLS_DESC" Language="en_US">
+			<Text>Adds additional hills to the map for more strategic terrain variety and less flat landscapes.</Text>
+		</Replace>
 		<Replace Tag="BBS_RIDGE_NORMAL_NAME" Language="en_US">
 			<Text>Standard</Text>
 		</Replace>

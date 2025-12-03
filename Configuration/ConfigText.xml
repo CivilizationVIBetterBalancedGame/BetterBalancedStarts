@@ -94,11 +94,11 @@
 	<Replace Tag="LOC_GAME_BBS_TEMP_DESC" language="en">
 		<Text>Less Snow and less Desert than Firaxis defaults.</Text>
 	</Replace>
-	<Replace Tag="LOC_GAME_BBS_EXTRA_HILLS_NAME" language="en">
-		<Text>Hillier Lakes</Text>
+	<Replace Tag="LOC_GAME_BBS_EXTRA_HILLS_NAME" Language="en_US">
+		<Text>Extra Hills</Text>
 	</Replace>
-	<Replace Tag="LOC_GAME_BBS_EXTRA_HILLS_DESC" language="en">
-		<Text>Adds additional hills to the map after tectonics to create a less flat terrain with more strategic variety.</Text>
+	<Replace Tag="LOC_GAME_BBS_EXTRA_HILLS_DESC" Language="en_US">
+		<Text>Adds additional hills to the map for more strategic terrain variety and less flat landscapes.</Text>
 	</Replace>
 	<Replace Tag="LOC_MAPSIZE_ENORMOUS_NAME" Language="en_US">
 		  <Text>Enormous</Text>
