@@ -354,6 +354,7 @@ end
 
 -- Main method to get valid spawns tiles depending on civ bias
 function CivilizationAssignSpawn:GetValidSpawnsInHexList(BBM_HexMap, listHex)
+    local temperature = MapConfiguration.GetValue("temperature")
     local validTiles = {}
     local isTerraMap = BBM_HexMap.mapScript == MapScripts.MAP_TERRA;
     for _, hex in pairs(listHex) do
@@ -363,10 +364,11 @@ function CivilizationAssignSpawn:GetValidSpawnsInHexList(BBM_HexMap, listHex)
         if RTScondition and terraCondition and hex.IsMajorSpawnable and self:ValidWalkableTiles(hex) and self:ValidTundraDensity(hex) then --pre calculation of technical spawns
             if self.IsTundraBias == false and self.IsDesertBias == false and hex:IsNextToOasis() == false then
                 -- If Maya ignore fresh water, it will be placed last because there is too much valid tiles
-                if self.IsCoastalBias and hex.IsCoastal and hex:IsTundraLand() == false then
+                -- Temp 5 = tundra only conditions
+                if self.IsCoastalBias and hex.IsCoastal and (hex:IsTundraLand() == false or temperature == 5) then
                     -- Fresh water is favored on score calculations
                     table.insert(validTiles, hex);
-                elseif self.IsCoastalBias == false and (hex.IsFreshWater or hex.IsCoastal) and hex:IsTundraLand() == false then
+                elseif self.IsCoastalBias == false and (hex.IsFreshWater or hex.IsCoastal) and (hex:IsTundraLand() == false or temperature == 5) then
                     table.insert(validTiles, hex);
                 end
             elseif self.IsTundraBias and hex:IsTundraLand() and hex.IsFreshWater then
@@ -377,7 +379,6 @@ function CivilizationAssignSpawn:GetValidSpawnsInHexList(BBM_HexMap, listHex)
             end
         end
     end
-
     return validTiles;
 end
 
@@ -486,6 +487,11 @@ function CivilizationAssignSpawn:ValidWalkableTiles(hex)
 end
 
 function CivilizationAssignSpawn:ValidTundraDensity(hex)
+    -- On tundra only maps, ignore tundra density limitations
+    local temperature = MapConfiguration.GetValue("temperature")
+    if temperature == 5 then
+        return true
+    end
     if self.IsTundraBias and hex:IsTundraLand() then
         return true;
     end
@@ -599,6 +605,7 @@ end
 
 -- Calculate the hex score for a civ, taking account for the bias score + extra parameters like fresh water/yield etc (to determine)
 function CivilizationAssignSpawn:ComputeHexScoreCiv(hex)
+    local temperature = MapConfiguration.GetValue("temperature")
     local score = 100
 
     -------------------
@@ -630,9 +637,9 @@ function CivilizationAssignSpawn:ComputeHexScoreCiv(hex)
     -------------------
     -- 4 - Tundra score - Discourage from spawning too close to tundra, reducing the score for non tundra civ (unspawnable after a certain threshold)
     -------------------
-    -- Desert not calculated because future terraforming
+    -- Desert not calculated because future terraforming - No malus in tundra only map
     local tundraScore = math.floor(hex.TundraScore / 4 + 0.5) * 10;
-    if self.IsTundraBias == false then
+    if self.IsTundraBias == false and temperature ~= 5 then
         score = score - tundraScore;
     end
     -------------------

@@ -166,6 +166,9 @@
 		<Row Domain="OldWorldStart" Value="OLD_WORLD" 	Name="Old World Only" 			Description="All civs start in 'old world'." 			SortIndex="10"/>
 		<Row Domain="OldWorldStart" Value="ANYWHERE" 	Name="Start Anywhere" 			Description="Civs start anywhere in the world." 		SortIndex="20"/>
 
+		<Row Domain="MapTemperature" Value="MAP_TEMPERATURE_EXTRA_COLD" Name="LOC_MAP_TEMPERATURE_EXTRA_COLD_NAME" Description="LOC_MAP_TEMPERATURE_EXTRA_COLD_DESCRIPTION" SortIndex="35"/>
+		<Row Domain="Temperature" Value="5" Name="LOC_MAP_TEMPERATURE_EXTRA_COLD_NAME" Description="LOC_MAP_TEMPERATURE_EXTRA_COLD_DESCRIPTION" SortIndex="35"/>	
+
 		<Row Domain="BBM_Team_Spawn" Value="0" Name="BBM_Team_Spawn_NORMAL_NAME" Description="BBM_Team_Spawn_NORMAL_DESC" SortIndex="10"/>
 		<Row Domain="BBM_Team_Spawn" Value="1" Name="BBM_Team_Spawn_EW_NAME" Description="BBM_Team_Spawn_EW_DESC" SortIndex="20"/>
 

@@ -705,5 +705,11 @@
 		<Replace Tag="LOC_PEDIA_FEATURES_PAGE_FEATURE_WULINGYUAN_CHAPTER_HISTORY_PARA_1" Language="en_US">
 			<Text>Wulingyuan is a scenic and historical site in south-central China. It is noted for more than 3,000 quartzite sandstone pillars and peaks, many over 200 meters in height, along with ravines, gorges, pools, lakes, rivers and waterfalls. It features 40 caves and two natural bridges, Xianrenqiao (Bridge of the Immortals) and Tianqiashengkong (Bridge Across the Sky).</Text>
 		</Replace>
+		<Replace Tag="LOC_MAP_TEMPERATURE_EXTRA_COLD_NAME" Language="en_US">
+		  <Text>Only Tundra</Text>
+		</Replace>
+		<Replace Tag="LOC_MAP_TEMPERATURE_EXTRA_COLD_DESCRIPTION" Language="en_US">
+			<Text>The map is completely covered by tundra</Text>
+		</Replace>
 	</LocalizedText>
 </GameData>

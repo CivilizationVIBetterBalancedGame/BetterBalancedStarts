@@ -712,5 +712,11 @@
 		<Replace Tag="LOC_PEDIA_FEATURES_PAGE_FEATURE_WULINGYUAN_CHAPTER_HISTORY_PARA_1" Language="fr_FR">
 			<Text>Wulingyuan est un site pittoresque et historique du centre-sud de la Chine. Il est connu pour plus de 3000 piliers et sommets en grès quartzite, dont beaucoup dépassent 200 mètres de haut, ainsi que des ravins, des gorges, des piscines, des lacs, des rivières et des cascades. Il comprend 40 grottes et deux ponts naturels, Xianrenqiao (Pont des Immortels) et Tianqiashengkong (Pont à travers le ciel).</Text>
 		</Replace>
+		<Replace Tag="LOC_MAP_TEMPERATURE_EXTRA_COLD_NAME" Language="en_US">
+		  <Text>Tundra uniquement</Text>
+		</Replace>
+		<Replace Tag="LOC_MAP_TEMPERATURE_EXTRA_COLD_DESCRIPTION" Language="en_US">
+			<Text>La carte est entièrement recouverte de tundra</Text>
+		</Replace>
 	</LocalizedText>
 </GameData>

@@ -1004,6 +1004,10 @@ function HexMap:CalculateWalkableHexInRange()
 end
 
 function HexMap:CanHaveJungle(hex)
+    -- Tundra only map exception
+    if MapConfiguration.GetValue("temperature") == 5 then
+        return false
+    end
     -- Rainforest on Earth mostly in Tropics, so keep in narrow band around Equator
     local equator = math.ceil(self.height / 2);
     local jungleBottom = equator - (20 * self.height / 180);

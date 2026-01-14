@@ -39,22 +39,22 @@ end
 
 ------------------------------------------------------------- BBS ----------------------------
 function BBM_AssignStartingPlots.Create(args)
-    bbs_game_config = {
+    bbm_game_config = {
         BBM_Team_Spawn = MapConfiguration.GetValue("BBM_Team_Spawn"),
-        BBS_MAP_SCRIPT = MapConfiguration.GetValue("MAP_SCRIPT"),
-        BBS_MAP_SIZE = Map.GetMapSize(),
-        BBS_GAME_SYNC_SEED = GameConfiguration.GetValue("GAME_SYNC_RANDOM_SEED"),
-        BBS_MULTIPLAYER_GAME = GameConfiguration.IsAnyMultiplayer(),
-        BBS_GAME_SEED = MapConfiguration.GetValue("RANDOM_SEED"),
-        BBS_BASE_TEMPERATURE = MapConfiguration.GetValue("temperature"),
-        BBS_BOOL_TEMPERATURE = GameConfiguration.GetValue("BBStemp"),
-        BBS_RAINFALL = MapConfiguration.GetValue("rainfall"),
-        BBS_WORLD_AGE = MapConfiguration.GetValue("world_age"),
-        BBS_RIDGE = MapConfiguration.GetValue("BBSRidge"),
-        BBS_SEA_LEVEL = MapConfiguration.GetValue("sea_level"),
-        BBS_STRATEGIC_RESOURCES = MapConfiguration.GetValue("BBSStratRes"),
-        BBS_BASE_RESOURCES = MapConfiguration.GetValue("resources"),
-        BBS_START = MapConfiguration.GetValue("start"),
+        BBM_MAP_SCRIPT = MapConfiguration.GetValue("MAP_SCRIPT"),
+        BBM_MAP_SIZE = Map.GetMapSize(),
+        BBM_GAME_SYNC_SEED = GameConfiguration.GetValue("GAME_SYNC_RANDOM_SEED"),
+        BBM_MULTIPLAYER_GAME = GameConfiguration.IsAnyMultiplayer(),
+        BBM_GAME_SEED = MapConfiguration.GetValue("RANDOM_SEED"),
+        BBM_BASE_TEMPERATURE = MapConfiguration.GetValue("temperature"),
+        BBM_BOOL_TEMPERATURE = GameConfiguration.GetValue("BBStemp"),
+        BBM_RAINFALL = MapConfiguration.GetValue("rainfall"),
+        BBM_WORLD_AGE = MapConfiguration.GetValue("world_age"),
+        BBM_RIDGE = MapConfiguration.GetValue("BBSRidge"),
+        BBM_SEA_LEVEL = MapConfiguration.GetValue("sea_level"),
+        BBM_STRATEGIC_RESOURCES = MapConfiguration.GetValue("BBSStratRes"),
+        BBM_BASE_RESOURCES = MapConfiguration.GetValue("resources"),
+        BBM_START = MapConfiguration.GetValue("start"),
         BBM_MIN_ATTEMPTS = MapConfiguration.GetValue("BBMMinAttempts"),
         BBM_MIN_DISTANCE = MapConfiguration.GetValue("BBMMinDistance")
     }
@@ -153,7 +153,7 @@ function BBM_AssignStartingPlots.Create(args)
 
     instance:__InitStartingData()
 
-    if Contains(MapScripts, bbs_game_config.BBS_MAP_SCRIPT) == false then
+    if Contains(MapScripts, bbm_game_config.BBM_MAP_SCRIPT) == false then
         print("Map is not supported by BBM ' Firaxis placement will be used");
         Game:SetProperty("BBM_SUPPORTEDMAP", false)
         CallFiraxisPlacement(args);
@@ -231,7 +231,7 @@ function BBM_AssignStartingPlots.Create(args)
     local BBS_AssignTries = 0;
     local BBS_Success = false;
     local TriesMajorSpawnableLeft = {};
-    while BBS_Success == false and BBS_AssignTries < bbs_game_config.BBM_MIN_ATTEMPTS do
+    while BBS_Success == false and BBS_AssignTries < bbm_game_config.BBM_MIN_ATTEMPTS do
         BBS_AssignTries = BBS_AssignTries + 1;
         -- Place all civs and fill BBM_HexMap.tempMajorSpawns
         local placementOK = instance:__PlaceMajorCivs(BBM_Civilisations, BBM_HexMap, BBS_AssignTries);
@@ -344,15 +344,15 @@ function BBM_AssignStartingPlots.Create(args)
         
         -- Check if we're using one of the maps that should use quadrant distribution
         local useQuadrantDistribution = (
-            bbs_game_config.BBS_MAP_SCRIPT == MapScripts.MAP_PANGAEA_ULTIMA or
-            bbs_game_config.BBS_MAP_SCRIPT == MapScripts.MAP_HIGHLANDS or
-            bbs_game_config.BBS_MAP_SCRIPT == MapScripts.MAP_RICH_HIGHLANDS or
-            bbs_game_config.BBS_MAP_SCRIPT == MapScripts.MAP_LAKES
+            bbm_game_config.BBM_MAP_SCRIPT == MapScripts.MAP_PANGAEA_ULTIMA or
+            bbm_game_config.BBM_MAP_SCRIPT == MapScripts.MAP_HIGHLANDS or
+            bbm_game_config.BBM_MAP_SCRIPT == MapScripts.MAP_RICH_HIGHLANDS or
+            bbm_game_config.BBM_MAP_SCRIPT == MapScripts.MAP_LAKES
         )
         
         -- Place city states
         if useQuadrantDistribution then
-            _Debug("Using quadrant distribution for city states on " .. bbs_game_config.BBS_MAP_SCRIPT)
+            _Debug("Using quadrant distribution for city states on " .. bbm_game_config.BBM_MAP_SCRIPT)
             -- Distribute city states across quadrants
             DistributeCityStatesAcrossRegions(BBM_HexMap, BBS_Citystates)
         else
@@ -400,7 +400,7 @@ function BBM_AssignStartingPlots:__InitStartingData()
     _Debug("Start parsing map",  os.date("%c"))
     -- Datas stored in HexMap object
     local width, height = Map.GetGridSize();
-    BBM_HexMap = HexMap.new(width, height, bbs_game_config.BBS_MAP_SCRIPT);
+    BBM_HexMap = HexMap.new(width, height, bbm_game_config.BBM_MAP_SCRIPT);
 
     --BBM_HexMap:PrintHexSpawnableMap();
     BBM_HexMap:PrintHexPeninsuleMap();

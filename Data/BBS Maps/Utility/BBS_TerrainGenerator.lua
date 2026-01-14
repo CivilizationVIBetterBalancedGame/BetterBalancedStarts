@@ -46,7 +46,13 @@ function BBS_GenerateTerrainTypes(plotTypes, iW, iH, iFlags, bNoCoastalMountains
 	local fDesertTopLatitude = 0.6; -- was 0.56 should be 0.6 to make the map symmetrical
 
 	-- Adjust user's Temperature selection.
-	if temperature > 2.5 then -- World Temperature is Cool.
+	if temperature == 5 then
+		iDesertPercent = 0;
+		fTundraLatitude = 0;
+		iPlainsPercent = 0;
+		fDesertTopLatitude = 0;
+		fGrassLatitude = 0;
+	elseif temperature > 2.5 then -- World Temperature is Cool.
 		iDesertPercent = iDesertPercent - desert_shift;
 		fTundraLatitude = fTundraLatitude - (temperature_shift * 1.5);
 		iPlainsPercent = iPlainsPercent + plains_shift;
