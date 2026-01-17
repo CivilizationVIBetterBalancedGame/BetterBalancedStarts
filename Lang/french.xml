@@ -718,5 +718,11 @@
 		<Replace Tag="LOC_MAP_TEMPERATURE_EXTRA_COLD_DESCRIPTION" Language="en_US">
 			<Text>La carte est entièrement recouverte de tundra</Text>
 		</Replace>
+		<Replace Tag="LOC_GAME_BBM_EXTRA_HILLS_NAME" language="en">
+			<Text>Lacs vallonnés</Text>
+		</Replace>
+		<Replace Tag="LOC_GAME_BBM_EXTRA_HILLS_DESC" language="en">
+			<Text>Ajoute des collines supplémentaires pour créer un terrain moins plat avec plus de stratégies.</Text>
+		</Replace>
 	</LocalizedText>
 </GameData>
