@@ -513,29 +513,31 @@ function SpawnBalancing:AddHighYieldFromStandard()
     AddToTable(innerRingStandard, self.RingTables[2].STANDARD_YIELD_TILES);
     innerRingStandard = GetShuffledCopyOfTable(innerRingStandard);
     for _, hex in ipairs(innerRingStandard) do
-        local ringHex = 2;
-        if Contains(self.RingTables[1].HexRings, hex) then
-            ringHex = 1;
-        end
-        -- Temp change hex not tagged as minimum
-        local wasTagged = false;
-        if hex.IsTaggedAsMinimum then
-            hex:SetTaggedAsMinimum(false);
-            wasTagged = true;
-        end
-        local canAddLux = false
-        if self.InnerRingLuxCount < self.MaxLuxInnerRingThreshold then
-            canAddLux = true;
-        end    
-        -- Try to terraform a standard tagged tile
-        if self:TerraformHex(hex, ringHex, TerraformType[13], true, canAddLux) then
-            _Debug("AddHighYieldFromStandard added high yield on ", hex:PrintXY());
-            if wasTagged then
-                hex:SetTaggedAsMinimum(true);
+        if not hex.IsFreshWater and not hex.IsCoastal then
+            local ringHex = 2;
+            if Contains(self.RingTables[1].HexRings, hex) then
+                ringHex = 1;
             end
-            return hex;
-        elseif wasTagged then
-            hex:SetTaggedAsMinimum(true);            
+            -- Temp change hex not tagged as minimum
+            local wasTagged = false;
+            if hex.IsTaggedAsMinimum then
+                hex:SetTaggedAsMinimum(false);
+                wasTagged = true;
+            end
+            local canAddLux = false
+            if self.InnerRingLuxCount < self.MaxLuxInnerRingThreshold then
+                canAddLux = true;
+            end    
+            -- Try to terraform a standard tagged tile
+            if self:TerraformHex(hex, ringHex, TerraformType[13], true, canAddLux) then
+                _Debug("AddHighYieldFromStandard added high yield on ", hex:PrintXY());
+                if wasTagged then
+                    hex:SetTaggedAsMinimum(true);
+                end
+                return hex;
+            elseif wasTagged then
+                hex:SetTaggedAsMinimum(true);            
+            end
         end
     end
     return nil;
@@ -1028,6 +1030,7 @@ function SpawnBalancing:CheckHighYieldsThreshold()
     self:CheckInnerRingHighYieldsThreshold()
     -- Extra moves high yields on non minimum on r3
     local ring3HighYields = {};
+    local ringModifiedTiles = {};
     AddToTable(ring3HighYields, self.RingTables[3].HIGH_YIELD_TILES);
     AddToTable(ring3HighYields, self.RingTables[3].HIGH_EXTRA_YIELDS);
     local leftR3HighYields = math.min(0, #ring3HighYields - self.MaxHighYieldR3Threshold)
