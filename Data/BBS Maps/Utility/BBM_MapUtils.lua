@@ -2453,11 +2453,7 @@ function HexMap:TerraformTo4YieldsTundra(hex, garanteed22)
     local rng = TerrainBuilder.GetRandomNumber(100, "Random resource");
     _Debug("TerraformTo4YieldsTundra - added hills ", hex:PrintXY());
     self:TerraformSetTerrain(hex, g_TERRAIN_TYPE_TUNDRA_HILLS);
-    if rng <= 10 then
-        _Debug("TerraformTo4YieldsTundra - added deer hills forest ", rng, hex:PrintXY())
-        --self:TerraformSetFeature(hex, g_FEATURE_FOREST, true);
-        return self:TerraformSetResource(hex, g_RESOURCE_DEER, true);
-    elseif rng <= 25 then
+    if rng <= 25 then
         _Debug("TerraformTo4YieldsTundra - added deer hills ", rng, hex:PrintXY())
         return self:TerraformSetResource(hex, g_RESOURCE_DEER, true);
     elseif rng <= 40 then
@@ -2466,7 +2462,7 @@ function HexMap:TerraformTo4YieldsTundra(hex, garanteed22)
         self:TerraformSetResource(hex, g_RESOURCE_DEER, true);
         return self:TerraformSetFeature(hex, g_FEATURE_FOREST, true);
     else
-        _Debug("TerraformTo4YieldsTundra - added forest ", rng, hex:PrintXY())
+        _Debug("TerraformTo4YieldsTundra - added hills forest ", rng, hex:PrintXY())
         return self:TerraformSetFeature(hex, g_FEATURE_FOREST, true);
     end
 end
@@ -3185,8 +3181,10 @@ function HexMap:CleanGlobalHighYieldsOnFresh()
 end
 
 function HexMap:CleanHighYieldsOnFresh(hex)
-    local nextToWater = hex.IsFreshWater or hex.IsCoastal
-    if hex ~= nil and hex.Food >= 4 and nextToWater and g_RESOURCES_HIGHFOOD[hex.ResourceType] then
+    -- 
+    local nextToWater = hex.IsFreshWater or hex.IsCoastal or hex:IsNextToLake()
+    print("CleanHighYieldsOnFresh - ", nextToWater, hex.IsFreshWater, hex.IsCoastal, hex.Food, g_RESOURCES_HIGHFOOD[hex.ResourceType])
+    if hex.Food >= 4 and nextToWater and g_RESOURCES_HIGHFOOD[hex.ResourceType] then
         _Debug("CleanHighYieldsOnFresh found lux 4+ food in ", hex:PrintXY())
         if hex.TerrainType == g_TERRAIN_TYPE_GRASS then
             self:TerraformSetTerrain(hex, g_TERRAIN_TYPE_PLAINS);
@@ -3202,7 +3200,7 @@ function HexMap:CleanHighYieldsOnFresh(hex)
             self:TerraformSetResource(hex, g_RESOURCE_NONE, false);
         end
         --
-    elseif hex ~= nil and hex.Prod >= 3 and nextToWater and g_RESOURCES_HIGHPROD[hex.ResourceType] then
+    elseif hex.Prod >= 3 and nextToWater and g_RESOURCES_HIGHPROD[hex.ResourceType] then
         _Debug("CleanHighYieldsOnFresh found 3+ prod settle on ", hex:PrintXY());
         self:TerraformToFlat(hex, false);
         _Debug("CleanHighYieldsOnFresh done for hex ", hex:PrintXY())
