@@ -712,7 +712,7 @@
 			<Text>The map is completely covered by tundra</Text>
 		</Replace>
 		<Replace Tag="LOC_GAME_BBM_EXTRA_HILLS_NAME" language="en">
-			<Text>Hillier Lakes</Text>
+			<Text>Extra hills</Text>
 		</Replace>
 		<Replace Tag="LOC_GAME_BBM_EXTRA_HILLS_DESC" language="en">
 			<Text>Adds additional hills to the map after tectonics to create a less flat terrain with more strategic variety.</Text>

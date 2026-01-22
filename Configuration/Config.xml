@@ -40,17 +40,20 @@
 		<Row Key1="Map" Key2="Continents.lua" ParameterId="AutoRemap" Name="LOC_GAME_SPAWN_REMAP" Description="LOC_GAME_SPAWN_REMAP_DESC" Domain="bool" DefaultValue="0" ConfigurationGroup="Game" ConfigurationId="AutoRemap" GroupId="AdvancedOptions" Visible="0" SortIndex="2051"/>
 		<Row Key1="Map" Key2="Continents.lua" ParameterId="BBStemp" Name="LOC_GAME_BBS_TEMP" Description="LOC_GAME_BBS_TEMP_DESC" Domain="bool" DefaultValue="1" ConfigurationGroup="Game" ConfigurationId="BBStemp" GroupId="AdvancedOptions" Visible="0" SortIndex="2052"/>
 		<Row Key1="Map" Key2="Continents.lua" ParameterId="BBM_Team_Spawn" Name="LOC_BBM_Team_Spawn_NAME" Description="LOC_BBM_Team_Spawn_DESC" Domain="BBM_Team_Spawn" DefaultValue="0" ConfigurationGroup="Map" ConfigurationId="BBM_Team_Spawn" GroupId="MapOptions" Visible="1" SortIndex="2053"/>
+		<Row Key1="Map" Key2="Continents.lua" ParameterId="BBMExtraHills" Name="LOC_GAME_BBM_EXTRA_HILLS_NAME" Description="LOC_GAME_BBM_EXTRA_HILLS_DESC" Domain="bool" DefaultValue="0" ConfigurationGroup="Map" ConfigurationId="BBMExtraHills" GroupId="MapOptions" SortIndex="2054"/>	
 
 		<Row Key1="Map" Key2="Continents_Islands.lua" ParameterId="Continents_IslandsMapName" 		Name="MapName" Description="" Domain="text" DefaultValue="Continents_Islands" 		ConfigurationGroup="Map" ConfigurationId="MapName" GroupId="MapOptions" Visible="0" SortIndex="2010"/>
 		<Row Key1="Map" Key2="Continents_Islands.lua" ParameterId="SpawnRecalculation" Name="LOC_GAME_SPAWN_RECALCULATION" Description="LOC_GAME_SPAWN_RECALCULATION_DESC" Domain="bool" DefaultValue="1" ConfigurationGroup="Game" ConfigurationId="SpawnRecalculation" GroupId="BBSOptions" SortIndex="2050"/>
 		<Row Key1="Map" Key2="Continents_Islands.lua" ParameterId="AutoRemap" Name="LOC_GAME_SPAWN_REMAP" Description="LOC_GAME_SPAWN_REMAP_DESC" Domain="bool" DefaultValue="0" ConfigurationGroup="Game" ConfigurationId="AutoRemap" GroupId="AdvancedOptions" Visible="0" SortIndex="2051"/>
 		<Row Key1="Map" Key2="Continents_Islands.lua" ParameterId="BBStemp" Name="LOC_GAME_BBS_TEMP" Description="LOC_GAME_BBS_TEMP_DESC" Domain="bool" DefaultValue="1" ConfigurationGroup="Game" ConfigurationId="BBStemp" GroupId="AdvancedOptions" Visible="0" SortIndex="2052"/>
-		
+		<Row Key1="Map" Key2="Continents_Islands.lua" ParameterId="BBMExtraHills" Name="LOC_GAME_BBM_EXTRA_HILLS_NAME" Description="LOC_GAME_BBM_EXTRA_HILLS_DESC" Domain="bool" DefaultValue="0" ConfigurationGroup="Map" ConfigurationId="BBMExtraHills" GroupId="MapOptions" SortIndex="2053"/>	
+
 		<Row Key1="Map" Key2="Fractal.lua" ParameterId="FractalMapName" 		Name="MapName" Description="" Domain="text" DefaultValue="Fractal" 		ConfigurationGroup="Map" ConfigurationId="MapName" GroupId="MapOptions" Visible="0" SortIndex="2010"/>
 		<Row Key1="Map" Key2="Fractal.lua" ParameterId="SpawnRecalculation" Name="LOC_GAME_SPAWN_RECALCULATION" Description="LOC_GAME_SPAWN_RECALCULATION_DESC" Domain="bool" DefaultValue="1" ConfigurationGroup="Game" ConfigurationId="SpawnRecalculation" GroupId="BBSOptions" SortIndex="2050"/>
 		<Row Key1="Map" Key2="Fractal.lua" ParameterId="AutoRemap" Name="LOC_GAME_SPAWN_REMAP" Description="LOC_GAME_SPAWN_REMAP_DESC" Domain="bool" DefaultValue="0" ConfigurationGroup="Game" ConfigurationId="AutoRemap" GroupId="AdvancedOptions" Visible="0" SortIndex="2051"/>
 		<Row Key1="Map" Key2="Fractal.lua" ParameterId="BBStemp" Name="LOC_GAME_BBS_TEMP" Description="LOC_GAME_BBS_TEMP_DESC" Domain="bool" DefaultValue="1" ConfigurationGroup="Game" ConfigurationId="BBStemp" GroupId="AdvancedOptions" Visible="0" SortIndex="2052"/>
-		
+		<Row Key1="Map" Key2="Fractal.lua" ParameterId="BBMExtraHills" Name="LOC_GAME_BBM_EXTRA_HILLS_NAME" Description="LOC_GAME_BBM_EXTRA_HILLS_DESC" Domain="bool" DefaultValue="0" ConfigurationGroup="Map" ConfigurationId="BBMExtraHills" GroupId="MapOptions" SortIndex="2053"/>	
+
 		<Row Key1="Map" Key2="Highlands_XP2.lua" ParameterId="Highlands_XP2MapName" 		Name="MapName" Description="" Domain="text" DefaultValue="Highlands_XP2" 		ConfigurationGroup="Map" ConfigurationId="MapName" GroupId="MapOptions" Visible="0" SortIndex="2010"/>
 		<Row Key1="Map" Key2="Highlands_XP2.lua" ParameterId="SpawnRecalculation" Name="LOC_GAME_SPAWN_RECALCULATION" Description="LOC_GAME_SPAWN_RECALCULATION_DESC" Domain="bool" DefaultValue="1" ConfigurationGroup="Game" ConfigurationId="SpawnRecalculation" GroupId="BBSOptions" SortIndex="2050"/>
 		<Row Key1="Map" Key2="Highlands_XP2.lua" ParameterId="AutoRemap" Name="LOC_GAME_SPAWN_REMAP" Description="LOC_GAME_SPAWN_REMAP_DESC" Domain="bool" DefaultValue="0" ConfigurationGroup="Game" ConfigurationId="AutoRemap" GroupId="AdvancedOptions" Visible="0" SortIndex="2051"/>
@@ -68,18 +71,20 @@
 		<Row Key1="Map" Key2="Wetlands_XP2.lua" ParameterId="SpawnRecalculation" Name="LOC_GAME_SPAWN_RECALCULATION" Description="LOC_GAME_SPAWN_RECALCULATION_DESC" Domain="bool" DefaultValue="1" ConfigurationGroup="Game" ConfigurationId="SpawnRecalculation" GroupId="BBSOptions" SortIndex="2050"/>
 		<Row Key1="Map" Key2="Wetlands_XP2.lua" ParameterId="AutoRemap" Name="LOC_GAME_SPAWN_REMAP" Description="LOC_GAME_SPAWN_REMAP_DESC" Domain="bool" DefaultValue="0" ConfigurationGroup="Game" ConfigurationId="AutoRemap" GroupId="AdvancedOptions" Visible="0" SortIndex="2051"/>
 		<Row Key1="Map" Key2="Wetlands_XP2.lua" ParameterId="BBStemp" Name="LOC_GAME_BBS_TEMP" Description="LOC_GAME_BBS_TEMP_DESC" Domain="bool" DefaultValue="1" ConfigurationGroup="Game" ConfigurationId="BBStemp" GroupId="AdvancedOptions" Visible="0" SortIndex="2052"/>
+		<Row Key1="Map" Key2="Wetlands_XP2.lua" ParameterId="BBMExtraHills" Name="LOC_GAME_BBM_EXTRA_HILLS_NAME" Description="LOC_GAME_BBM_EXTRA_HILLS_DESC" Domain="bool" DefaultValue="0" ConfigurationGroup="Map" ConfigurationId="BBMExtraHills" GroupId="MapOptions" SortIndex="2053"/>	
 
 		<Row Key1="Map" Key2="Lakes.lua" ParameterId="LakesMapName" 		Name="MapName" Description="" Domain="text" DefaultValue="Lakes" 		ConfigurationGroup="Map" ConfigurationId="MapName" GroupId="MapOptions" Visible="0" SortIndex="2010"/>
 		<Row Key1="Map" Key2="Lakes.lua" ParameterId="SpawnRecalculation" Name="LOC_GAME_SPAWN_RECALCULATION" Description="LOC_GAME_SPAWN_RECALCULATION_DESC" Domain="bool" DefaultValue="1" ConfigurationGroup="Game" ConfigurationId="SpawnRecalculation" GroupId="BBSOptions" SortIndex="2050"/>
 		<Row Key1="Map" Key2="Lakes.lua" ParameterId="AutoRemap" Name="LOC_GAME_SPAWN_REMAP" Description="LOC_GAME_SPAWN_REMAP_DESC" Domain="bool" DefaultValue="0" ConfigurationGroup="Game" ConfigurationId="AutoRemap" GroupId="AdvancedOptions" Visible="0" SortIndex="2051"/>
 		<Row Key1="Map" Key2="Lakes.lua" ParameterId="BBStemp" Name="LOC_GAME_BBS_TEMP" Description="LOC_GAME_BBS_TEMP_DESC" Domain="bool" DefaultValue="1" ConfigurationGroup="Game" ConfigurationId="BBStemp" GroupId="AdvancedOptions" Visible="0" SortIndex="2052"/>
-		<Row Key1="Map" Key2="Lakes.lua" ParameterId="BBSExtraHills" Name="LOC_GAME_BBM_EXTRA_HILLS_NAME" Description="LOC_GAME_BBM_EXTRA_HILLS_DESC" Domain="bool" DefaultValue="0" ConfigurationGroup="Map" ConfigurationId="BBSExtraHills" GroupId="MapOptions" SortIndex="2053"/>
+		<Row Key1="Map" Key2="Lakes.lua" ParameterId="BBMExtraHills" Name="LOC_GAME_BBM_EXTRA_HILLS_NAME" Description="LOC_GAME_BBM_EXTRA_HILLS_DESC" Domain="bool" DefaultValue="0" ConfigurationGroup="Map" ConfigurationId="BBMExtraHills" GroupId="MapOptions" SortIndex="2053"/>
 		
 		<Row Key1="Map" Key2="InlandSea.lua" ParameterId="InlandSeaMapName" 		Name="MapName" Description="" Domain="text" DefaultValue="InlandSea" 		ConfigurationGroup="Map" ConfigurationId="MapName" GroupId="MapOptions" Visible="0" SortIndex="2010"/>
 		<Row Key1="Map" Key2="InlandSea.lua" ParameterId="SpawnRecalculation" Name="LOC_GAME_SPAWN_RECALCULATION" Description="LOC_GAME_SPAWN_RECALCULATION_DESC" Domain="bool" DefaultValue="1" ConfigurationGroup="Game" ConfigurationId="SpawnRecalculation" GroupId="BBSOptions" SortIndex="2050"/>
 		<Row Key1="Map" Key2="InlandSea.lua" ParameterId="AutoRemap" Name="LOC_GAME_SPAWN_REMAP" Description="LOC_GAME_SPAWN_REMAP_DESC" Domain="bool" DefaultValue="0" ConfigurationGroup="Game" ConfigurationId="AutoRemap" GroupId="AdvancedOptions" Visible="0" SortIndex="2051"/>
 		<Row Key1="Map" Key2="InlandSea.lua" ParameterId="BBStemp" Name="LOC_GAME_BBS_TEMP" Description="LOC_GAME_BBS_TEMP_DESC" Domain="bool" DefaultValue="1" ConfigurationGroup="Game" ConfigurationId="BBStemp" GroupId="AdvancedOptions" Visible="0" SortIndex="2052"/>
 		<Row Key1="Map" Key2="InlandSea.lua" ParameterId="BBM_Team_Spawn" Name="LOC_BBM_Team_Spawn_NAME" Description="LOC_BBM_Team_Spawn_DESC" Domain="BBM_Team_Spawn" DefaultValue="0" ConfigurationGroup="Map" ConfigurationId="BBM_Team_Spawn" GroupId="MapOptions" Visible="1" Hash="0" SortIndex="2053"/>
+		<Row Key1="Map" Key2="InlandSea.lua" ParameterId="BBMExtraHills" Name="LOC_GAME_BBM_EXTRA_HILLS_NAME" Description="LOC_GAME_BBM_EXTRA_HILLS_DESC" Domain="bool" DefaultValue="0" ConfigurationGroup="Map" ConfigurationId="BBMExtraHills" GroupId="MapOptions" SortIndex="2054"/>
 
 
 		<Row Key1="Map" Key2="Island_Plates.lua" ParameterId="Island_PlatesMapName" 		Name="MapName" Description="" Domain="text" DefaultValue="Island_Plates" 		ConfigurationGroup="Map" ConfigurationId="MapName" GroupId="MapOptions" Visible="0" SortIndex="2010"/>
@@ -93,19 +98,21 @@
 		<Row Key1="Map" Key2="Pangaea.lua" ParameterId="AutoRemap" Name="LOC_GAME_SPAWN_REMAP" Description="LOC_GAME_SPAWN_REMAP_DESC" Domain="bool" DefaultValue="0" ConfigurationGroup="Game" ConfigurationId="AutoRemap" GroupId="AdvancedOptions" Visible="0" SortIndex="2051"/>
 		<Row Key1="Map" Key2="Pangaea.lua" ParameterId="BBStemp" Name="LOC_GAME_BBS_TEMP" Description="LOC_GAME_BBS_TEMP_DESC" Domain="bool" DefaultValue="1" ConfigurationGroup="Game" ConfigurationId="BBStemp" GroupId="AdvancedOptions" Visible="0" SortIndex="2052"/>
 		<Row Key1="Map" Key2="Pangaea.lua" ParameterId="BBM_Team_Spawn" Name="LOC_BBM_Team_Spawn_NAME" Description="LOC_BBM_Team_Spawn_DESC" Domain="BBM_Team_Spawn" DefaultValue="0" ConfigurationGroup="Map" ConfigurationId="BBM_Team_Spawn" GroupId="MapOptions" Visible="1" Hash="0" SortIndex="2053"/>
+		<Row Key1="Map" Key2="Pangaea.lua" ParameterId="BBMExtraHills" Name="LOC_GAME_BBM_EXTRA_HILLS_NAME" Description="LOC_GAME_BBM_EXTRA_HILLS_DESC" Domain="bool" DefaultValue="0" ConfigurationGroup="Map" ConfigurationId="BBMExtraHills" GroupId="MapOptions" SortIndex="2054"/>
 
 
 		<Row Key1="Map" Key2="Primordial.lua" ParameterId="PrimordialMapName" 		Name="MapName" Description="" Domain="text" DefaultValue="Primordial" 		ConfigurationGroup="Map" ConfigurationId="MapName" GroupId="MapOptions" Visible="0" SortIndex="2010"/>
 		<Row Key1="Map" Key2="Primordial.lua" ParameterId="SpawnRecalculation" Name="LOC_GAME_SPAWN_RECALCULATION" Description="LOC_GAME_SPAWN_RECALCULATION_DESC" Domain="bool" DefaultValue="1" ConfigurationGroup="Game" ConfigurationId="SpawnRecalculation" GroupId="BBSOptions" SortIndex="2050"/>
 		<Row Key1="Map" Key2="Primordial.lua" ParameterId="AutoRemap" Name="LOC_GAME_SPAWN_REMAP" Description="LOC_GAME_SPAWN_REMAP_DESC" Domain="bool" DefaultValue="0" ConfigurationGroup="Game" ConfigurationId="AutoRemap" GroupId="AdvancedOptions" Visible="0" SortIndex="2051"/>
 		<Row Key1="Map" Key2="Primordial.lua" ParameterId="BBStemp" Name="LOC_GAME_BBS_TEMP" Description="LOC_GAME_BBS_TEMP_DESC" Domain="bool" DefaultValue="1" ConfigurationGroup="Game" ConfigurationId="BBStemp" GroupId="AdvancedOptions" Visible="0" SortIndex="2052"/>
-		
+		<Row Key1="Map" Key2="Primordial.lua" ParameterId="BBMExtraHills" Name="LOC_GAME_BBM_EXTRA_HILLS_NAME" Description="LOC_GAME_BBM_EXTRA_HILLS_DESC" Domain="bool" DefaultValue="0" ConfigurationGroup="Map" ConfigurationId="BBMExtraHills" GroupId="MapOptions" SortIndex="2053"/>
+
 		
 		<Row Key1="Map" Key2="Seven_Seas.lua" ParameterId="Seven_SeasMapName" 		Name="MapName" Description="" Domain="text" DefaultValue="Seven_Seas" 		ConfigurationGroup="Map" ConfigurationId="MapName" GroupId="MapOptions" Visible="0" SortIndex="2010"/>
 		<Row Key1="Map" Key2="Seven_Seas.lua" ParameterId="SpawnRecalculation" Name="LOC_GAME_SPAWN_RECALCULATION" Description="LOC_GAME_SPAWN_RECALCULATION_DESC" Domain="bool" DefaultValue="1" ConfigurationGroup="Game" ConfigurationId="SpawnRecalculation" GroupId="BBSOptions" SortIndex="2050"/>
 		<Row Key1="Map" Key2="Seven_Seas.lua" ParameterId="AutoRemap" Name="LOC_GAME_SPAWN_REMAP" Description="LOC_GAME_SPAWN_REMAP_DESC" Domain="bool" DefaultValue="0" ConfigurationGroup="Game" ConfigurationId="AutoRemap" GroupId="AdvancedOptions" Visible="0" SortIndex="2051"/>
 		<Row Key1="Map" Key2="Seven_Seas.lua" ParameterId="BBStemp" Name="LOC_GAME_BBS_TEMP" Description="LOC_GAME_BBS_TEMP_DESC" Domain="bool" DefaultValue="1" ConfigurationGroup="Game" ConfigurationId="BBStemp" GroupId="AdvancedOptions" Visible="0" SortIndex="2052"/>
-		
+		<Row Key1="Map" Key2="Seven_Seas.lua" ParameterId="BBMExtraHills" Name="LOC_GAME_BBM_EXTRA_HILLS_NAME" Description="LOC_GAME_BBM_EXTRA_HILLS_DESC" Domain="bool" DefaultValue="0" ConfigurationGroup="Map" ConfigurationId="BBMExtraHills" GroupId="MapOptions" SortIndex="2053"/>	
 
 		<Row Key1="Map" Key2="Shuffle.lua" ParameterId="ShuffleMapName" 		Name="MapName" Description="" Domain="text" DefaultValue="Shuffle" 		ConfigurationGroup="Map" ConfigurationId="MapName" GroupId="MapOptions" Visible="0" SortIndex="2010"/>
 		<Row Key1="Map" Key2="Shuffle.lua" ParameterId="SpawnRecalculation" Name="LOC_GAME_SPAWN_RECALCULATION" Description="LOC_GAME_SPAWN_RECALCULATION_DESC" Domain="bool" DefaultValue="1" ConfigurationGroup="Game" ConfigurationId="SpawnRecalculation" GroupId="BBSOptions" SortIndex="2050"/>
@@ -117,13 +124,13 @@
 		<Row Key1="Map" Key2="Small_Continents.lua" ParameterId="SpawnRecalculation" Name="LOC_GAME_SPAWN_RECALCULATION" Description="LOC_GAME_SPAWN_RECALCULATION_DESC" Domain="bool" DefaultValue="1" ConfigurationGroup="Game" ConfigurationId="SpawnRecalculation" GroupId="BBSOptions" SortIndex="2050"/>
 		<Row Key1="Map" Key2="Small_Continents.lua" ParameterId="AutoRemap" Name="LOC_GAME_SPAWN_REMAP" Description="LOC_GAME_SPAWN_REMAP_DESC" Domain="bool" DefaultValue="0" ConfigurationGroup="Game" ConfigurationId="AutoRemap" GroupId="AdvancedOptions" Visible="0" SortIndex="2051"/>
 		<Row Key1="Map" Key2="Small_Continents.lua" ParameterId="BBStemp" Name="LOC_GAME_BBS_TEMP" Description="LOC_GAME_BBS_TEMP_DESC" Domain="bool" DefaultValue="1" ConfigurationGroup="Game" ConfigurationId="BBStemp" GroupId="AdvancedOptions" Visible="0" SortIndex="2052"/>
-		
+		<Row Key1="Map" Key2="Small_Continents.lua" ParameterId="BBMExtraHills" Name="LOC_GAME_BBM_EXTRA_HILLS_NAME" Description="LOC_GAME_BBM_EXTRA_HILLS_DESC" Domain="bool" DefaultValue="0" ConfigurationGroup="Map" ConfigurationId="BBMExtraHills" GroupId="MapOptions" SortIndex="2053"/>	
 
 		<Row Key1="Map" Key2="Splintered_Fractal.lua" ParameterId="Splintered_FractalMapName" 		Name="MapName" Description="" Domain="text" DefaultValue="Splintered_Fractal" 		ConfigurationGroup="Map" ConfigurationId="MapName" GroupId="MapOptions" Visible="0" SortIndex="2010"/>
 		<Row Key1="Map" Key2="Splintered_Fractal.lua" ParameterId="SpawnRecalculation" Name="LOC_GAME_SPAWN_RECALCULATION" Description="LOC_GAME_SPAWN_RECALCULATION_DESC" Domain="bool" DefaultValue="1" ConfigurationGroup="Game" ConfigurationId="SpawnRecalculation" GroupId="BBSOptions" SortIndex="2050"/>
 		<Row Key1="Map" Key2="Splintered_Fractal.lua" ParameterId="AutoRemap" Name="LOC_GAME_SPAWN_REMAP" Description="LOC_GAME_SPAWN_REMAP_DESC" Domain="bool" DefaultValue="0" ConfigurationGroup="Game" ConfigurationId="AutoRemap" GroupId="AdvancedOptions" Visible="0" SortIndex="2051"/>
 		<Row Key1="Map" Key2="Splintered_Fractal.lua" ParameterId="BBStemp" Name="LOC_GAME_BBS_TEMP" Description="LOC_GAME_BBS_TEMP_DESC" Domain="bool" DefaultValue="1" ConfigurationGroup="Game" ConfigurationId="BBStemp" GroupId="AdvancedOptions" Visible="0" SortIndex="2052"/>
-		
+		<Row Key1="Map" Key2="Splintered_Fractal.lua" ParameterId="BBMExtraHills" Name="LOC_GAME_BBM_EXTRA_HILLS_NAME" Description="LOC_GAME_BBM_EXTRA_HILLS_DESC" Domain="bool" DefaultValue="0" ConfigurationGroup="Map" ConfigurationId="BBMExtraHills" GroupId="MapOptions" SortIndex="2053"/>	
 
 		<Row Key1="Map" Key2="Terra.lua" ParameterId="TerraMapName" 		Name="MapName" Description="" Domain="text" DefaultValue="Terra" 		ConfigurationGroup="Map" ConfigurationId="MapName" GroupId="MapOptions" Visible="0" SortIndex="2010"/>
 		<Row Key1="Map" Key2="Terra.lua" ParameterId="SpawnRecalculation" Name="LOC_GAME_SPAWN_RECALCULATION" Description="LOC_GAME_SPAWN_RECALCULATION_DESC" Domain="bool" DefaultValue="1" ConfigurationGroup="Game" ConfigurationId="SpawnRecalculation" GroupId="BBSOptions" SortIndex="2050"/>
@@ -135,7 +142,8 @@
 		<Row Key1="Map" Key2="Tilted_Axis.lua" ParameterId="SpawnRecalculation" Name="LOC_GAME_SPAWN_RECALCULATION" Description="LOC_GAME_SPAWN_RECALCULATION_DESC" Domain="bool" DefaultValue="1" ConfigurationGroup="Game" ConfigurationId="SpawnRecalculation" GroupId="BBSOptions" SortIndex="2050"/>
 		<Row Key1="Map" Key2="Tilted_Axis.lua" ParameterId="AutoRemap" Name="LOC_GAME_SPAWN_REMAP" Description="LOC_GAME_SPAWN_REMAP_DESC" Domain="bool" DefaultValue="0" ConfigurationGroup="Game" ConfigurationId="AutoRemap" GroupId="AdvancedOptions" Visible="0" SortIndex="2051"/>
 		<Row Key1="Map" Key2="Tilted_Axis.lua" ParameterId="BBStemp" Name="LOC_GAME_BBS_TEMP" Description="LOC_GAME_BBS_TEMP_DESC" Domain="bool" DefaultValue="1" ConfigurationGroup="Game" ConfigurationId="BBStemp" GroupId="AdvancedOptions" Visible="0" SortIndex="2052"/>
-		
+		<Row Key1="Map" Key2="Tilted_Axis.lua" ParameterId="BBMExtraHills" Name="LOC_GAME_BBM_EXTRA_HILLS_NAME" Description="LOC_GAME_BBM_EXTRA_HILLS_DESC" Domain="bool" DefaultValue="0" ConfigurationGroup="Map" ConfigurationId="BBMExtraHills" GroupId="MapOptions" SortIndex="2053"/>	
+
 		<Row Key1="Map" Key2="Tilted_Axis_Wrap.lua" ParameterId="Tilted_Axis_WrapMapName" 		Name="MapName" Description="" Domain="text" DefaultValue="Tilted_Axis_Wrap" 		ConfigurationGroup="Map" ConfigurationId="MapName" GroupId="MapOptions" Visible="0" SortIndex="2010"/>
 		<Row Key1="Map" Key2="Tilted_Axis_Wrap.lua" ParameterId="SpawnRecalculation" Name="LOC_GAME_SPAWN_RECALCULATION" Description="LOC_GAME_SPAWN_RECALCULATION_DESC" Domain="bool" DefaultValue="1" ConfigurationGroup="Game" ConfigurationId="SpawnRecalculation" GroupId="BBSOptions" SortIndex="2050"/>
 		<Row Key1="Map" Key2="Tilted_Axis_Wrap.lua" ParameterId="AutoRemap" Name="LOC_GAME_SPAWN_REMAP" Description="LOC_GAME_SPAWN_REMAP_DESC" Domain="bool" DefaultValue="0" ConfigurationGroup="Game" ConfigurationId="AutoRemap" GroupId="AdvancedOptions" Visible="0" SortIndex="2051"/>
@@ -143,6 +151,7 @@
 		<Row Key1="Map" Key2="Tilted_Axis_Wrap.lua" ParameterId="WorldAge" Name="LOC_MAP_WORLD_AGE_NAME" Description="LOC_MAP_WORLD_AGE_DESCRIPTION" Domain="WorldAge" DefaultValue="2" ConfigurationGroup="Map" ConfigurationId="world_age" GroupId="MapOptions" Hash="0" SortIndex="230"/>
 		<Row Key1="Map" Key2="Tilted_Axis_Wrap.lua" ParameterId="Rainfall" Name="LOC_MAP_RAINFALL_NAME" Description="LOC_MAP_RAINFALL_DESCRIPTION" Domain="Rainfall" DefaultValue="2" ConfigurationGroup="Map" ConfigurationId="rainfall" GroupId="MapOptions" Hash="0" SortIndex="250"/>
 		<Row Key1="Map" Key2="Tilted_Axis_Wrap.lua" ParameterId="SeaLevel" Name="LOC_MAP_SEA_LEVEL_NAME" Description="LOC_MAP_SEA_LEVEL_LOW_DESCRIPTION" Domain="SeaLevel" DefaultValue="2" ConfigurationGroup="Map" ConfigurationId="sea_level" GroupId="MapOptions" Hash="0" SortIndex="260"/>
+		<Row Key1="Map" Key2="Tilted_Axis_Wrap.lua" ParameterId="BBMExtraHills" Name="LOC_GAME_BBM_EXTRA_HILLS_NAME" Description="LOC_GAME_BBM_EXTRA_HILLS_DESC" Domain="bool" DefaultValue="0" ConfigurationGroup="Map" ConfigurationId="BBMExtraHills" GroupId="MapOptions" SortIndex="2053"/>	
 
 		<Row Key1="Map" Key2="Mirror.lua" ParameterId="MirrorMapName" 		Name="MapName" Description="" Domain="text" DefaultValue="Mirror" 		ConfigurationGroup="Map" ConfigurationId="MapName" GroupId="MapOptions" Visible="0" SortIndex="2010"/>
 		<Row Key1="Map" Key2="Mirror.lua" ParameterId="AutoRemap" Name="LOC_GAME_SPAWN_REMAP" Description="LOC_GAME_SPAWN_REMAP_DESC" Domain="bool" DefaultValue="0" ConfigurationGroup="Game" ConfigurationId="AutoRemap" GroupId="AdvancedOptions" Visible="0" SortIndex="2051"/>
