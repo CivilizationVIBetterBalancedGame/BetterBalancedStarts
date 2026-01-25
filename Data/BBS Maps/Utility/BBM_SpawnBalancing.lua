@@ -967,7 +967,7 @@ function SpawnBalancing:CheckLuxThreshold()
     self.InnerRingLuxCount = 0;
     self.OuterRingLuxCount = 0;
     local i = 1;
-    print("CheckLuxThreshold START", self.Civ.CivilizationLeader)
+    _Debug("CheckLuxThreshold START", self.Civ.CivilizationLeader)
     while i <= 6 do
         for _,h in pairs(self.RingTables[i].HexRings) do
             if h:HasLux()  then
@@ -1022,7 +1022,7 @@ function SpawnBalancing:CheckLuxThreshold()
             self.OuterRingLuxCount = self.MinLuxOuterRingThreshold;
         end
     end
-    print("CheckLuxThreshold DONE", self.Civ.CivilizationLeader)
+    _Debug("CheckLuxThreshold DONE", self.Civ.CivilizationLeader)
 end
 
 function SpawnBalancing:CheckHighYieldsThreshold()

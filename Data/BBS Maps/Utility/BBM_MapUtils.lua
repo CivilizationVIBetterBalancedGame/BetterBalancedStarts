@@ -3782,24 +3782,27 @@ end
 ---------------------------------------
 function BalanceMapHills(hexMap, hex, adjHills, isUnderHillsGoal)
     -- Check hills
+    local isExtraHills = MapConfiguration.GetValue("BBMExtraHills")
     local percentage = 0;
-    if isUnderHillsGoal and (IsWorldAgeOld() or MapConfiguration.GetValue("BBMExtraHills")) then
+    if isUnderHillsGoal and (IsWorldAgeOld() or isExtraHills) then
         if adjHills == 0 then
-            percentage = 60
-        elseif adjHills == 1 then
             percentage = 30
+        elseif adjHills == 1 then
+            percentage = 20
         elseif adjHills == 2 then
-            percentage = 15
-        elseif adjHills == 3 then
             percentage = 10
         else
             percentage = 5
         end
     elseif adjHills == 0 then 
-        percentage = 30
+        percentage = 15
+    end
+    local bonusPercentage = 0
+    if isExtraHills and percentage > 0 then
+        bonusPercentage = 10
     end
     local rng = TerrainBuilder.GetRandomNumber(100, "Terraform hills");
-    if rng < percentage and hexMap:TerraformToHill(hex, false) then
+    if rng < percentage + bonusPercentage and hexMap:TerraformToHill(hex, false) then
         return true;
     end
     return false;
@@ -3866,7 +3869,7 @@ end
 -- To avoid turtles to be deleted after the coastal score calc, we check lux before
 function InitSpawnBalancing(hexMap, civ)
     local balancing = SpawnBalancing.new(civ.StartingHex, hexMap, civ);
-    print("InitSpawnBalancing ", civ.StartingHex)
+    _Debug("InitSpawnBalancing ", civ.StartingHex)
     balancing:RemoveRing1MountainsOnRiver();
     balancing:TerraformRing6Deserts();
     balancing:CleanSpawnTile();
