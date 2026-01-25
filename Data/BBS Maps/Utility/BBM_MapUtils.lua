@@ -3712,6 +3712,7 @@ function printAllStartYields(hexMap)
     _Debug("meanProdR1 = "..tostring(meanProdR1));
 end
 
+-- Global map balancing
 function BalanceMap(hexMap)
     local iForestCounter = 0;
     local iNearFloodsCounter = 0;
@@ -3726,15 +3727,15 @@ function BalanceMap(hexMap)
         end
     end
     landTiles = GetShuffledCopyOfTable(landTiles)
-
     local countHills, _ = hexMap:LookForHills();
     local countLandTiles, _ = hexMap:GetLandHexList();
     local hillPercent = countHills / countLandTiles
     local goalHills = math.ceil(countLandTiles * 0.4)
-    print("Hills count : ", countHills, countLandTiles, hillPercent)
-    if (MapConfiguration.GetValue("BBMExtraHills") == true) then
-        goalHills = math.ceil(countLandTiles * 0.5)
-		print("BalanceMap - Extra Hills option enabled - Set goal to 50%");
+    _Debug("Hills count : ", countHills, countLandTiles, hillPercent)
+    local isBBMExtraHills = MapConfiguration.GetValue("BBMExtraHills")
+    if (isBBMExtraHills) then
+        goalHills = math.ceil(countLandTiles * 0.52)
+		print("BalanceMap - Extra Hills option enabled");
 	end
     for k, hex in pairs(landTiles) do
         hillPercent = countHills / countLandTiles
@@ -3751,69 +3752,55 @@ function BalanceMap(hexMap)
                 iHillsScore = iHillsScore + 1;
             end
         end 
-        local hillsByPeninsulaScore = (hex.TerrainsScore[g_HILLS]) / (hex.PeninsulaScore / 100 * 126) * 100--Total tiles on r6   
-        local underHillsGoal = IsWorldAgeOld() and (countHills + iHillsCounter <= goalHills)
-        print(hex:PrintXY(), " iHillScore = ", iHillsScore, "TerrainsScoreHills", hex.TerrainsScore[g_HILLS], " Hex6ByPSc = ", hillsByPeninsulaScore, " PenScore = ", hex.PeninsulaScore, " Hill%Map = ", hillPercent, " Target = ", goalHills, underHillsGoal)
+        local underHillsGoal = IsWorldAgeOld() and (countHills <= goalHills)
+        _Debug(hex:PrintXY(), " iHillScore = ", iHillsScore, "TerrainsScoreHills", hex.TerrainsScore[g_HILLS], " PenScore = ", hex.PeninsulaScore, " Hill%Map = ", hillPercent, " Target = ", goalHills, underHillsGoal)
+        -- Hills global rebalaning
         if hex:IsHill() == false and hex.ResourceType == g_RESOURCE_NONE and (hex.FeatureType == g_FEATURE_NONE or hex.FeatureType == g_FEATURE_FOREST or hex.FeatureType == g_FEATURE_JUNGLE)
-            and hillsByPeninsulaScore < hillPercent * 100 - 5 and BalanceMapHills(hexMap, hex, iHillsScore, hillsByPeninsulaScore, underHillsGoal) then
-            -- and BalanceMapHills(hexMap, hex, iHillsScore) then
-            print("BalanceMapHills done for ", hex:PrintXY())
+            and BalanceMapHills(hexMap, hex, iHillsScore, underHillsGoal) then
+            _Debug("BalanceMapHills done for ", hex:PrintXY())
             iHillsCounter = iHillsCounter + 1;
             countHills = countHills + 1
         end
+        -- Forest global rebalancing
         if hex.FeatureType == g_FEATURE_NONE and BalanceMapForests(hexMap, hex, iForestScore) then
             iForestCounter = iForestCounter + 1;
         end
+        -- Near flood yields global
         if (hex.FeatureType == g_FEATURE_NONE or hex.FeatureType == g_FEATURE_FOREST or hex.FeatureType == g_FEATURE_JUNGLE) 
             and BalanceNearFloodplainsYields(hexMap, hex, iFloodplainsScore) then
             iNearFloodsCounter = iNearFloodsCounter + 1;
         end
     end
 
-    print("Added "..tostring(iForestCounter).." Forest to the base map.")
-    print("Added "..tostring(iHillsCounter).." hills to the base map.")
-    print("Changed "..tostring(iNearFloodsCounter).." near floods to add prod.")
+    _Debug("Added "..tostring(iForestCounter).." Forest to the base map.")
+    _Debug("Added "..tostring(iHillsCounter).." hills to the base map.")
+    _Debug("Changed "..tostring(iNearFloodsCounter).." near floods to add prod.")
 end
 
 ---------------------------------------
 -- MapBalancing
 ---------------------------------------
-function BalanceMapHills(hexMap, hex, adjHills, hillsByPeninsulaScore, isUnderHillsGoal)
+function BalanceMapHills(hexMap, hex, adjHills, isUnderHillsGoal)
     -- Check hills
     local percentage = 0;
-    if hillsByPeninsulaScore < 10 then  
+    if isUnderHillsGoal and (IsWorldAgeOld() or MapConfiguration.GetValue("BBMExtraHills")) then
         if adjHills == 0 then
-            percentage = 30
+            percentage = 60
         elseif adjHills == 1 then
-            percentage = 10
-        end
-    elseif isUnderHillsGoal then
-        if adjHills == 0 then
             percentage = 30
-        elseif adjHills == 1 then
-            percentage = 50
         elseif adjHills == 2 then
             percentage = 15
         elseif adjHills == 3 then
+            percentage = 10
+        else
             percentage = 5
-        else
-            percentage = 0
         end
+    elseif adjHills == 0 then 
+        percentage = 30
     end
-    local bonusPercentage = 0
-    if (MapConfiguration.GetValue("BBMExtraHills") == true) then
-        if isUnderHillsGoal then
-            bonusPercentage = 15
-        else
-            bonusPercentage = 5
-        end
-	end
-    percentage = percentage + bonusPercentage
     local rng = TerrainBuilder.GetRandomNumber(100, "Terraform hills");
-    if rng < percentage then
-        if hexMap:TerraformToHill(hex, false) then
-            return true;
-        end
+    if rng < percentage and hexMap:TerraformToHill(hex, false) then
+        return true;
     end
     return false;
 end
