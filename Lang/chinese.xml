@@ -16,7 +16,7 @@
 			<Text>供16名玩家使用的极大地图</Text>
 		</Replace>
 		<Replace Tag="LOC_MAP_RICH_RIVERLANDS_NAME" Language="zh_Hans_CN">
-            <Text>富泽高地</Text>
+            <Text>富饶河地</Text>
         </Replace>
         <Replace Tag="LOC_MAP_RICH_RIVERLANDS_DESCRIPTION" Language="zh_Hans_CN">
             <Text>拥有丰富河流、湖泊和资源的高地。每种地图尺寸使用小一级的网格，使景观更密集、竞争更激烈。</Text>
@@ -373,7 +373,7 @@
 			<Text>队伍起始位置</Text>
 		</Replace>
 		<Replace Tag="LOC_BBM_Team_Spawn_DESC" Language="zh_Hans_CN">
-			<Text>控制组队游戏中主要文明在地图上的起始位置</Text>
+			<Text>控制团队游戏中文明在地图上的起始位置</Text>
 		</Replace>
 		<Replace Tag="BBM_Team_Spawn_NORMAL_NAME" Language="zh_Hans_CN">
 			<Text>标准</Text>
@@ -732,7 +732,10 @@
 			<Text>确保每位玩家在其首都6格范围内至少拥有7个奢侈品资源。低于此下限的玩家将在附近获得适合其大陆的额外奢侈品资源。高楼层玩家不受影响。适用于所有地图。</Text>
 		</Replace>
 		<Replace Tag="LOC_MAP_WRAPAROUND_NAME" Language="zh_Hans_CN">
-			<Text>环球航行</Text>
+			<Text>环球</Text>
+		</Replace>
+		<Replace Tag="LOC_MAP_WRAPAROUND" Language="zh_Hans_CN">
+   		    <Text>可在地图上进行环球</Text>
 		</Replace>
 		<Replace Tag="LOC_BBM_WRAP_DEFAULT_NAME" Language="zh_Hans_CN">
 			<Text>默认</Text>
@@ -741,16 +744,16 @@
 			<Text>地图的默认配置</Text>
 		</Replace>
 		<Replace Tag="LOC_BBM_WRAP_YES_NAME" Language="zh_Hans_CN">
-			<Text>环球航行</Text>
+			<Text>启用环球</Text>
 		</Replace>
 		<Replace Tag="LOC_BBM_WRAP_YES_DESC" Language="zh_Hans_CN">
-			<Text>可在地图上进行环球航行</Text>
+			<Text>可在地图上进行环球</Text>
 		</Replace>
 		<Replace Tag="LOC_BBM_WRAP_NO_NAME" Language="zh_Hans_CN">
-			<Text>无环球航行</Text>
+			<Text>禁用环球</Text>
 		</Replace>
 		<Replace Tag="LOC_BBM_WRAP_NO_DESC" Language="zh_Hans_CN">
-			<Text>无法在地图上进行环球航行</Text>
+			<Text>无法在地图上进行环球</Text>
 		</Replace>
 
 	</LocalizedText>
