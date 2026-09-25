@@ -44,11 +44,17 @@
 
 		<!-- === SETUP === -->
 		<!-- == Karteneigenschaften == -->
+		<Replace Tag="I18N_BALANCING_TYPE_1_NAME" Language="de_DE">
+			<Text>Neuausbalancierung des Startplatzes</Text>
+		</Replace>
+		<Replace Tag="I18N_BALANCING_TYPE_1_DESC" Language="de_DE">
+			<Text>Passt die Gewichtung der einzelnen Startplätze so an, dass sie innerhalb eines bestimmten prozentualen Ertragsbereichs der jeweiligen Zivilisation liegen:[NEWLINE]1: Weniger Anpassungen (33 %)[NEWLINE]2: Standard (25 %)[NEWLINE]3: Mehr Anpassungen (10 %)</Text>
+		</Replace>
 		<Replace Tag="LOC_GAME_SPAWN_RECALCULATION" Language="de_DE">
 			<Text>Neuberechnung des Startplatzes</Text>
 		</Replace>
 		<Replace Tag="LOC_GAME_SPAWN_RECALCULATION_DESC" Language="de_DE">
-			<Text>Versucht, die Zivilisation an einem besseren Startplatz zu platzieren</Text>
+			<Text>Versucht, die Zivilisation an einem besseren Startort zu platzieren (Standard = "Ein").[NEWLINE]Die Einstellung "Aus" würde immer zu einer Platzierung durch "Firaxis" führen, was möglicherweise[NEWLINE] zu mehr Terraforming führen könnte (z.B. Umwandlung von Polargebieten in Ebenen),[NEWLINE] um sicherzustellen, dass jede Zivilisation einen fairen Start erhält.</Text>
 		</Replace>
 		<Replace Tag="LOC_GAME_BBM_EXTRA_HILLS_NAME" Language="de_DE">
 			<Text>Zusätzliche Hügel</Text>
@@ -69,13 +75,16 @@
 			<Text>NICHT VERWENDEN, WENN MALI IM SPIEL IST. Teilt große zusammenhängende Wüstenregionen in kleine, verstreute Flecken auf. Wüstenfelder mit 3 oder mehr angrenzenden Wüstenfeldern werden in Ebenen umgewandelt, wodurch verhindert wird, dass ein Spieler neben einer nicht besiedelbaren Wüste festsitzt, während kleine Wüstencluster für Wunder erhalten bleiben.</Text>
 		</Replace>
 		<Replace Tag="LOC_BBM_LUX_EXP1_NAME" Language="de_DE">
-			<Text>[EXPERIMENTELL] Luxus-Mindestanzahl</Text>
+			<Text>Luxus-Mindestanzahl</Text>
 		</Replace>
 		<Replace Tag="LOC_BBM_LUX_EXP1_DESC" Language="de_DE">
-			<Text>>EXPERIMENTELL. Stellt sicher, dass jeder Spieler mindestens 7 Luxusressourcenfelder im Umkreis von 6 Hexfeldern um seine Hauptstadt hat. Spieler, die diese Mindestanzahl nicht erreichen, erhalten zusätzliche, dem Kontinent entsprechende Luxusressourcen in der Nähe. High-Roll-Starts sind davon nicht betroffen. Funktioniert auf allen Karten.</Text>
+			<Text>Stellt sicher, dass jeder Spieler mindestens 7 Luxusressourcenfelder im Umkreis von 6 Hexfeldern um seine Hauptstadt hat. Spieler, die diese Mindestanzahl nicht erreichen, erhalten zusätzliche, dem Kontinent entsprechende Luxusressourcen in der Nähe. High-Roll-Starts sind davon nicht betroffen. Funktioniert auf allen Karten.</Text>
 		</Replace>
 		<Replace Tag="LOC_MAP_WRAPAROUND_NAME" Language="de_DE">
 			<Text>Weltumrundung</Text>
+		</Replace>
+		<Replace Tag="LOC_MAP_WRAPAROUND" Language="de_DE">
+			<Text>Weltumrundung wird den Karteneigenschaften hinzugefügt.</Text>
 		</Replace>
 		<Replace Tag="LOC_BBM_WRAP_DEFAULT_NAME" Language="de_DE">
 			<Text>Standart</Text>
@@ -83,16 +92,16 @@
 		<Replace Tag="LOC_BBM_WRAP_DEFAULT_DESC" Language="de_DE">
 			<Text>Karteneigenschaften bleiben unverändert.</Text>
 		</Replace>
-		<Replace Tag="OC_BBM_WRAP_YES_NAME" Language="de_DE">
-			<Text>Aktiviert</Text>
+		<Replace Tag="LOC_BBM_WRAP_YES_NAME" Language="de_DE">
+			<Text>Weltumrundung aktiviert</Text>
 		</Replace>
 		<Replace Tag="LOC_BBM_WRAP_YES_DESC" Language="de_DE">
 			<Text>Weltumrundung wird den Karteneigenschaften hinzugefügt.</Text>
 		</Replace>
 		<Replace Tag="LOC_BBM_WRAP_NO_NAME" Language="de_DE">
-			<Text>Deaktiviert</Text>
+			<Text>Weltumrundung deaktiviert</Text>
 		</Replace>
-		<Replace Tag="LOC_BBM_WRAP_NO_DESC " Language="de_DE">
+		<Replace Tag="LOC_BBM_WRAP_NO_DESC" Language="de_DE">
 			<Text>Weltumrundung wird von den Karteneigenschaften entfernt.</Text>
 		</Replace>
 		
@@ -430,7 +439,7 @@
 			<Text>Team-Startposition</Text>
 		</Replace>
 		<Replace Tag="LOC_BBM_Team_Spawn_DESC" Language="de_DE">
-			<Text>Bestimmt die Bedingungen, für die Platzierung der Zivilisationen auf der Karte, wenn Teams gebildet wurden.</Text>
+			<Text>Bestimme, wie die Zivilisationen in Teamspielen auf der Karte platziert werden sollen.</Text>
 		</Replace>
 		<Replace Tag="BBM_Team_Spawn_NORMAL_NAME" Language="de_DE">
 			<Text>Standard</Text>
@@ -442,13 +451,13 @@
 			<Text>Ost gegen West</Text>
 		</Replace>
 		<Replace Tag="BBM_Team_Spawn_EW_DESC" Language="de_DE">
-			<Text>Spieler desselben Teams starten mit größerer Wahrscheinlichkeit gemeinsam im Osten oder  im Westen</Text>
+			<Text>Für 2v2 oder 4v4: Spieler desselben Teams starten mit größerer Wahrscheinlichkeit gemeinsam im Osten oder im Westen.</Text>
 		</Replace>
 		<Replace Tag="BBM_Team_Spawn_NS_NAME" Language="de_DE">
 			<Text>Nord gegen Süd</Text>
 		</Replace>
 		<Replace Tag="BBM_Team_Spawn_NS_DESC" Language="de_DE">
-			<Text>Spieler desselben Teams starten mit größerer Wahrscheinlichkeit gemeinsam im Norden oder im Süden</Text>
+			<Text>Für 2v2 oder 4v4: Spieler desselben Teams starten mit größerer Wahrscheinlichkeit gemeinsam im Norden oder im Süden.</Text>
 		</Replace>
 		
 		
@@ -542,7 +551,7 @@
 			<Text>Felsen von Gibraltar</Text>
 		</Replace>
 		<Replace Tag="LOC_FEATURE_GIBRALTAR_DESCRIPTION" Language="de_DE">
-			<Text>Unpassierbares Naturwunder auf einem Feld:[NEWLINE][NEWLINE]• Erscheint als Bergfeld auf einem Grasland- oder Graslandhügelfeld, angrenzend an ein Küstenfeld.[NEWLINE]• +1 [ICON_FOOD] Nahrung, +1 [ICON_PRODUCTION] Produktion und +1 [ICON_GOLD] Gold für angrenzende Felder.[NEWLINE]• +2 Anziehungskraft für angrenzende Felder.</Text>
+			<Text>Unpassierbares Naturwunder auf einem Feld:[NEWLINE][NEWLINE]• Erscheint als Bergfeld auf einem Grasland- oder Graslandhügelfeld, angrenzend an ein Küstenfeld.[NEWLINE]• +1 [ICON_FOOD] Nahrung und +1 [ICON_GOLD] Gold für angrenzende Felder.[NEWLINE]• +2 Anziehungskraft für angrenzende Felder.</Text>
 		</Replace>
 		<Replace Tag="LOC_FEATURE_GIBRALTAR_QUOTE" Language="de_DE">
 			<Text>"Schaut euch um, meine Jungs, und betrachtet, wie schön der Felsen im Licht des glorreichen Feuers erscheint."[NEWLINE]- George Augustus Eliott</Text>
