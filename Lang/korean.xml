@@ -666,5 +666,12 @@
 		<Replace Tag="LOC_PEDIA_FEATURES_PAGE_FEATURE_WULINGYUAN_CHAPTER_HISTORY_PARA_1" Language="ko_KR">
 			<Text>우링위안은 중국 중남부에 있는 경치 좋고 역사적인 장소입니다. 3,000개 이상의 규암 사암 기둥과 봉우리로 유명하며, 그중 다수는 높이가 200미터가 넘습니다. 또한 계곡, 협곡, 웅덩이, 호수, 강, 폭포가 있습니다. 40개의 동굴과 두 개의 자연 다리인 셴런차오(선인의 다리)와 톈차오셩쿵(하늘을 가로지르는 다리)가 특징입니다.</Text>
 		</Replace>
+		<!-- === BBM MAP NAMES (missing translations) === -->
+		<Replace Tag="LOC_MAP_RICH_RIVERLANDS_NAME" Language="ko_KR">
+			<Text>풍요로운 강변 지대</Text>
+		</Replace>
+		<Replace Tag="LOC_MAP_RICH_RIVERLANDS_DESCRIPTION" Language="ko_KR">
+			<Text>강, 호수, 자원이 풍부한 고원 맵입니다. 각 맵 크기마다 한 단계 작은 그리드를 사용하여 더 밀집되고 경쟁이 치열한 지형이 됩니다.</Text>
+		</Replace>
 	</LocalizedText>
 </GameData>

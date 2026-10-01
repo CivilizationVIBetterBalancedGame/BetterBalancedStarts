@@ -653,6 +653,25 @@
 	</Replace>	
 	
 	
+		<!-- === BBM MAP NAMES (missing translations) === -->
+		<Replace Tag="LOC_MAP_RICH_HIGHLANDS_NAME" Language="ja_JP">
+			<Text>リッチ・ハイランド</Text>
+		</Replace>
+		<Replace Tag="LOC_MAP_RICH_HIGHLANDS_DESCRIPTION" Language="ja_JP">
+			<Text>より資源の多くなったハイランド。</Text>
+		</Replace>
+		<Replace Tag="LOC_MAP_RICH_RIVERLANDS_NAME" Language="ja_JP">
+			<Text>リッチ・リバーランド</Text>
+		</Replace>
+		<Replace Tag="LOC_MAP_RICH_RIVERLANDS_DESCRIPTION" Language="ja_JP">
+			<Text>川や湖、資源が豊富な高地。各マップサイズで1段階小さいグリッドを使用し、より密集した激戦の地形になります。</Text>
+		</Replace>
+		<Replace Tag="LOC_MAP_PANGAEA_ULTIMA_NAME" Language="ja_JP">
+			<Text>パンゲア・ウルティマ</Text>
+		</Replace>
+		<Replace Tag="LOC_MAP_PANGAEA_ULTIMA_DESCRIPTION" Language="ja_JP">
+			<Text>使える土地がより多い、大きなパンゲアマップ</Text>
+		</Replace>
 	</LocalizedText>
 
 </GameData>

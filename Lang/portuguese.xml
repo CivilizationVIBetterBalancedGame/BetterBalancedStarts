@@ -1,4 +1,4 @@
-<?xml version="1.0" frcoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <GameData>
 	<LocalizedText>	
 
@@ -694,5 +694,24 @@
     <Replace Tag="LOC_PEDIA_FEATURES_PAGE_FEATURE_WULINGYUAN_CHAPTER_HISTORY_PARA_1" Language="pt_BR">
         <Text>Wulingyuan é um site pitoresco e histórico no centro-sul da China. É conhecido por mais de 3000 pilares e picos de arenito quartzito, muitos dos quais têm mais de 200 metros de altura, além de ravinas, desfiladeiros, poças, lagos, rios e cachoeiras. Inclui 40 cavernas e duas pontes naturais, Xianrenqiao (Ponte dos Imortais) e Tianqiashengkong (Ponte através do céu).</Text>
     </Replace>
+		<!-- === BBM MAP NAMES (missing translations) === -->
+		<Replace Tag="LOC_MAP_RICH_HIGHLANDS_NAME" Language="pt_BR">
+			<Text>Planaltos Ricos</Text>
+		</Replace>
+		<Replace Tag="LOC_MAP_RICH_HIGHLANDS_DESCRIPTION" Language="pt_BR">
+			<Text>Planaltos com mais recursos</Text>
+		</Replace>
+		<Replace Tag="LOC_MAP_RICH_RIVERLANDS_NAME" Language="pt_BR">
+			<Text>Terras Fluviais Ricas</Text>
+		</Replace>
+		<Replace Tag="LOC_MAP_RICH_RIVERLANDS_DESCRIPTION" Language="pt_BR">
+			<Text>Planaltos com muitos rios, lagos e recursos. Cada tamanho de mapa usa uma grade um nível menor, para um terreno mais denso e disputado.</Text>
+		</Replace>
+		<Replace Tag="LOC_MAP_PANGAEA_ULTIMA_NAME" Language="pt_BR">
+			<Text>Pangeia Ultima</Text>
+		</Replace>
+		<Replace Tag="LOC_MAP_PANGAEA_ULTIMA_DESCRIPTION" Language="pt_BR">
+			<Text>Um mapa de Pangeia maior, com mais terra utilizável</Text>
+		</Replace>
 	</LocalizedText>
 </GameData>

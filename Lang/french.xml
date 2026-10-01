@@ -1,4 +1,4 @@
-<?xml version="1.0" frcoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <GameData>
 	<LocalizedText>
 	
@@ -755,6 +755,19 @@
 		</Replace>
 		<Replace Tag="LOC_BBM_WRAP_NO_DESC" language="fr_FR">
 			<Text>On ne peut pas faire le tour du monde sur la carte</Text>
+		</Replace>
+		<!-- === BBM MAP NAMES (missing translations) === -->
+		<Replace Tag="LOC_MAP_RICH_HIGHLANDS_NAME" Language="fr_FR">
+			<Text>Plateaux riches</Text>
+		</Replace>
+		<Replace Tag="LOC_MAP_RICH_HIGHLANDS_DESCRIPTION" Language="fr_FR">
+			<Text>Plateaux, avec plus de ressources</Text>
+		</Replace>
+		<Replace Tag="LOC_MAP_RICH_RIVERLANDS_NAME" Language="fr_FR">
+			<Text>Terres fluviales riches</Text>
+		</Replace>
+		<Replace Tag="LOC_MAP_RICH_RIVERLANDS_DESCRIPTION" Language="fr_FR">
+			<Text>Plateaux riches en rivières, lacs et ressources. Chaque taille de carte utilise une grille d'un cran plus petite, pour un terrain plus dense et plus disputé.</Text>
 		</Replace>
 	</LocalizedText>
 </GameData>

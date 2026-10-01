@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<GameData>
+	<LocalizedText>
+		<!-- === MAPS === -->
+		<Replace Tag="LOC_MAP_RICH_HIGHLANDS_NAME" Language="es_ES">
+			<Text>Tierras altas ricas</Text>
+		</Replace>
+		<Replace Tag="LOC_MAP_RICH_HIGHLANDS_DESCRIPTION" Language="es_ES">
+			<Text>Tierras altas con más recursos</Text>
+		</Replace>
+		<Replace Tag="LOC_MAP_RICH_RIVERLANDS_NAME" Language="es_ES">
+			<Text>Tierras fluviales ricas</Text>
+		</Replace>
+		<Replace Tag="LOC_MAP_RICH_RIVERLANDS_DESCRIPTION" Language="es_ES">
+			<Text>Tierras altas con abundantes ríos, lagos y recursos. Cada tamaño de mapa usa una cuadrícula un nivel más pequeña, para un terreno más denso y disputado.</Text>
+		</Replace>
+		<Replace Tag="LOC_MAP_PANGAEA_ULTIMA_NAME" Language="es_ES">
+			<Text>Pangea Ultima</Text>
+		</Replace>
+		<Replace Tag="LOC_MAP_PANGAEA_ULTIMA_DESCRIPTION" Language="es_ES">
+			<Text>Un mapa de Pangea más grande, con más tierra aprovechable</Text>
+		</Replace>
+	</LocalizedText>
+</GameData>
