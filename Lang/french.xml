@@ -371,6 +371,12 @@
 		<Replace Tag="BBM_Team_Spawn_EW_DESC" Language="fr_FR">
 			<Text>Les joueurs de la même équipe sont beaucoup plus susceptibles d'apparaître à l'Est ou à l'Ouest.</Text>
 		</Replace>
+		<Replace Tag="BBM_Team_Spawn_DUOS_NAME" Language="fr_FR">
+			<Text>Duos rapprochés</Text>
+		</Replace>
+		<Replace Tag="BBM_Team_Spawn_DUOS_DESC" Language="fr_FR">
+			<Text>Équipes de 2 uniquement (ex. 2v2v2v2v2) : chaque joueur apparaît près de son coéquipier.</Text>
+		</Replace>
 		<Replace Tag="BBM_Team_Spawn_NS_NAME" Language="fr_FR">
 			<Text>Nord contre Sud</Text>
 		</Replace>

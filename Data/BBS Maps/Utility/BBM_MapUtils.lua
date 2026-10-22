@@ -297,6 +297,7 @@ g_PASSABLE_LAND = "PassableLand";
 
 TeamerConfigStandard = "Standard";
 TeamerConfigEastVsWest = "EastVsWest";
+TeamerConfigCloseDuos = "CloseDuos";
 EastTeam = "East";
 WestTeam = "West";
 Quadrant_NW = "North-West"
@@ -865,6 +866,12 @@ function HexMap.new(_width, _height, mapScript)
     instance.RTSPangaeaTeamerConfigWarMax = math.floor(_width * 0.13 + 0.5); -- on 4v4 = +-11 from middle
     instance.RTSPangaeaTeamerConfigWarMaxTundra = math.floor(_width * 0.18 + 0.5); -- on 4v4 = +-15 from middle
     instance.RTSPangaeaTeamerConfigSimMin = math.floor(_width * 0.2 + 0.5); -- on 4v4 = +-17 from middle
+    -- Close duos: maximum distance between teammates. Spawn blocking covers rings 0 to the minimum distance,
+    -- so a teammate lands between minimum distance + 1 and minimum distance + 3. When no tile is left that close,
+    -- the maximum is widened by DuoWidenStep up to DuoMaxDistance + DuoWidenMax, then the rule is dropped.
+    instance.DuoMaxDistance = instance.minimumDistanceMajorToMajorCivs + 3;
+    instance.DuoWidenStep = 2;
+    instance.DuoWidenMax = 10;
     -- Put maps parameters here ? (world age, temperature, rainfall etc)
     -- BBM Mountains change = recalculate areas
     AreaBuilder.Recalculate();
@@ -3667,6 +3674,9 @@ function even(test)
 end
 
 function HexMap:GetTeamerPositionConfig() 
+    if MapConfiguration.GetValue("BBM_Team_Spawn") == 2 and IsDuoConfig() then
+        return TeamerConfigCloseDuos;
+    end
     if MapConfiguration.GetValue("BBM_Team_Spawn") ~= nil and Is1v1OrTeamerConfig() then
         local Teamers_Config = MapConfiguration.GetValue("BBM_Team_Spawn");
         _Debug("GetTeamerPositionConfig : ", Teamers_Config)

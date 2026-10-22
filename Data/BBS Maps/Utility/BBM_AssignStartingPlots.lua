@@ -121,6 +121,13 @@ function BBM_AssignStartingPlots.Create(args)
         _Debug("Leader added ", i, player, leader, name, team)
         table.insert(BBM_Civilisations, newCivilization);
     end
+    -- Close duos: each player of a team of 2 knows its teammate
+    for _, members in pairs(BBM_Teams) do
+        if #members == 2 then
+            members[1].DuoMate = members[2];
+            members[2].DuoMate = members[1];
+        end
+    end
 
     -- Get City States data
     local BBS_Citystates = {}
@@ -443,6 +450,9 @@ end
 function BBM_AssignStartingPlots:__PlaceMajorCivs(civs, BBM_HexMap, index) 
 -- TODO : manage cases when unable to place a civ => rollback and try again
     BBM_HexMap.tempMajorSpawns[index] = {};
+    if BBM_HexMap.TeamerConfig == TeamerConfigCloseDuos then
+        civs = GetDuoPlacementOrder(civs);
+    end
     
     for ind, civ in pairs(civs) do
         if civ.CivilizationLeader ~= BBS_LEADER_TYPE_SPECTATOR then
@@ -523,6 +533,36 @@ function Is1v1OrTeamerConfig()
     local isTeamerConfig = teamCount == 2 and team1Size == team2Size;
     _Debug("IsTeamerConfig : ", teamCount, team1Size, team2Size, isTeamerConfig);
     return isTeamerConfig;
+end
+
+-- Close duos: at least 2 teams, all of exactly 2 players (spectators excluded)
+function IsDuoConfig()
+    local teamCount = 0;
+    for _, members in pairs(BBM_Teams) do
+        teamCount = teamCount + 1;
+        if #members ~= 2 then
+            return false;
+        end
+    end
+    return teamCount >= 2;
+end
+
+-- Close duos: keep the BBM order (most constrained civs first) and place each teammate right after its partner
+function GetDuoPlacementOrder(civs)
+    local order = {};
+    local done = {};
+    for _, civ in ipairs(civs) do
+        if done[civ] == nil then
+            table.insert(order, civ);
+            done[civ] = true;
+            local mate = civ.DuoMate;
+            if mate ~= nil and done[mate] == nil then
+                table.insert(order, mate);
+                done[mate] = true;
+            end
+        end
+    end
+    return order;
 end
 
 -- Call default fixaris placement script
