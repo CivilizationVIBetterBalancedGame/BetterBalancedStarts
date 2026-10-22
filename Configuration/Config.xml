@@ -117,6 +117,8 @@
 		<Row Key1="Map" Key2="Pangaea.lua" ParameterId="AutoRemap" Name="LOC_GAME_SPAWN_REMAP" Description="LOC_GAME_SPAWN_REMAP_DESC" Domain="bool" DefaultValue="0" ConfigurationGroup="Game" ConfigurationId="AutoRemap" GroupId="AdvancedOptions" Visible="0" SortIndex="2051"/>
 		<Row Key1="Map" Key2="Pangaea.lua" ParameterId="BBStemp" Name="LOC_GAME_BBS_TEMP" Description="LOC_GAME_BBS_TEMP_DESC" Domain="bool" DefaultValue="1" ConfigurationGroup="Game" ConfigurationId="BBStemp" GroupId="AdvancedOptions" Visible="0" SortIndex="2052"/>
 		<Row Key1="Map" Key2="Pangaea.lua" ParameterId="BBM_Team_Spawn" Name="LOC_BBM_Team_Spawn_NAME" Description="LOC_BBM_Team_Spawn_DESC" Domain="BBM_Team_Spawn" DefaultValue="0" ConfigurationGroup="Map" ConfigurationId="BBM_Team_Spawn" GroupId="MapOptions" Visible="1" Hash="0" SortIndex="2053"/>
+		<Row Key1="Map" Key2="Lakes.lua" ParameterId="BBM_Team_Spawn" Name="LOC_BBM_Team_Spawn_NAME" Description="LOC_BBM_Team_Spawn_DESC" Domain="BBM_Team_Spawn" DefaultValue="0" ConfigurationGroup="Map" ConfigurationId="BBM_Team_Spawn" GroupId="MapOptions" Visible="1" Hash="0" SortIndex="2053"/>
+		<Row Key1="Map" Key2="rich_riverlands.lua" ParameterId="BBM_Team_Spawn" Name="LOC_BBM_Team_Spawn_NAME" Description="LOC_BBM_Team_Spawn_DESC" Domain="BBM_Team_Spawn" DefaultValue="0" ConfigurationGroup="Map" ConfigurationId="BBM_Team_Spawn" GroupId="MapOptions" Visible="1" Hash="0" SortIndex="2053"/>
 		<Row Key1="Map" Key2="Pangaea.lua" ParameterId="BBMExtraHills" Name="LOC_GAME_BBM_EXTRA_HILLS_NAME" Description="LOC_GAME_BBM_EXTRA_HILLS_DESC" Domain="bool" DefaultValue="0" ConfigurationGroup="Map" ConfigurationId="BBMExtraHills" GroupId="MapOptions" SortIndex="2054"/>
 		<Row Key1="Map" Key2="Pangaea.lua" ParameterId="BBMWraparound" Name="LOC_MAP_WRAPAROUND_NAME" Description="LOC_MAP_WRAPAROUND" Domain="BBM_Wraparound" DefaultValue="0" ConfigurationGroup="Map" ConfigurationId="BBMWraparound" GroupId="MapOptions" SortIndex="2054"/>	
 
@@ -199,6 +201,7 @@
 
 		<Row Domain="BBM_Team_Spawn" Value="0" Name="BBM_Team_Spawn_NORMAL_NAME" Description="BBM_Team_Spawn_NORMAL_DESC" SortIndex="10"/>
 		<Row Domain="BBM_Team_Spawn" Value="1" Name="BBM_Team_Spawn_EW_NAME" Description="BBM_Team_Spawn_EW_DESC" SortIndex="20"/>
+		<Row Domain="BBM_Team_Spawn" Value="2" Name="BBM_Team_Spawn_DUOS_NAME" Description="BBM_Team_Spawn_DUOS_DESC" SortIndex="30"/>
 
 		<Row Domain="BBM_Wraparound" Value="0" Name="LOC_BBM_WRAP_DEFAULT_NAME" Description="LOC_BBM_WRAP_DEFAULT_DESC" SortIndex="10"/>
 		<Row Domain="BBM_Wraparound" Value="1" Name="LOC_BBM_WRAP_YES_NAME" Description="LOC_BBM_WRAP_YES_DESC" SortIndex="20"/>

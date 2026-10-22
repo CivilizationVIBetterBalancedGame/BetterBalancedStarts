@@ -297,10 +297,17 @@ function CivilizationAssignSpawn:AssignSpawnByCentroid(BBM_HexMap)
     if self.CivilizationLeader == BBS_LEADER_TYPE_SPECTATOR then
         return true;
     end
+    self:PrepareDuoFilter(BBM_HexMap);
     -- Recalculate valid tiles in each centroid
     self:CalculateOrderCentroidsScore(BBM_HexMap);
     -- Find the best tiles based on score of top centroids 
     local hexSpawnFound, score = self:FindHighestScoreHex();
+    -- Close duos: no valid tile close enough to the teammate, widen the maximum distance, then drop the rule
+    while hexSpawnFound == nil and self:WidenDuoFilter(BBM_HexMap) do
+        self:CalculateOrderCentroidsScore(BBM_HexMap);
+        hexSpawnFound, score = self:FindHighestScoreHex();
+    end
+    self.DuoFilter = nil;
 
     -- 
     if hexSpawnFound ~= nil then
@@ -313,6 +320,73 @@ function CivilizationAssignSpawn:AssignSpawnByCentroid(BBM_HexMap)
     end
 end
 
+
+-- Close duos: proximity filter on spawn tiles, set before each placement
+--   teammate already placed: stay within Max of it
+--   first of the duo: only keep tiles that leave the teammate a tile valid for its own biases, still spawnable after
+--   this placement (distance > minimum distance) and within Max
+function CivilizationAssignSpawn:PrepareDuoFilter(BBM_HexMap)
+    self.DuoFilter = nil;
+    local mate = self.DuoMate;
+    if BBM_HexMap.TeamerConfig ~= TeamerConfigCloseDuos or mate == nil then
+        return;
+    end
+    if mate.StartingHex ~= nil and mate.StartingHex.Plot ~= nil then
+        self.DuoFilter = { Near = mate.StartingHex, Max = BBM_HexMap.DuoMaxDistance };
+        return;
+    end
+    local allHex = {};
+    for y = 0, BBM_HexMap.height - 1 do
+        for x = 0, BBM_HexMap.width - 1 do
+            table.insert(allHex, BBM_HexMap:GetHexInMap(x, y));
+        end
+    end
+    self.DuoFilter = {
+        MateTiles = mate:GetValidSpawnsInHexList(BBM_HexMap, allHex),
+        Min = BBM_HexMap.minimumDistanceMajorToMajorCivs,
+        Max = BBM_HexMap.DuoMaxDistance,
+        Cache = {}
+    };
+end
+
+function CivilizationAssignSpawn:GetDuoCondition(BBM_HexMap, hex)
+    local f = self.DuoFilter;
+    if f == nil then
+        return true;
+    end
+    if f.Near ~= nil then
+        return hex:DistanceTo(f.Near) <= f.Max;
+    end
+    if f.Cache[hex] == nil then
+        local ok = false;
+        for _, t in ipairs(f.MateTiles) do
+            local d = hex:DistanceTo(t);
+            if d > f.Min and d <= f.Max then
+                ok = true;
+                break;
+            end
+        end
+        f.Cache[hex] = ok;
+    end
+    return f.Cache[hex];
+end
+
+-- Returns true when the filter changed (widened or dropped) and the search is worth trying again
+function CivilizationAssignSpawn:WidenDuoFilter(BBM_HexMap)
+    local f = self.DuoFilter;
+    if f == nil then
+        return false;
+    end
+    if f.Max + BBM_HexMap.DuoWidenStep <= BBM_HexMap.DuoMaxDistance + BBM_HexMap.DuoWidenMax then
+        f.Max = f.Max + BBM_HexMap.DuoWidenStep;
+        f.Cache = {};
+        _Debug("Close duos - maximum distance widened to ", f.Max, " for ", self.CivilizationLeader);
+    else
+        print("Close duos - no tile near the teammate, rule dropped for "..tostring(self.CivilizationLeader));
+        self.DuoFilter = nil;
+    end
+    return true;
+end
 
 -- Order the regions based on bias score and number of valid spawn tiles
 function CivilizationAssignSpawn:CalculateOrderCentroidsScore(BBM_HexMap)
@@ -361,7 +435,7 @@ function CivilizationAssignSpawn:GetValidSpawnsInHexList(BBM_HexMap, listHex)
         -- In Terra, major civ spawn on the biggest island
         local terraCondition = isTerraMap == false or (isTerraMap and hex.Plot:GetArea():GetID() == BBM_HexMap.BiggestIsland:GetID())
         local RTScondition = self:GetXPlacementCondition(BBM_HexMap, hex);
-        if RTScondition and terraCondition and hex.IsMajorSpawnable and self:ValidWalkableTiles(hex) and self:ValidTundraDensity(hex) then --pre calculation of technical spawns
+        if RTScondition and terraCondition and hex.IsMajorSpawnable and self:ValidWalkableTiles(hex) and self:ValidTundraDensity(hex) and self:GetDuoCondition(BBM_HexMap, hex) then --pre calculation of technical spawns
             if self.IsTundraBias == false and self.IsDesertBias == false and hex:IsNextToOasis() == false then
                 -- If Maya ignore fresh water, it will be placed last because there is too much valid tiles
                 -- Temp 5 = tundra only conditions
@@ -383,7 +457,7 @@ function CivilizationAssignSpawn:GetValidSpawnsInHexList(BBM_HexMap, listHex)
 end
 
 function CivilizationAssignSpawn:GetXPlacementCondition(BBM_HexMap, hex)
-    if  BBM_HexMap.TeamerConfig == TeamerConfigStandard then
+    if  BBM_HexMap.TeamerConfig == TeamerConfigStandard or BBM_HexMap.TeamerConfig == TeamerConfigCloseDuos then
         return true;
     end
     BBM_HexMap.RTSContinentSetup = BBM_HexMap.RTSContinentSetup or {}

@@ -387,6 +387,12 @@
 		<Replace Tag="BBM_Team_Spawn_EW_DESC" Language="en_US">
 			<Text>Players of the same team are much more likely to spawn East or West.</Text>
 		</Replace>
+		<Replace Tag="BBM_Team_Spawn_DUOS_NAME" Language="en_US">
+			<Text>Close duos</Text>
+		</Replace>
+		<Replace Tag="BBM_Team_Spawn_DUOS_DESC" Language="en_US">
+			<Text>Teams of 2 only (e.g. 2v2v2v2v2): each player spawns close to their teammate.</Text>
+		</Replace>
 		<Replace Tag="BBM_Team_Spawn_NS_NAME" Language="en_US">
 			<Text>North vs. South</Text>
 		</Replace>
