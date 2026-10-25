@@ -33,6 +33,14 @@ function CivilizationAssignSpawn.new(player, leader, name, team, index)
     instance.CentroidsScore = {}
     instance.AttributedCentroid = nil;
     instance.StartingHex = nil;
+    instance.TeamMates = nil;
+    instance.TeamSize = 1;
+    instance.TeamFilter = nil;
+    instance.FallbackUsed = false;
+    instance.TotalValidTiles = 0;
+    instance.TotalMapScore = 0;
+    instance.ScanValidTilesBias = {};
+    instance.ScanValidTiles = {};
     instance.TeamerSim = false;
     instance.TeamerWar = false;
     instance.TeamerSide = "";
@@ -268,7 +276,7 @@ function CivilizationAssignSpawn:CalculateTotalScores(BBM_HexMap)
             totalScore = totalScore + c.Score
             totalValidTiles = totalValidTiles + #c.ValidTilesBias
             if c.Score > maxCentScore then
-                maxCentScore = c.Score;
+                maxCentScore = c.Score
             end
         end
         -- By default, if no bias are giving score, put the max score by default being the max number of regions
@@ -276,6 +284,18 @@ function CivilizationAssignSpawn:CalculateTotalScores(BBM_HexMap)
             totalScore = GlobalNumberOfRegions;
             maxCentScore = 1;
         end
+        -- Static snapshot of the initial scan (no team filter yet), reused by the close team filter
+        local scanBias, scanTechnical = {}, {};
+        for _, c in pairs(self.CentroidsScore) do
+            for _, h in ipairs(c.ValidTilesBias) do
+                table.insert(scanBias, h);
+            end
+            for _, h in ipairs(c.ValidTiles) do
+                table.insert(scanTechnical, h);
+            end
+        end
+        self.ScanValidTilesBias = scanBias;
+        self.ScanValidTiles = scanTechnical;
         self.TotalMapScore = totalScore / maxCentScore
         self.TotalValidTiles = totalValidTiles
         self.RandomPlaceIdOrder = TerrainBuilder.GetRandomNumber(100, "Spawn A"); -- Used to determine in what order will be placed civ with same score and valid tiles (typically no bias)
@@ -297,19 +317,30 @@ function CivilizationAssignSpawn:AssignSpawnByCentroid(BBM_HexMap)
     if self.CivilizationLeader == BBS_LEADER_TYPE_SPECTATOR then
         return true;
     end
-    self:PrepareDuoFilter(BBM_HexMap);
+    self.FallbackUsed = false;
+    self.TeamFilter = nil;
+    self:PrepareCloseTeamFilter(BBM_HexMap);
     -- Recalculate valid tiles in each centroid
     self:CalculateOrderCentroidsScore(BBM_HexMap);
-    -- Find the best tiles based on score of top centroids 
-    local hexSpawnFound, score = self:FindHighestScoreHex();
-    -- Close duos: no valid tile close enough to the teammate, widen the maximum distance, then drop the rule
-    while hexSpawnFound == nil and self:WidenDuoFilter(BBM_HexMap) do
-        self:CalculateOrderCentroidsScore(BBM_HexMap);
-        hexSpawnFound, score = self:FindHighestScoreHex();
-    end
-    self.DuoFilter = nil;
 
-    -- 
+    -- Close teams: widen the band once while no bias tile is found. If the widened band still
+    -- yields nothing usable, the trial is abandoned: the caller discards it and BBM tries the next
+    -- attempt. Dropping the rule would place the civ anywhere on the map, breaking the close team.
+    local closeTeams = (BBM_HexMap.TeamerConfig == TeamerConfigCloseTeams) and (self.TeamFilter ~= nil);
+    local hexSpawnFound, score, usedFallback = self:FindHighestScoreHex();
+    while closeTeams and (hexSpawnFound == nil or usedFallback) and self:WidenCloseTeamFilter(BBM_HexMap) do
+        self:CalculateOrderCentroidsScore(BBM_HexMap);
+        hexSpawnFound, score, usedFallback = self:FindHighestScoreHex();
+    end
+    local closeTeamFailed = closeTeams and (hexSpawnFound == nil or usedFallback);
+    self.TeamFilter = nil;
+
+    if closeTeamFailed then
+        print("Close teams - no valid tile even after widening, trial abandoned for "..tostring(self.CivilizationLeader));
+        self.FallbackUsed = false;
+        return false, nil, nil;
+    end
+
     if hexSpawnFound ~= nil then
         self:AssignMajorCivSpawn(BBM_HexMap, hexSpawnFound);
         return true, hexSpawnFound, score;
@@ -321,70 +352,221 @@ function CivilizationAssignSpawn:AssignSpawnByCentroid(BBM_HexMap)
 end
 
 
--- Close duos: proximity filter on spawn tiles, set before each placement
---   teammate already placed: stay within Max of it
---   first of the duo: only keep tiles that leave the teammate a tile valid for its own biases, still spawnable after
---   this placement (distance > minimum distance) and within Max
-function CivilizationAssignSpawn:PrepareDuoFilter(BBM_HexMap)
-    self.DuoFilter = nil;
-    local mate = self.DuoMate;
-    if BBM_HexMap.TeamerConfig ~= TeamerConfigCloseDuos or mate == nil then
+
+
+-- Close teams: proximity filter on spawn tiles, set before each placement
+--   teammates already placed: stay within Max of the nearest one, and keep at least Min from every placed teammate
+--   first member of the team: only keep tiles that leave every future teammate a bias-valid tile in ]Min, Max]
+function CivilizationAssignSpawn:PrepareCloseTeamFilter(BBM_HexMap)
+    self.TeamFilter = nil;
+    local mates = self.TeamMates;
+    if BBM_HexMap.TeamerConfig ~= TeamerConfigCloseTeams or mates == nil or #mates < 2 then
         return;
     end
-    if mate.StartingHex ~= nil and mate.StartingHex.Plot ~= nil then
-        self.DuoFilter = { Near = mate.StartingHex, Max = BBM_HexMap.DuoMaxDistance };
-        return;
-    end
-    local allHex = {};
-    for y = 0, BBM_HexMap.height - 1 do
-        for x = 0, BBM_HexMap.width - 1 do
-            table.insert(allHex, BBM_HexMap:GetHexInMap(x, y));
+    BBM_HexMap.CloseTeamWindow = BBM_HexMap.CloseTeamWindow or {};
+    local minDist = BBM_HexMap.minimumDistanceMajorToMajorCivs;
+    local maxDist = self:GetCloseTeamMaxDistance(BBM_HexMap);
+    local anchors = {};
+    local pending = {};
+    for _, mate in ipairs(mates) do
+        if mate ~= self then
+            if mate.StartingHex ~= nil and mate.StartingHex.Plot ~= nil then
+                table.insert(anchors, mate.StartingHex);
+            else
+                table.insert(pending, mate);
+            end
         end
     end
-    self.DuoFilter = {
-        MateTiles = mate:GetValidSpawnsInHexList(BBM_HexMap, allHex),
-        Min = BBM_HexMap.minimumDistanceMajorToMajorCivs,
-        Max = BBM_HexMap.DuoMaxDistance,
+    if #anchors == 0 and #pending == 0 then
+        return;
+    end
+    -- Every future teammate must still have a bias-valid tile in the star, without being too close to the candidate
+    local mateLists = {};
+    for _, mate in ipairs(pending) do
+        local list = mate:GetCloseTeamCandidateTiles(BBM_HexMap);
+        if #list == 0 then
+            -- No tile left for a teammate: nothing to filter on, widening and fallback will decide
+            return;
+        end
+        mateLists[mate] = list;
+    end
+    self.TeamFilter = {
+        Anchors = (#anchors > 0) and anchors or nil,
+        MateLists = mateLists,
+        Min = minDist,
+        Max = maxDist,
+        MalusCfg = self:GetCloseTeamMalusConfig(BBM_HexMap),
         Cache = {}
     };
 end
 
-function CivilizationAssignSpawn:GetDuoCondition(BBM_HexMap, hex)
-    local f = self.DuoFilter;
+-- Distance malus configuration for the current team. Teams of 2 never take a distance malus:
+-- the band alone decides. For larger teams the average distance ramps from Dstar0 up to G and the
+-- farthest distance ramps from G up to Dmax, so the star is favoured without forbidding chains.
+-- Returns nil when no malus applies.
+function CivilizationAssignSpawn:GetCloseTeamMalusConfig(BBM_HexMap)
+    local size = self.TeamSize or (self.TeamMates and #self.TeamMates or 0);
+    if size <= 2 then
+        return nil;
+    end
+    local minDist = BBM_HexMap.minimumDistanceMajorToMajorCivs;
+    local dstar0 = minDist + (BBM_HexMap.CloseTeamStep or 3);
+    local dmax = dstar0 * (size - 1);
+    local g = math.ceil((dstar0 + dmax) / 2);
+    if g <= dstar0 or dmax <= g then
+        return nil;
+    end
+    return {
+        Dstar0 = dstar0,
+        Dmax = dmax,
+        G = g,
+        MalusAvg = BBM_HexMap.CloseTeamMalusAvg or 5,
+        MalusFar = BBM_HexMap.CloseTeamMalusFar or 15,
+    };
+end
+
+-- Score penalty from the spread of a candidate tile around the already placed teammates.
+-- Applied only for teams larger than 2, and only when the team filter has anchors to measure.
+function CivilizationAssignSpawn:GetCloseTeamDistanceMalus(hex, anchors, cfg)
+    if cfg == nil or anchors == nil or #anchors == 0 then
+        return 0;
+    end
+    
+    local total = 0;
+    local far = 0;
+    for _, anchor in ipairs(anchors) do
+        local d = hex:DistanceTo(anchor);
+        total = total + d;
+        if d > far then
+            far = d;
+        end
+    end
+    local avg = total / #anchors;
+    local ratioAvg = (avg - cfg.Dstar0) / (cfg.G - cfg.Dstar0);
+    if ratioAvg < 0 then ratioAvg = 0 elseif ratioAvg > 1 then ratioAvg = 1 end;
+    local ratioFar = (far - cfg.G) / (cfg.Dmax - cfg.G);
+    if ratioFar < 0 then ratioFar = 0 elseif ratioFar > 1 then ratioFar = 1 end;
+    _Debug("DEBUG GetCloseTeamDistanceMalus", ratioAvg, ratioFar, cfg.MalusAvg * ratioAvg + cfg.MalusFar * ratioFar)
+    return cfg.MalusAvg * ratioAvg + cfg.MalusFar * ratioFar;
+end
+
+-- Upper bound of the band around the team anchors. Fixed by the configured minimum distance and the
+-- team step, independent of team size. Shared by the whole team so the widening is decided once.
+function CivilizationAssignSpawn:GetCloseTeamMaxDistance(BBM_HexMap)
+    local baseDist = BBM_HexMap.minimumDistanceMajorToMajorCivs;
+    local step = BBM_HexMap.CloseTeamStep or 3;
+    local base = baseDist + step;
+    BBM_HexMap.CloseTeamWindow = BBM_HexMap.CloseTeamWindow or {};
+    local window = BBM_HexMap.CloseTeamWindow[self.CivilizationTeam];
+    if window == nil then
+        window = { Max = base, Widened = false };
+        BBM_HexMap.CloseTeamWindow[self.CivilizationTeam] = window;
+    end
+    return window.Max;
+end
+
+-- Tiles a teammate can still use for its own biases, without the team filter applied
+function CivilizationAssignSpawn:GetCloseTeamCandidateTiles(BBM_HexMap)
+    local tiles = {};
+    -- Static scan snapshot: immune to the per-attempt filter and to stale CentroidsScore data
+    local source = self.ScanValidTilesBias;
+    if source == nil or #source == 0 then
+        source = self.ScanValidTiles or {};
+    end
+    for _, hex in ipairs(source) do
+        if hex.IsMajorSpawnable then
+            table.insert(tiles, hex);
+        end
+    end
+    return tiles;
+end
+
+function CivilizationAssignSpawn:GetCloseTeamCondition(BBM_HexMap, hex)
+    local f = self.TeamFilter;
     if f == nil then
         return true;
     end
-    if f.Near ~= nil then
-        return hex:DistanceTo(f.Near) <= f.Max;
-    end
-    if f.Cache[hex] == nil then
-        local ok = false;
-        for _, t in ipairs(f.MateTiles) do
-            local d = hex:DistanceTo(t);
-            if d > f.Min and d <= f.Max then
-                ok = true;
-                break;
+    -- Close teams: hard band check against the already placed teammates
+    if f.Anchors ~= nil then
+        local nearAnchor = false;
+        for _, anchor in ipairs(f.Anchors) do
+            local d = hex:DistanceTo(anchor);
+            if d <= f.Min then
+                return false; -- too close to an already placed teammate
+            end
+            if d <= f.Max then
+                nearAnchor = true;
             end
         end
-        f.Cache[hex] = ok;
+        if not nearAnchor then
+            return false;
+        end
     end
-    return f.Cache[hex];
+    if f.MateLists ~= nil and next(f.MateLists) ~= nil then
+        if f.Cache[hex] == nil then
+            local ok = true;
+            for _, list in pairs(f.MateLists) do
+                local found = false;
+                for _, tile in ipairs(list) do
+                    if tile ~= hex and tile.IsMajorSpawnable then
+                        -- the future teammate must still fit in the star around a placed anchor
+                        local anchorOk = true;
+                        if f.Anchors ~= nil then
+                            anchorOk = false;
+                            for _, anchor in ipairs(f.Anchors) do
+                                local da = tile:DistanceTo(anchor);
+                                if da > f.Min and da <= f.Max then
+                                    anchorOk = true;
+                                    break;
+                                end
+                            end
+                        end
+                        if anchorOk then
+                            local d = hex:DistanceTo(tile);
+                            if d > f.Min and d <= f.Max then
+                                found = true;
+                                break;
+                            end
+                        end
+                    end
+                end
+                if not found then
+                    ok = false;
+                    break;
+                end
+            end
+            f.Cache[hex] = ok;
+        end
+        return f.Cache[hex];
+    end
+    return true;
 end
 
--- Returns true when the filter changed (widened or dropped) and the search is worth trying again
-function CivilizationAssignSpawn:WidenDuoFilter(BBM_HexMap)
-    local f = self.DuoFilter;
+-- Returns true only when the band was widened and the search is worth trying again.
+-- Single widening only: the band goes from minimum + CloseTeamStep to minimum + CloseTeamStep +
+-- CloseTeamWidenStep once. A second failure returns false without touching the filter: the caller
+-- abandons the trial instead of dropping the rule and placing the civ anywhere on the map.
+function CivilizationAssignSpawn:WidenCloseTeamFilter(BBM_HexMap)
+    local f = self.TeamFilter;
     if f == nil then
         return false;
     end
-    if f.Max + BBM_HexMap.DuoWidenStep <= BBM_HexMap.DuoMaxDistance + BBM_HexMap.DuoWidenMax then
-        f.Max = f.Max + BBM_HexMap.DuoWidenStep;
-        f.Cache = {};
-        _Debug("Close duos - maximum distance widened to ", f.Max, " for ", self.CivilizationLeader);
-    else
-        print("Close duos - no tile near the teammate, rule dropped for "..tostring(self.CivilizationLeader));
-        self.DuoFilter = nil;
+    BBM_HexMap.CloseTeamWindow = BBM_HexMap.CloseTeamWindow or {};
+    local window = BBM_HexMap.CloseTeamWindow[self.CivilizationTeam];
+    if window == nil then
+        self.TeamFilter = nil;
+        return false;
     end
+    if window.Widened then
+        _Debug("Close teams - no bias tile close enough even after widening for ", self.CivilizationLeader);
+        return false;
+    end
+    local widenStep = BBM_HexMap.CloseTeamWidenStep or 3;
+    window.Widened = true;
+    window.Max = window.Max + widenStep;
+    f.Max = window.Max;
+    f.Cache = {};
+    _Debug("Close teams - maximum distance widened once to ", f.Max, " for ", self.CivilizationLeader);
     return true;
 end
 
@@ -435,7 +617,7 @@ function CivilizationAssignSpawn:GetValidSpawnsInHexList(BBM_HexMap, listHex)
         -- In Terra, major civ spawn on the biggest island
         local terraCondition = isTerraMap == false or (isTerraMap and hex.Plot:GetArea():GetID() == BBM_HexMap.BiggestIsland:GetID())
         local RTScondition = self:GetXPlacementCondition(BBM_HexMap, hex);
-        if RTScondition and terraCondition and hex.IsMajorSpawnable and self:ValidWalkableTiles(hex) and self:ValidTundraDensity(hex) and self:GetDuoCondition(BBM_HexMap, hex) then --pre calculation of technical spawns
+        if RTScondition and terraCondition and hex.IsMajorSpawnable and self:ValidWalkableTiles(hex) and self:ValidTundraDensity(hex) and self:GetCloseTeamCondition(BBM_HexMap, hex) then --pre calculation of technical spawns
             if self.IsTundraBias == false and self.IsDesertBias == false and hex:IsNextToOasis() == false then
                 -- If Maya ignore fresh water, it will be placed last because there is too much valid tiles
                 -- Temp 5 = tundra only conditions
@@ -457,7 +639,7 @@ function CivilizationAssignSpawn:GetValidSpawnsInHexList(BBM_HexMap, listHex)
 end
 
 function CivilizationAssignSpawn:GetXPlacementCondition(BBM_HexMap, hex)
-    if  BBM_HexMap.TeamerConfig == TeamerConfigStandard or BBM_HexMap.TeamerConfig == TeamerConfigCloseDuos then
+    if  BBM_HexMap.TeamerConfig == TeamerConfigStandard or BBM_HexMap.TeamerConfig == TeamerConfigCloseTeams then
         return true;
     end
     BBM_HexMap.RTSContinentSetup = BBM_HexMap.RTSContinentSetup or {}
@@ -586,6 +768,8 @@ end
 
 
 -- Find the best centroid for the civ from data analysis
+-- Always falls back on technical valid tiles when no bias tile is available.
+-- Returns useEveryValidTiles so the caller can widen the close team window before accepting the fallback.
 function CivilizationAssignSpawn:FindHighestScoreHex()
     local topCentroids =  {};
     local i = 0;
@@ -625,8 +809,10 @@ function CivilizationAssignSpawn:FindHighestScoreHex()
     end
     if #topCentroids == 0 then
         --  No centroid found => not even a valid tile in the map = impossible to place civ
+        self.FallbackUsed = false;
         return nil;
     end
+    self.FallbackUsed = useEveryValidTiles;
     -- Compare regions by size of valids tiles and best score tile in region
     local validTilesInTop5 = {}
     for _, c in pairs(topCentroids) do
@@ -641,19 +827,31 @@ function CivilizationAssignSpawn:FindHighestScoreHex()
         end
     end
 
-    -- Take random tile among the highest scores
-    local selectedHex, score = self:GetHighestHexScore(validTilesInTop5)
+    -- Close teams: penalise candidates that spread the team too far from its placed anchors.
+    -- The malus is folded into the returned score so the trial comparison sees it too.
+    local penaltyAnchors = nil;
+    local penaltyCfg = nil;
+    if self.TeamFilter ~= nil and self.TeamFilter.Anchors ~= nil then
+        penaltyAnchors = self.TeamFilter.Anchors;
+        penaltyCfg = self.TeamFilter.MalusCfg;
+    end
 
-    return selectedHex, score;
+    -- Take random tile among the highest scores
+    local selectedHex, score = self:GetHighestHexScore(validTilesInTop5, penaltyAnchors, penaltyCfg)
+
+    return selectedHex, score, useEveryValidTiles;
 end
 
 
 -- Return the highest score hex for this civ
-function CivilizationAssignSpawn:GetHighestHexScore(hexList)
+function CivilizationAssignSpawn:GetHighestHexScore(hexList, penaltyAnchors, penaltyCfg)
     local scoring = {}
     -- Get all the hex scores for this civ and order them
     for _, h in pairs(hexList) do
         local score = self:ComputeHexScoreCiv(h)
+        if penaltyCfg ~= nil then
+            score = score - self:GetCloseTeamDistanceMalus(h, penaltyAnchors, penaltyCfg)
+        end
         table.insert(scoring, { Hex = h, Score = score})
     end
     table.sort(scoring, function(a, b)
@@ -1237,16 +1435,4 @@ function CivilizationAssignSpawn:IsBiasRespected(hex, hexMap)
     end
     return isOneOfBiasRespected;
 end
-
-
-function CivilizationAssignSpawn:FindTotalNumberOfValidTiles(BBM_HexMap)
-    local totalValidTiles = 0;
-    for i, centroid in pairs(BBM_HexMap.centroidsArray) do
-        local centScore = self:ComputeBiasScoreCivCentroid(centroid);
-        local meanPeninsulaScore = 0;
-        local validTiles = self:GetValidSpawnsInHexList(BBM_HexMap, centroid.HexCluster);
-        totalValidTiles = totalValidTiles + #validTiles;
-    end    
-end
-
 

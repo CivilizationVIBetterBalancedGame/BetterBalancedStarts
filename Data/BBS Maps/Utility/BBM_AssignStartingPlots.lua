@@ -24,6 +24,10 @@ local BBS_VERSION = "2.2.0"
 -- Special civilisations types
 BBS_LEADER_TYPE_SPECTATOR = "LEADER_SPECTATOR"
 
+-- Malus applied per civilisation that had to fall back on technical valid tiles
+-- because no bias-preferred tile was available. Applies to every game mode.
+BBM_FALLBACK_MALUS = 20
+
 --------------------------------------------------------------------------------
 --  Init metatable -------------------------------------------------------------
 --------------------------------------------------------------------------------
@@ -121,11 +125,13 @@ function BBM_AssignStartingPlots.Create(args)
         _Debug("Leader added ", i, player, leader, name, team)
         table.insert(BBM_Civilisations, newCivilization);
     end
-    -- Close duos: each player of a team of 2 knows its teammate
+    -- Close teams: each player of a team knows all its teammates (any team size >= 2)
     for _, members in pairs(BBM_Teams) do
-        if #members == 2 then
-            members[1].DuoMate = members[2];
-            members[2].DuoMate = members[1];
+        if #members >= 2 then
+            for _, civ in ipairs(members) do
+                civ.TeamMates = members;
+                civ.TeamSize = #members;
+            end
         end
     end
 
@@ -268,8 +274,12 @@ function BBM_AssignStartingPlots.Create(args)
         local meanScore = 0
         if #list > 0 then
             local totalScore = 0
+            local fallbackCount = 0
             for _, civscore in pairs(list) do
                 totalScore = totalScore + civscore.Score;
+                if civscore.Fallback then
+                    fallbackCount = fallbackCount + 1;
+                end
                 if civscore.Score < minLocalScore then
                     minLocalScore = civscore.Score;
                 end
@@ -284,6 +294,10 @@ function BBM_AssignStartingPlots.Create(args)
             if isTeamer and BBM_HexMap:IsTeamerValidContinentPlacement(index) == false then
                 print("Malus try score because all team spawns in a single continent")
                 meanScore = meanScore - 20;
+            end
+            if fallbackCount > 0 then
+                print("Malus try score because "..tostring(fallbackCount).." civ(s) used fallback spawns")
+                meanScore = meanScore - BBM_FALLBACK_MALUS * fallbackCount;
             end
 
             minDiffScore = maxLocalScore - minLocalScore
@@ -450,18 +464,18 @@ end
 function BBM_AssignStartingPlots:__PlaceMajorCivs(civs, BBM_HexMap, index) 
 -- TODO : manage cases when unable to place a civ => rollback and try again
     BBM_HexMap.tempMajorSpawns[index] = {};
-    if BBM_HexMap.TeamerConfig == TeamerConfigCloseDuos then
-        civs = GetDuoPlacementOrder(civs);
+    if BBM_HexMap.TeamerConfig == TeamerConfigCloseTeams then
+        civs = GetCloseTeamPlacementOrder(civs);
     end
     
-    for ind, civ in pairs(civs) do
+    for ind, civ in ipairs(civs) do
         if civ.CivilizationLeader ~= BBS_LEADER_TYPE_SPECTATOR then
             local placed, spawnHex, score = civ:AssignSpawnByCentroid(BBM_HexMap);
             if placed == false then
                 print("Failed to place civ "..tostring(civ.CivilizationLeader))
                 return false;
             end
-            table.insert(BBM_HexMap.tempMajorSpawns[index], {Civ = civ, Spawn = spawnHex, Score = score});
+            table.insert(BBM_HexMap.tempMajorSpawns[index], {Civ = civ, Spawn = spawnHex, Score = score, Fallback = civ.FallbackUsed});
             if BBM_HexMap.TeamerConfig == TeamerConfigEastVsWest then
                 BBM_HexMap.RTSContinentSetup = BBM_HexMap.RTSContinentSetup or {}
                 BBM_HexMap.RTSContinentSetup[civ.CivilizationTeam] = spawnHex.IslandId;
@@ -504,6 +518,8 @@ end
 function BBM_AssignStartingPlots:__ResetMajorsSpawns(civs, BBM_HexMap)
     BBM_HexMap.majorSpawns = {};
     BBM_HexMap:ResetSpawnableHex();
+    -- Close teams: the widened radius is shared per team and must not leak between attempts
+    BBM_HexMap.CloseTeamWindow = {};
     for _, civ in pairs(civs) do
         if civ.AttributedCentroid ~= nil then
             civ.AttributedCentroid.PlacedCiv = false;
@@ -511,6 +527,8 @@ function BBM_AssignStartingPlots:__ResetMajorsSpawns(civs, BBM_HexMap)
         end
         civ.AttributedCentroid = nil;
         civ.StartingHex = {};
+        civ.TeamFilter = nil;
+        civ.FallbackUsed = false;
     end
 end
 
@@ -535,28 +553,31 @@ function Is1v1OrTeamerConfig()
     return isTeamerConfig;
 end
 
--- Close duos: at least 2 teams, all of exactly 2 players (spectators excluded)
-function IsDuoConfig()
-    local teamCount = 0;
-    for _, members in pairs(BBM_Teams) do
-        teamCount = teamCount + 1;
-        if #members ~= 2 then
-            return false;
-        end
-    end
-    return teamCount >= 2;
-end
-
--- Close duos: keep the BBM order (most constrained civs first) and place each teammate right after its partner
-function GetDuoPlacementOrder(civs)
+-- Close teams: keep the BBM order (most constrained civs first) and place every team member
+-- right after the first member of its team. Members are ordered by increasing number of valid
+-- bias tiles, random tie-break, so the most constrained teammate becomes the anchor.
+function GetCloseTeamPlacementOrder(civs)
     local order = {};
     local done = {};
     for _, civ in ipairs(civs) do
         if done[civ] == nil then
-            table.insert(order, civ);
-            done[civ] = true;
-            local mate = civ.DuoMate;
-            if mate ~= nil and done[mate] == nil then
+            local teamMembers = {};
+            if civ.TeamMates ~= nil then
+                for _, mate in ipairs(civ.TeamMates) do
+                    if done[mate] == nil then
+                        table.insert(teamMembers, mate);
+                    end
+                end
+            else
+                table.insert(teamMembers, civ);
+            end
+            table.sort(teamMembers, function(a, b)
+                if a.TotalValidTiles == b.TotalValidTiles then
+                    return a.RandomPlaceIdOrder < b.RandomPlaceIdOrder;
+                end
+                return a.TotalValidTiles < b.TotalValidTiles;
+            end);
+            for _, mate in ipairs(teamMembers) do
                 table.insert(order, mate);
                 done[mate] = true;
             end

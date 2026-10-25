@@ -297,7 +297,7 @@ g_PASSABLE_LAND = "PassableLand";
 
 TeamerConfigStandard = "Standard";
 TeamerConfigEastVsWest = "EastVsWest";
-TeamerConfigCloseDuos = "CloseDuos";
+TeamerConfigCloseTeams = "CloseTeams";
 EastTeam = "East";
 WestTeam = "West";
 Quadrant_NW = "North-West"
@@ -306,7 +306,7 @@ Quadrant_SE = "South-East"
 Quadrant_SW = "South-West"
 
 function _Debug(...)
-    --print(...);
+    print(...);
 end
 
 function IsWorldAgeOld()
@@ -866,12 +866,16 @@ function HexMap.new(_width, _height, mapScript)
     instance.RTSPangaeaTeamerConfigWarMax = math.floor(_width * 0.13 + 0.5); -- on 4v4 = +-11 from middle
     instance.RTSPangaeaTeamerConfigWarMaxTundra = math.floor(_width * 0.18 + 0.5); -- on 4v4 = +-15 from middle
     instance.RTSPangaeaTeamerConfigSimMin = math.floor(_width * 0.2 + 0.5); -- on 4v4 = +-17 from middle
-    -- Close duos: maximum distance between teammates. Spawn blocking covers rings 0 to the minimum distance,
-    -- so a teammate lands between minimum distance + 1 and minimum distance + 3. When no tile is left that close,
-    -- the maximum is widened by DuoWidenStep up to DuoMaxDistance + DuoWidenMax, then the rule is dropped.
-    instance.DuoMaxDistance = instance.minimumDistanceMajorToMajorCivs + 3;
-    instance.DuoWidenStep = 2;
-    instance.DuoWidenMax = 10;
+    -- Close teams: hard band for a new teammate is ]minimumDistance, minimumDistance + CloseTeamStep].
+    -- Spawn blocking covers rings 0 to the minimum distance, so the first usable ring is minimum + 1.
+    -- The band is measured against at least one already placed teammate, which allows chain layouts.
+    -- When no bias-valid tile is left in the band, the window is widened once by CloseTeamWidenStep
+    -- and never again: the next failure drops the rule and falls back on technical valid tiles.
+    instance.CloseTeamStep = 3;
+    instance.CloseTeamWidenStep = 3;
+    instance.CloseTeamMalusAvg = 5;
+    instance.CloseTeamMalusFar = 15;
+    instance.CloseTeamWindow = {};
     -- Put maps parameters here ? (world age, temperature, rainfall etc)
     -- BBM Mountains change = recalculate areas
     AreaBuilder.Recalculate();
@@ -3676,8 +3680,8 @@ function even(test)
 end
 
 function HexMap:GetTeamerPositionConfig() 
-    if MapConfiguration.GetValue("BBM_Team_Spawn") == 2 and IsDuoConfig() then
-        return TeamerConfigCloseDuos;
+    if MapConfiguration.GetValue("BBM_Team_Spawn") == 2 then
+        return TeamerConfigCloseTeams;
     end
     if MapConfiguration.GetValue("BBM_Team_Spawn") ~= nil and Is1v1OrTeamerConfig() then
         local Teamers_Config = MapConfiguration.GetValue("BBM_Team_Spawn");
