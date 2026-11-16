@@ -4,6 +4,7 @@
 --	PURPOSE: Rich Riverlands - highlands with abundant rivers, lakes, and resources.
 --           Each map size uses one tier smaller grid dimensions while
 --           retaining the selected size's continent count.
+--           Tiny and Small use larger grids and reshaped water (see below).
 ------------------------------------------------------------------------------
 --	Copyright (c) 2014 Firaxis Games, Inc. All rights reserved.
 ------------------------------------------------------------------------------
@@ -30,6 +31,36 @@ local featureGen = nil;
 local g_riverPlots = {};
 local g_riverStartPlots = {};
 local g_iRiverID = 0;
+
+------------------------------------------------------------------------------
+-- Tiny (2v2) and Small (3v3): water reshaping.
+-- BBM only counts water bodies of 10+ tiles as coast (the game's OCEAN_MIN_WATER_SIZE), so coastal-bias
+-- civs (Spain, Japan, Norway, Phoenicia...) rarely found a start and BBM fell back to Firaxis placement.
+-- Bodies of 6-9 tiles are neither coast nor wanted lakes, so on Tiny and Small:
+--   * a few bodies, spaced apart, are grown to sea size (real coast for naval civs),
+--   * every other body is cut down to at most WATER_MAX_LAKE_TILES.
+------------------------------------------------------------------------------
+local WATER_MAX_LAKE_TILES = 5;
+local WATER_SEA_MIN_TILES = 10;
+local WATER_SEA_TARGET_TILES = 12;
+local WATER_SEA_SPACING = 12; -- below the 14 tile minimum distance between majors
+local WATER_SEA_MARGIN = 4;   -- keep new seas away from the map edge
+-- Seas must stay clear of tundra (starts at latitude 0.66 here, and BBM rejects starts with tundra within
+-- 3 tiles) and of the polar ice band that ConvertIceToSnow turns into land. 0 = equator, 1 = pole.
+local WATER_SEA_MAX_LAT = 0.45;
+
+function UseWaterReshape()
+	local sizeType = GameInfo.Maps[Map.GetMapSize()].MapSizeType;
+	return sizeType == "MAPSIZE_TINY" or sizeType == "MAPSIZE_SMALL";
+end
+
+-- Number of guaranteed sea-sized bodies: 3 on Tiny (2v2), 4 on Small (3v3, a bit more map and two more civs).
+function GetWaterSeaBodies()
+	if GameInfo.Maps[Map.GetMapSize()].MapSizeType == "MAPSIZE_SMALL" then
+		return 4;
+	end
+	return 3;
+end
 
 ------------------------------------------------------------------------------
 -- The application side will call GetMapScriptInfo directly to request
@@ -124,6 +155,10 @@ function GenerateMap()
 	-- Standard large lakes, then flat-only small lake passes.
 	-- AddFlatLakes skips hills and mountains, preserving the highlands character.
 	local numLargeLakes = math.ceil(GameInfo.Maps[Map.GetMapSize()].Continents / 2);
+	-- AddLakes' large lake can reach 7 tiles; Tiny and Small keep lakes at WATER_MAX_LAKE_TILES or fewer.
+	if UseWaterReshape() then
+		numLargeLakes = 0;
+	end
 	AddLakes(numLargeLakes);
 	AddFlatLakes(4);
 	AreaBuilder.Recalculate();
@@ -257,9 +292,278 @@ function GeneratePlotTypes()
 		end
 	end
 	
+	if UseWaterReshape() then
+		-- Land type a removed water tile gets, using the same thresholds as the loop above.
+		ReshapeTinyWater(plotTypes, function(x, y)
+			local val = terrainFrac:GetHeight(x, y);
+			if val >= iMountainsThreshold then
+				if mountain_passFrac:GetHeight(x, y) >= iPassThreshold then
+					return g_PLOT_TYPE_HILLS;
+				end
+				return g_PLOT_TYPE_MOUNTAIN;
+			elseif val >= iHillsThreshold then
+				return g_PLOT_TYPE_HILLS;
+			end
+			return g_PLOT_TYPE_LAND;
+		end);
+	end
+
 	AreaBuilder.Recalculate();
 	
 	return plotTypes;
+end
+
+-- Works on plotTypes before terrain is generated. Water bodies are connected groups of ocean plots
+-- (all water at this stage is the lake fractal). Tiles of a body are kept in breadth-first order, so
+-- any prefix of the list is still connected.
+function ReshapeTinyWater(plotTypes, landTypeAt)
+	local iW, iH = Map.GetGridSize();
+	local seaBodyTarget = GetWaterSeaBodies();
+
+	local function idx(x, y)
+		return y * iW + x + 1;
+	end
+
+	local function isWater(x, y)
+		return plotTypes[idx(x, y)] == g_PLOT_TYPE_OCEAN;
+	end
+
+	local function neighbors(x, y)
+		local list = {};
+		for dir = 0, DirectionTypes.NUM_DIRECTION_TYPES - 1 do
+			local p = Map.GetAdjacentPlot(x, y, dir);
+			if p ~= nil then
+				table.insert(list, {x = p:GetX(), y = p:GetY()});
+			end
+		end
+		return list;
+	end
+
+	local bodyOf = {}; -- plot index -> body number
+	local bodies = {};
+	for x = 0, iW - 1 do
+		for y = 0, iH - 1 do
+			if isWater(x, y) and bodyOf[idx(x, y)] == nil then
+				local n = #bodies + 1;
+				local tiles = {};
+				local queue = {{x = x, y = y}};
+				bodyOf[idx(x, y)] = n;
+				local head = 1;
+				while head <= #queue do
+					local t = queue[head];
+					head = head + 1;
+					table.insert(tiles, t);
+					for _, nb in ipairs(neighbors(t.x, t.y)) do
+						if isWater(nb.x, nb.y) and bodyOf[idx(nb.x, nb.y)] == nil then
+							bodyOf[idx(nb.x, nb.y)] = n;
+							table.insert(queue, nb);
+						end
+					end
+				end
+				bodies[n] = {n = n, tiles = tiles, kind = "lake"};
+			end
+		end
+	end
+
+	-- Latitude 0 = equator, 1 = pole. Water near the poles turns to ice and then tundra (ConvertIceToSnow),
+	-- and nobody starts there, so only bodies in the middle band count as usable coast.
+	local function latitude(y)
+		return math.abs(iH / 2 - y) / (iH / 2);
+	end
+
+	local function inSeaBand(tiles)
+		for _, t in ipairs(tiles) do
+			if latitude(t.y) > WATER_SEA_MAX_LAT then
+				return false;
+			end
+		end
+		return true;
+	end
+
+	local seas = {};
+	local polarBodies = 0;
+	for _, b in ipairs(bodies) do
+		if #b.tiles >= WATER_SEA_MIN_TILES then
+			if inSeaBand(b.tiles) then
+				b.kind = "sea";
+				table.insert(seas, b);
+			else
+				b.kind = "polar"; -- big, but out of the band: left as it is, not counted
+				polarBodies = polarBodies + 1;
+			end
+		end
+	end
+	local naturalSeas = #seas;
+
+	local function bodyDistance(tilesA, tilesB)
+		local best = 1000;
+		for _, a in ipairs(tilesA) do
+			for _, b in ipairs(tilesB) do
+				local d = Map.GetPlotDistance(a.x, a.y, b.x, b.y);
+				if d < best then
+					best = d;
+				end
+			end
+		end
+		return best;
+	end
+
+	local function farFromSeas(tiles)
+		for _, s in ipairs(seas) do
+			if bodyDistance(tiles, s.tiles) < WATER_SEA_SPACING then
+				return false;
+			end
+		end
+		return true;
+	end
+
+	-- Adds land tiles next to the body, preferring tiles that touch it most, and never tiles that touch
+	-- another water body (that would merge them).
+	local function growBody(body, targetSize)
+		while #body.tiles < targetSize do
+			local best = nil;
+			local bestScore = -1;
+			local seen = {};
+			for _, t in ipairs(body.tiles) do
+				for _, nb in ipairs(neighbors(t.x, t.y)) do
+					local k = idx(nb.x, nb.y);
+					if not seen[k] and not isWater(nb.x, nb.y) and latitude(nb.y) <= WATER_SEA_MAX_LAT then
+						seen[k] = true;
+						local ok = true;
+						local contact = 0;
+						for _, nn in ipairs(neighbors(nb.x, nb.y)) do
+							if isWater(nn.x, nn.y) then
+								if bodyOf[idx(nn.x, nn.y)] == body.n then
+									contact = contact + 1;
+								else
+									ok = false;
+								end
+							end
+						end
+						if ok then
+							local score = contact * 10 + TerrainBuilder.GetRandomNumber(10, "Water reshape grow");
+							if score > bestScore then
+								best = nb;
+								bestScore = score;
+							end
+						end
+					end
+				end
+			end
+			if best == nil then
+				return;
+			end
+			plotTypes[idx(best.x, best.y)] = g_PLOT_TYPE_OCEAN;
+			bodyOf[idx(best.x, best.y)] = body.n;
+			table.insert(body.tiles, best);
+		end
+	end
+
+	-- Starts a new body on land, as far as possible from the existing seas.
+	local function seedNewSea()
+		local best = nil;
+		local bestScore = -1;
+		for x = WATER_SEA_MARGIN, iW - 1 - WATER_SEA_MARGIN do
+			for y = WATER_SEA_MARGIN, iH - 1 - WATER_SEA_MARGIN do
+				if latitude(y) <= WATER_SEA_MAX_LAT and not isWater(x, y) then
+					local touching = false;
+					for _, nb in ipairs(neighbors(x, y)) do
+						if isWater(nb.x, nb.y) then
+							touching = true;
+						end
+					end
+					if not touching then
+						local minD = 30;
+						for _, s in ipairs(seas) do
+							for _, t in ipairs(s.tiles) do
+								local d = Map.GetPlotDistance(x, y, t.x, t.y);
+								if d < minD then
+									minD = d;
+								end
+							end
+						end
+						local score = minD * 10 + TerrainBuilder.GetRandomNumber(10, "Water reshape seed");
+						if score > bestScore then
+							best = {x = x, y = y};
+							bestScore = score;
+						end
+					end
+				end
+			end
+		end
+		if best == nil then
+			return nil;
+		end
+		local n = #bodies + 1;
+		plotTypes[idx(best.x, best.y)] = g_PLOT_TYPE_OCEAN;
+		bodyOf[idx(best.x, best.y)] = n;
+		local body = {n = n, tiles = {best}, kind = "lake"};
+		bodies[n] = body;
+		growBody(body, WATER_SEA_TARGET_TILES);
+		return body;
+	end
+
+	-- Promote the biggest existing bodies that are far enough from the seas chosen so far.
+	local candidates = {};
+	for _, b in ipairs(bodies) do
+		if b.kind == "lake" and inSeaBand(b.tiles) then
+			table.insert(candidates, b);
+		end
+	end
+	table.sort(candidates, function(a, b)
+		if #a.tiles ~= #b.tiles then
+			return #a.tiles > #b.tiles;
+		end
+		return a.n < b.n;
+	end);
+	for _, b in ipairs(candidates) do
+		if #seas >= seaBodyTarget then
+			break
+		end
+		if farFromSeas(b.tiles) then
+			growBody(b, WATER_SEA_TARGET_TILES);
+			if #b.tiles >= WATER_SEA_MIN_TILES then
+				b.kind = "sea";
+				table.insert(seas, b);
+			end
+		end
+	end
+
+	-- Not enough suitable bodies: carve new ones.
+	local attempts = 0;
+	while #seas < seaBodyTarget and attempts < 6 do
+		attempts = attempts + 1;
+		local b = seedNewSea();
+		if b == nil then
+			break
+		end
+		if #b.tiles >= WATER_SEA_MIN_TILES then
+			b.kind = "sea";
+			table.insert(seas, b);
+		end
+	end
+
+	-- Everything that is not a sea is a lake: keep a connected core of at most WATER_MAX_LAKE_TILES.
+	local lakesKept = 0;
+	local tilesRemoved = 0;
+	for _, b in ipairs(bodies) do
+		if b.kind == "lake" then
+			lakesKept = lakesKept + 1;
+			for i = WATER_MAX_LAKE_TILES + 1, #b.tiles do
+				local t = b.tiles[i];
+				plotTypes[idx(t.x, t.y)] = landTypeAt(t.x, t.y);
+				tilesRemoved = tilesRemoved + 1;
+			end
+		end
+	end
+
+	local seaSizes = {};
+	for _, s in ipairs(seas) do
+		table.insert(seaSizes, #s.tiles);
+	end
+	print("Water reshape: " .. #seas .. " sea bodies (" .. naturalSeas .. " natural), sizes " .. table.concat(seaSizes, ",")
+		.. "; " .. lakesKept .. " lakes kept at <= " .. WATER_MAX_LAKE_TILES .. " tiles, " .. tilesRemoved .. " water tiles removed; "
+		.. polarBodies .. " big polar bodies left alone");
 end
 
 function AddFeatures()
@@ -796,12 +1100,15 @@ function GetMapInitData(MapSize)
 
 	-- Use one size smaller for grid dimensions, keeping continent count from the selected size.
 	-- This keeps the map denser/more focused while retaining the correct number of continents.
-	--   Small    → Tiny    dimensions (60×38)
+	--   Tiny     → 52×32 (~416 tiles per player at 4 players)
+	--   Small    → 64×40 (~427 tiles per player at 6 players, same as Standard's ~426 at 8)
 	--   Standard → Small   dimensions (74×46)
 	--   Large    → Standard dimensions (84×54)  ← CPL 10-man FFA standard
 	--   Huge     → Large   dimensions (96×60)
+	-- Width and height must both be even numbers: odd dimensions bug the map wrap.
 	local sizeDownMap = {
-		MAPSIZE_SMALL    = {W=60,  H=38},
+		MAPSIZE_TINY     = {W=52,  H=32},
+		MAPSIZE_SMALL    = {W=64,  H=40},
 		MAPSIZE_STANDARD = {W=74,  H=46},
 		MAPSIZE_LARGE    = {W=84,  H=54},
 		MAPSIZE_HUGE     = {W=96, H=60},
