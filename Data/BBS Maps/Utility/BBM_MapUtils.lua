@@ -884,8 +884,8 @@ function HexMap:SetMinimumDistanceMajorToMajorCivs()
         or self.mapScript == MapScripts.MAP_RICH_HIGHLANDS then
             return 15;
         elseif self.mapScript == MapScripts.MAP_RICH_RIVERLANDS then
-            -- Small uses a Tiny grid (60x38) so needs a reduced distance.
-            if Map.GetMapSize() <= 1 then return 11; end
+            -- Duel keeps its default grid, which is too small for 14. Tiny and Small use enlarged grids (see rich_riverlands.lua).
+            if Map.GetMapSize() == 0 then return 11; end
             return 14;
         elseif self.mapScript == MapScripts.MAP_INLAND_SEA 
         or self.mapScript == MapScripts.MAP_PANGAEA_ULTIMA then
