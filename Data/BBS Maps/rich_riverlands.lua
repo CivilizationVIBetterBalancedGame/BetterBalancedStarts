@@ -1100,15 +1100,15 @@ function GetMapInitData(MapSize)
 
 	-- Use one size smaller for grid dimensions, keeping continent count from the selected size.
 	-- This keeps the map denser/more focused while retaining the correct number of continents.
-	--   Tiny     → 54×34 (~459 tiles per player at 4 players, close to Large's ~454 at 10)
-	--   Small    → 66×42 (~462 tiles per player at 6 players)
+	--   Tiny     → 52×32 (~416 tiles per player at 4 players)
+	--   Small    → 64×40 (~427 tiles per player at 6 players, same as Standard's ~426 at 8)
 	--   Standard → Small   dimensions (74×46)
 	--   Large    → Standard dimensions (84×54)  ← CPL 10-man FFA standard
 	--   Huge     → Large   dimensions (96×60)
 	-- Width and height must both be even numbers: odd dimensions bug the map wrap.
 	local sizeDownMap = {
-		MAPSIZE_TINY     = {W=54,  H=34},
-		MAPSIZE_SMALL    = {W=66,  H=42},
+		MAPSIZE_TINY     = {W=52,  H=32},
+		MAPSIZE_SMALL    = {W=64,  H=40},
 		MAPSIZE_STANDARD = {W=74,  H=46},
 		MAPSIZE_LARGE    = {W=84,  H=54},
 		MAPSIZE_HUGE     = {W=96, H=60},
