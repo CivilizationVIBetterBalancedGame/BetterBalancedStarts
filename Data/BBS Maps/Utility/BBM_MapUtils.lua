@@ -2526,7 +2526,8 @@ function HexMap:TerraformAdd1Food(hex, canMinusProd, canExtraYield)
         if hex.ResourceType == g_RESOURCE_MAIZE or hex.ResourceType == g_RESOURCE_COPPER then
             self:TerraformSetResource(hex, g_RESOURCE_NONE, false);
         elseif hex.Food + hex.Prod == 3 and g_RESOURCES_BONUS_LIST[hex.ResourceType] then
-            self:TerraformTo22Yields(hex, true);
+            -- 3 yields bonus tile to 2/2 : stop here, do not add food again on the new tile
+            return self:TerraformTo22Yields(hex, true);
         else
             return false;
         end
@@ -2581,8 +2582,13 @@ function HexMap:TerraformAdd1FoodOnFeatureHex(hex, canMinusProd, canExtraYield)
         --end
     -- JUNGLE
     elseif hex.FeatureType == g_FEATURE_JUNGLE then
-        _Debug("TerraformAdd1FoodOnFeatureHex added bananas")
-        return self:TerraformSetResource(hex, g_RESOURCE_BANANAS, false)
+        -- Bananas on hills jungle make a high yield tile (2/2 -> 3/2) : only allowed with canExtraYield
+        -- Otherwise only on flat jungle (2/1 -> 3/1)
+        if canExtraYield or IsFlat(hex.TerrainType) then
+            _Debug("TerraformAdd1FoodOnFeatureHex added bananas")
+            return self:TerraformSetResource(hex, g_RESOURCE_BANANAS, false)
+        end
+        return false;
     -- FOREST
     elseif hex.FeatureType == g_FEATURE_FOREST then
         if canMinusProd and IsPlainLand(hex.TerrainType) then
