@@ -2445,21 +2445,19 @@ function HexMap:HasTerraformTo4YieldsRequirements(hex)
 end
 
 function HexMap:TerraformTo4YieldsTundra(hex, garanteed22)
-    -- 4yields considered as 1/2 or 1/3
+    -- 4yields considered as 1/2 only (tundra food counts +1, so 1/2 = 2/2)
+    -- Never produce hills + forest + deer : it is a 1/3 (= 2/3), counted as a high yield tile
     -- Possible resources (lux excluded) are sheep, deer, copper
     _Debug("Enter TerraformTo4YieldsTundra ", hex:PrintXY())
     if garanteed22 then
-        -- Default will be deer with hill/forest or both
+        -- Default will be deer with hill or forest (never both : 1/3 is a high yield)
         self:TerraformSetTerrain(hex, g_TERRAIN_TYPE_TUNDRA);
         self:TerraformSetFeature(hex, g_FEATURE_NONE, true);
         self:TerraformSetResource(hex, g_RESOURCE_DEER, true);
         local rng = TerrainBuilder.GetRandomNumber(100, "Random yields");
-        if rng <= 45 then
+        if rng <= 50 then
             return self:TerraformSetTerrain(hex, g_TERRAIN_TYPE_TUNDRA_HILLS);
-        elseif rng <= 75 then
-            return self:TerraformSetFeature(hex, g_FEATURE_FOREST, true);
         else
-            self:TerraformSetTerrain(hex, g_TERRAIN_TYPE_TUNDRA_HILLS);
             return self:TerraformSetFeature(hex, g_FEATURE_FOREST, true);
         end
     end
@@ -2467,6 +2465,9 @@ function HexMap:TerraformTo4YieldsTundra(hex, garanteed22)
         return false;
     end
     local rng = TerrainBuilder.GetRandomNumber(100, "Random resource");
+    -- Start from an empty tile : an existing forest or deer would end as hills + forest + deer (1/3, high yield)
+    self:TerraformSetFeature(hex, g_FEATURE_NONE, true);
+    self:TerraformSetResource(hex, g_RESOURCE_NONE, true);
     _Debug("TerraformTo4YieldsTundra - added hills ", hex:PrintXY());
     self:TerraformSetTerrain(hex, g_TERRAIN_TYPE_TUNDRA_HILLS);
     if rng <= 25 then
