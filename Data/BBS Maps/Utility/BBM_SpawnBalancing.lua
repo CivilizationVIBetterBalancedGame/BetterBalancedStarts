@@ -418,6 +418,10 @@ function SpawnBalancing:ApplyMinimalLandTiles(iMin, iMax)
                     end
                 end
             end
+            -- Desert bias : last resort if no 2/2 could be guaranteed in ring 1
+            if i == 1 and self.Civ.IsDesertBias and #self:Find22TilesInRing(1) < 1 then
+                self:ForceDesertTo22InRing1();
+            end
             -- Tag one 2/2 tiles on each ring 1 and 2 as minimaltiles to avoid further terraforming
             if i <= 2 then
                 local found22tiles = self:Find22TilesInRing(i);
@@ -461,6 +465,48 @@ function SpawnBalancing:ApplyMinimalLandTiles(iMin, iMax)
         end
     end
     _Debug("ApplyMinimalLandTiles DONE")
+end
+
+-- Desert bias : when no 2/2 could be guaranteed in ring 1 (only grass/plains tiles can become 2/2 and they may be
+-- taken by a lux, a strategic or the guaranteed high food tile), turn one ring 1 desert tile next to a grass/plains
+-- tile into a 2/2. The tile with the most grass/plains neighbours is preferred to keep a natural transition.
+function SpawnBalancing:ForceDesertTo22InRing1()
+    local candidates = {};
+    for _, h in ipairs(GetShuffledCopyOfTable(self.RingTables[1].DESERT)) do
+        if h:IsMountain() == false and h:IsFloodplains(true) == false
+                and h.FeatureType ~= g_FEATURE_OASIS and h.FeatureType ~= g_FEATURE_VOLCANO
+                and h.FeatureType ~= g_FEATURE_GEOTHERMAL_FISSURE
+                and h.IsNaturalWonder == false and h.IsTaggedAsMinimum == false
+                and not g_RESOURCES_LUX_LIST[h.ResourceType] and not g_RESOURCES_STRATEGICS[h.ResourceType] then
+            local nonDesertNeighbours = 0;
+            for _, n in pairs(h.AllRing6Map[1]) do
+                if n:IsGrassLand() or n:IsPlainLand() then
+                    nonDesertNeighbours = nonDesertNeighbours + 1;
+                end
+            end
+            if nonDesertNeighbours > 0 then
+                table.insert(candidates, { Hex = h, Score = nonDesertNeighbours });
+            end
+        end
+    end
+    -- Candidates were shuffled before, so equal scores keep a random order
+    table.sort(candidates, function(a, b) return a.Score > b.Score end);
+    for _, c in ipairs(candidates) do
+        local h = c.Hex;
+        local targetTerrain = g_TERRAIN_TYPE_PLAINS;
+        if IsHill(h.TerrainType) then
+            targetTerrain = g_TERRAIN_TYPE_PLAINS_HILLS;
+        end
+        if self:TerraformHex(h, 1, TerraformType[1], targetTerrain, false, false)
+                and self:TerraformHex(h, 1, TerraformType[16], 0, false, true)
+                and self:GetHexBaseFood(h) >= 2 and self:GetHexBaseProd(h) >= 2 then
+            h:SetTaggedAsMinimum(true);
+            print("ForceDesertTo22InRing1 - "..tostring(self.Civ.CivilizationLeader).." - desert tile turned into 2/2 on "..h:PrintXY());
+            return h;
+        end
+    end
+    print("ForceDesertTo22InRing1 - "..tostring(self.Civ.CivilizationLeader).." - no ring 1 desert tile could become a 2/2 (candidates = "..tostring(#candidates)..")");
+    return nil;
 end
 
 function SpawnBalancing:Find22TilesInRing(i)
