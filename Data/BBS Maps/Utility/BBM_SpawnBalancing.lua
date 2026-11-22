@@ -1334,7 +1334,7 @@ function SpawnBalancing:ForceHexRelocateToRing(hexToRelocate, ringTableHex, dest
             local canFeat = self.HexMap:TerraformSetFeatureRequirements(hex, hexData.FeatureId, false);
             local canRes = self.HexMap:TerraformSetResourceRequirements(hex, hexData.ResourceId);
             local canTerr = hex:IsSameTerrainCategory(hexData.TerrainId);
-            if canTerr and canFeat and hex.ResourceType == g_RESOURCE_NONE and self.HexMap:LuxPlacementRequirement(hex, hex.ResourceType) then
+            if canTerr and canFeat and hex.ResourceType == g_RESOURCE_NONE and self.HexMap:LuxPlacementRequirement(hex, hexData.ResourceId) then
                 self:TerraformHex(hex, destinationRing, TerraformType[1], hexData.TerrainId, true, false);
                 self:TerraformHex(hex, destinationRing, TerraformType[2], hexData.FeatureId, true, false);
                 if self:TerraformHex(hex, destinationRing, TerraformType[3], hexData.ResourceId, true, false) then
@@ -1352,7 +1352,7 @@ function SpawnBalancing:ForceHexRelocateToRing(hexToRelocate, ringTableHex, dest
             local canFeat = self.HexMap:TerraformSetFeatureRequirements(hex, hexData.FeatureId, false);
             local canRes = self.HexMap:TerraformSetResourceRequirements(hex, hexData.ResourceId);
             local canTerr = hex:IsSameTerrainCategory(hexData.TerrainId);
-            if canTerr and canFeat and hex.ResourceType == g_RESOURCE_NONE and self.HexMap:LuxPlacementRequirement(hex, hex.ResourceType) then
+            if canTerr and canFeat and hex.ResourceType == g_RESOURCE_NONE and self.HexMap:LuxPlacementRequirement(hex, hexData.ResourceId) then
                 self:TerraformHex(hex, destinationRing, TerraformType[1], hexData.TerrainId, true, false);
                 self:TerraformHex(hex, destinationRing, TerraformType[2], hexData.FeatureId, true, false);
                 if self:TerraformHex(hex, destinationRing, TerraformType[3], hexData.ResourceId, true, false) then

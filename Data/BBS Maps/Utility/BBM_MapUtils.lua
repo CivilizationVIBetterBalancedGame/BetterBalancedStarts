@@ -4467,6 +4467,7 @@ end
 local function BBM_BuildLuxCandidates(startPlot, rMin, rMax, contTypes, luxByIdx, iW, iH)
     local sx      = startPlot:GetX();
     local sy      = startPlot:GetY();
+    local contID  = startPlot:GetContinentType(); -- candidates must stay on the start plot continent (contTypes come from it)
     local cands   = {};
     local typeArr = {};
     for ri, _ in pairs(contTypes) do table.insert(typeArr, ri); end
@@ -4479,7 +4480,7 @@ local function BBM_BuildLuxCandidates(startPlot, rMin, rMax, contTypes, luxByIdx
                 local dist = Map.GetPlotDistance(sx, sy, nx, ny);
                 if dist >= rMin and dist <= rMax then
                     local plot = Map.GetPlot(nx, ny);
-                    if plot and not plot:IsWater() and plot:GetResourceType() < 0 then
+                    if plot and not plot:IsWater() and plot:GetResourceType() < 0 and plot:GetContinentType() == contID then
                         typeArr = GetShuffledCopyOfTable(typeArr);
                         for _, ri in ipairs(typeArr) do
                             local info = luxByIdx[ri];
