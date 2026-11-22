@@ -529,7 +529,7 @@ function SpawnBalancing:AddHighYieldFromStandard()
                 canAddLux = true;
             end    
             -- Try to terraform a standard tagged tile
-            if self:TerraformHex(hex, ringHex, TerraformType[13], true, canAddLux) then
+            if self:TerraformHex(hex, ringHex, TerraformType[13], 0, true, canAddLux) then
                 _Debug("AddHighYieldFromStandard added high yield on ", hex:PrintXY());
                 if wasTagged then
                     hex:SetTaggedAsMinimum(true);
@@ -1468,7 +1468,7 @@ function SpawnBalancing:TerraformRandomInRing(i, terraformType, id, needToBeWalk
             _Debug("Try to force on ring "..tostring(i));
             -- Try to add on Feature, exclude flood and geo
             for _, hex in pairs(listLowYieldsTiles) do
-                if hex.IsTaggedAsMinimum == false and needToBeWalkableTo == false or (needToBeWalkableTo and self.Hex:IsWalkableInRange(hex, i)) and hex:IsFloodplains(true) == false then
+                if hex.IsTaggedAsMinimum == false and (needToBeWalkableTo == false or self.Hex:IsWalkableInRange(hex, i)) and hex:IsFloodplains(true) == false then
                     if hex.ResourceType == g_RESOURCE_NONE and hex.FeatureType ~= g_FEATURE_GEOTHERMAL_FISSURE then
                         if self:TerraformHex(hex, i, terraformType, id, true, boolParam) then
                             _Debug("Terraformed a "..tostring(hex.FeatureType).." feature "..hex:PrintXY());

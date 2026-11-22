@@ -306,7 +306,7 @@ Quadrant_SE = "South-East"
 Quadrant_SW = "South-West"
 
 function _Debug(...)
-    print(...);
+    --print(...);
 end
 
 function IsWorldAgeOld()
@@ -2645,7 +2645,7 @@ function HexMap:Terraform4YieldsToHighYields(hex, canChangeResource, canAddLux)
             _Debug("Terraform4YieldsToHighYields Added a lux from standard ", hex.ResourceType)
             return true;
         end
-        if canChangeResource and (hex.ResourceType ~= g_RESOURCE_NONE and g_RESOURCES_LUX_LIST[hex.ResourceType] == false and g_RESOURCES_STRATEGICS[hex.ResourceType] == false) then
+        if canChangeResource and (hex.ResourceType ~= g_RESOURCE_NONE and not g_RESOURCES_LUX_LIST[hex.ResourceType] and not g_RESOURCES_STRATEGICS[hex.ResourceType]) then
             -- Stone, Sheep
             if hex.ResourceType ~= g_RESOURCE_BANANAS and hex.ResourceType ~= g_RESOURCE_DEER then
                 _Debug("Terraform4YieldsToHighYields Resource cleared", hex.ResourceType);
