@@ -1122,7 +1122,10 @@ function GetBiasScorePerFactor(hex, bias)
             biasScore = hex.TerrainsScore[bias.Value] * GetBiasFactorV2(bias);
         end
     elseif (bias.Type == "FEATURES") then
-        if hex.FeaturesScore[bias.Value] ~= nil  then
+        if bias.Value == g_FEATURE_JUNGLE and hex.JungleWeightedScore ~= nil then
+            -- Weighted by distance (rings 1-2 x3, ring 3 x2, rings 4-6 x0.5) : T2 = 2 per weight point, cap 120 = 60 weight points
+            biasScore = hex.JungleWeightedScore * GetBiasFactorV2(bias) / 4
+        elseif hex.FeaturesScore[bias.Value] ~= nil  then
             biasScore = hex.FeaturesScore[bias.Value] * GetBiasFactorV2(bias)
         end
     elseif (bias.Type == "RIVERS") then

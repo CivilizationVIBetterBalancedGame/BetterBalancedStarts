@@ -1169,8 +1169,13 @@ function HexMap:ComputeResourcesScore(hex)
 
 end
 
+-- Jungle bias : jungle close to the spawn matters more than far away jungle
+-- Weight per ring (spawn tile excluded, settling removes it)
+JungleRingWeights = { 3, 3, 2, 0.5, 0.5, 0.5 };
+
 function HexMap:ComputeFeaturesScore(hex)
     hex.FeaturesScore = {}
+    hex.JungleWeightedScore = 0
     local mapRing6 = hex.AllRing6Map
     for i = 1, #mapRing6 do
         local ring = mapRing6[i]
@@ -1180,6 +1185,9 @@ function HexMap:ComputeFeaturesScore(hex)
                 local score = hex.FeaturesScore[h.FeatureType] or 0 --init
                 score = score + 1
                 hex.FeaturesScore[h.FeatureType] = score
+                if h.FeatureType == g_FEATURE_JUNGLE then
+                    hex.JungleWeightedScore = hex.JungleWeightedScore + (JungleRingWeights[i] or 0)
+                end
             end
         end
     end

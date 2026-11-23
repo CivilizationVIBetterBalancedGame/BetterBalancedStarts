@@ -42,3 +42,5 @@ DELETE FROM StartBiasTerrains WHERE CivilizationType='CIVILIZATION_AMERICA' AND 
 DELETE FROM StartBiasTerrains WHERE CivilizationType='CIVILIZATION_GREECE' AND TerrainType IN ('TERRAIN_TUNDRA_HILLS', 'TERRAIN_DESERT_HILLS');
 DELETE FROM StartBiasTerrains WHERE CivilizationType='CIVILIZATION_NUBIA' AND TerrainType IN ('TERRAIN_DESERT_HILLS', 'TERRAIN_DESERT');
 DELETE FROM StartBiasTerrains WHERE CivilizationType='CIVILIZATION_ETHIOPIA' AND TerrainType IN ('TERRAIN_TUNDRA_HILLS', 'TERRAIN_DESERT_HILLS');
+-- Scythia : plains and grass biases are obsolete (standard terrains are handled by the spawn balancing), keep only horses / sheep / cattle
+DELETE FROM StartBiasTerrains WHERE CivilizationType='CIVILIZATION_SCYTHIA' AND TerrainType IN ('TERRAIN_GRASS', 'TERRAIN_PLAINS');

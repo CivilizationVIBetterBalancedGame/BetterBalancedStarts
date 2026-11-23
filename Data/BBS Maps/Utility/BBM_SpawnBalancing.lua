@@ -47,6 +47,8 @@ function SpawnBalancing.new(hex, hexMap, civ)
     instance.MaxHighYieldInnerRingThreshold = 1;
     instance.MaxHighYieldR3Threshold = 2;
     instance.Min22TilesInRing2 = 3;
+    -- When true, a terraformation removing a tile wanted by the civ biases (or adding a negative bias) is cancelled
+    instance.ProtectBiases = false;
     instance.IsBCYActivated = isBCYActivated()
     _Debug("Init SpawnBalancing")
 
@@ -1656,13 +1658,119 @@ end
 -- @param id is the corresponding resource/feature/terrain to apply (some terraformType do not use this)
 -- @param forced is a boolean to change the tile even if it do not meet all conditions (some terraformType do not use this)
 function SpawnBalancing:TerraformHex(hex, ring, terraformType, id, forced, boolParam)
-    if hex.IsNaturalWonder == false and hex.IsTaggedAsMinimum == false and self:Terraform(hex, terraformType, id, forced, boolParam) then
-        self:FillTableRing(ring)
-        --self:UpdateTableDataRing(hex, ring);
-        table.insert(self.TerraformedTiles, hex);
-        return hex;
+    if hex.IsNaturalWonder == false and hex.IsTaggedAsMinimum == false then
+        local snapshot = nil;
+        if self.ProtectBiases then
+            snapshot = { Terrain = hex.TerrainType, Feature = hex.FeatureType, Resource = hex.ResourceType };
+        end
+        local terraformed = self:Terraform(hex, terraformType, id, forced, boolParam);
+        -- Bias protection : also checked on failure, some methods change the tile before failing
+        if snapshot ~= nil then
+            local lostBias = self:GetLostBias(hex, snapshot);
+            if lostBias ~= nil then
+                self:RestoreHexSnapshot(hex, snapshot);
+                return nil;
+            end
+        end
+        if terraformed then
+            self:FillTableRing(ring)
+            --self:UpdateTableDataRing(hex, ring);
+            table.insert(self.TerraformedTiles, hex);
+            return hex;
+        end
     end
     return nil;
+end
+
+-- Name of a terrain/feature/resource index for logs
+local function GetBiasValueName(biasType, value)
+    local ok, name = pcall(function()
+        if biasType == "TERRAINS" or biasType == "NEGATIVE_TERRAINS" then
+            return GameInfo.Terrains[value].TerrainType;
+        elseif biasType == "FEATURES" or biasType == "NEGATIVE_FEATURES" then
+            return GameInfo.Features[value].FeatureType;
+        elseif biasType == "RESOURCES" or biasType == "NEGATIVE_RESOURCES" then
+            return GameInfo.Resources[value].ResourceType;
+        end
+    end)
+    if ok and name ~= nil then
+        return name;
+    end
+    return tostring(value);
+end
+
+-- Compare a tile with its state before terraformation : return a description if a civ bias is lost (or a negative bias added), nil otherwise
+-- Hills biases only care about hills (grass hills <-> plains hills is fine), floodplains variants count as one
+function SpawnBalancing:GetLostBias(hex, snapshot)
+    if self.Civ == nil or self.Civ.CivilizationBiases == nil then
+        return nil;
+    end
+    for _, bias in pairs(self.Civ.CivilizationBiases) do
+        local lost = false;
+        if bias.Type == "FEATURES" then
+            if IsFloodplains(bias.Value, true) then
+                lost = IsFloodplains(snapshot.Feature, true) and not IsFloodplains(hex.FeatureType, true);
+            else
+                lost = snapshot.Feature == bias.Value and hex.FeatureType ~= bias.Value;
+            end
+        elseif bias.Type == "RESOURCES" then
+            lost = snapshot.Resource == bias.Value and hex.ResourceType ~= bias.Value;
+        elseif bias.Type == "TERRAINS" and bias.Value ~= g_TERRAIN_TYPE_COAST then
+            -- Mountains first : IsPlainLand / IsGrassLand also include mountains, a mountain bias must not block plains <-> grass changes
+            if IsMountain(bias.Value) then
+                lost = IsMountain(snapshot.Terrain) and not IsMountain(hex.TerrainType);
+            elseif IsHill(bias.Value) then
+                lost = IsHill(snapshot.Terrain) and not IsHill(hex.TerrainType);
+            elseif IsPlainLand(bias.Value) then
+                lost = IsPlainLand(snapshot.Terrain) and not IsPlainLand(hex.TerrainType);
+            elseif IsGrassLand(bias.Value) then
+                lost = IsGrassLand(snapshot.Terrain) and not IsGrassLand(hex.TerrainType);
+            elseif IsDesertLand(bias.Value) then
+                lost = IsDesertLand(snapshot.Terrain) and not IsDesertLand(hex.TerrainType);
+            elseif IsTundraLand(bias.Value) then
+                lost = IsTundraLand(snapshot.Terrain) and not IsTundraLand(hex.TerrainType);
+            elseif IsSnowLand(bias.Value) then
+                lost = IsSnowLand(snapshot.Terrain) and not IsSnowLand(hex.TerrainType);
+            end
+        elseif bias.Type == "NEGATIVE_FEATURES" then
+            if IsFloodplains(bias.Value, true) then
+                lost = IsFloodplains(hex.FeatureType, true) and not IsFloodplains(snapshot.Feature, true);
+            else
+                lost = hex.FeatureType == bias.Value and snapshot.Feature ~= bias.Value;
+            end
+        elseif bias.Type == "NEGATIVE_RESOURCES" then
+            lost = hex.ResourceType == bias.Value and snapshot.Resource ~= bias.Value;
+        elseif bias.Type == "NEGATIVE_TERRAINS" then
+            lost = hex.TerrainType == bias.Value and snapshot.Terrain ~= bias.Value;
+        end
+        if lost then
+            return bias.Type.." "..GetBiasValueName(bias.Type, bias.Value).." T"..tostring(bias.Tier);
+        end
+    end
+    return nil;
+end
+
+-- Put back terrain, feature and resource saved before a terraformation (direct engine calls : no side terraforming)
+function SpawnBalancing:RestoreHexSnapshot(hex, snapshot)
+    if hex.TerrainType ~= snapshot.Terrain then
+        TerrainBuilder.SetTerrainType(hex.Plot, snapshot.Terrain);
+        hex.TerrainType = snapshot.Terrain;
+    end
+    if hex.FeatureType ~= snapshot.Feature then
+        self.HexMap:RemoveMapFeatures(hex);
+        TerrainBuilder.SetFeatureType(hex.Plot, snapshot.Feature);
+        hex.FeatureType = snapshot.Feature;
+        self.HexMap:InsertMapFeatures(hex);
+    end
+    if hex.ResourceType ~= snapshot.Resource then
+        ResourceBuilder.SetResourceType(hex.Plot, g_RESOURCE_NONE);
+        if snapshot.Resource ~= g_RESOURCE_NONE then
+            ResourceBuilder.SetResourceType(hex.Plot, snapshot.Resource, 1);
+        end
+        hex.ResourceType = snapshot.Resource;
+        hex.HexResource = HexResource.new(snapshot.Resource);
+    end
+    hex:UpdateYields();
 end
 
 
@@ -1906,6 +2014,8 @@ function BalanceAllCivYields(spawns)
         local unworkableYieldMargin = 2;
         local allowedChanges = 0;
         local tries = 0;
+        -- Do not remove tiles wanted by the civ biases while balancing yields
+        spawn.ProtectBiases = true;
         while allowedChanges < 20 and tries < 10 do
             if spawn:BalanceToMean(yieldMargin, standardMargin, unworkableYieldMargin) then
                 allowedChanges = allowedChanges + 1;
@@ -1915,6 +2025,7 @@ function BalanceAllCivYields(spawns)
                 tries = tries + 1;
             end
         end
+        spawn.ProtectBiases = false;
         -- Last calculations post balance
         spawn:GetInnerRingWorkable();
         spawn.StandardDiff = #spawn.InnerRingStd + #spawn.InnerRingHigh - MeansBalancing.MeanInnerStandardYields;
