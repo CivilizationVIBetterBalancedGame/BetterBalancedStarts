@@ -33,6 +33,12 @@
         </Replace>
 	
 		<!-- === KARTENGRÖßEN === -->
+		<Replace Tag="LOC_MAPSIZE_HUGE_NAME" Language="de_DE">
+			<Text>Riesig</Text>
+		</Replace>
+		<Replace Tag="LOC_MAPSIZE_HUGE_DESCRIPTION" Language="de_DE">
+			<Text>Riesige Kartengröße für 12 Spieler</Text>
+		</Replace>
 		<Replace Tag="LOC_MAPSIZE_ENORMOUS_NAME" Language="de_DE">
 			<Text>Enorm</Text>
 		</Replace>
@@ -458,6 +464,12 @@
 		</Replace>
 		<Replace Tag="BBM_Team_Spawn_NS_DESC" Language="de_DE">
 			<Text>Für 2v2 oder 4v4: Spieler desselben Teams starten mit größerer Wahrscheinlichkeit gemeinsam im Norden oder im Süden.</Text>
+		</Replace>
+		<Replace Tag="BBM_Team_Spawn_TEAMS_NAME" Language="de_DE">
+			<Text>Teammitglieder in der Nähe</Text>
+		</Replace>
+		<Replace Tag="BBM_Team_Spawn_TEAMS_DESC" Language="de_DE">
+			<Text>Teams mit 2 oder mehr Spielern (z.B.: 2v2v2v2v2, 3v3, 4v4): Jeder Spieler startet in der Nähe seiner Teammitglieder.</Text>
 		</Replace>
 		
 		
