@@ -1,4 +1,4 @@
-<?xml version="1.0" frcoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <GameData>
 	<LocalizedText>
 	
@@ -13,6 +13,18 @@
         </Replace>
         <Replace Tag="LOC_MAP_PANGAEA_ULTIMA_DESCRIPTION" Language="fr_FR">
             <Text>Une pangée plus grande avec plus de terre</Text>
+        </Replace>
+		<Replace Tag="LOC_MAP_RICH_RIVERLANDS_NAME" Language="fr_FR">
+            <Text>Rich Riverlands</Text>
+        </Replace>
+        <Replace Tag="LOC_MAP_RICH_RIVERLANDS_DESCRIPTION" Language="fr_FR">
+            <Text>Highlands, avec plus de fleuves, lacs et ressources. Chaque taille de carte utilise une grille d'un cran plus petite, pour un paysage plus dense et plus disputé.</Text>
+        </Replace>
+		<Replace Tag="LOC_MAP_RICH_HIGHLANDS_NAME" Language="fr_FR">
+            <Text>Rich Highlands</Text>
+        </Replace>
+        <Replace Tag="LOC_MAP_RICH_HIGHLANDS_DESCRIPTION" Language="fr_FR">
+            <Text>Highlands, avec plus de ressources</Text>
         </Replace>
 		<!-- === SETTINGS - PARAMÈTRES	=== -->
 		<!-- = Map Sizes = -->
@@ -370,6 +382,12 @@
 		</Replace>
 		<Replace Tag="BBM_Team_Spawn_EW_DESC" Language="fr_FR">
 			<Text>Les joueurs de la même équipe sont beaucoup plus susceptibles d'apparaître à l'Est ou à l'Ouest.</Text>
+		</Replace>
+		<Replace Tag="BBM_Team_Spawn_TEAMS_NAME" Language="fr_FR">
+			<Text>Équipes rapprochées</Text>
+		</Replace>
+		<Replace Tag="BBM_Team_Spawn_TEAMS_DESC" Language="fr_FR">
+			<Text>Équipes de 2 joueurs ou plus (ex. 2v2v2v2v2, 3v3, 4v4) : chaque joueur apparaît près de ses coéquipiers.</Text>
 		</Replace>
 		<Replace Tag="BBM_Team_Spawn_NS_NAME" Language="fr_FR">
 			<Text>Nord contre Sud</Text>

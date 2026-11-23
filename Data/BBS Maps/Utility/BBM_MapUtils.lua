@@ -297,6 +297,7 @@ g_PASSABLE_LAND = "PassableLand";
 
 TeamerConfigStandard = "Standard";
 TeamerConfigEastVsWest = "EastVsWest";
+TeamerConfigCloseTeams = "CloseTeams";
 EastTeam = "East";
 WestTeam = "West";
 Quadrant_NW = "North-West"
@@ -865,6 +866,16 @@ function HexMap.new(_width, _height, mapScript)
     instance.RTSPangaeaTeamerConfigWarMax = math.floor(_width * 0.13 + 0.5); -- on 4v4 = +-11 from middle
     instance.RTSPangaeaTeamerConfigWarMaxTundra = math.floor(_width * 0.18 + 0.5); -- on 4v4 = +-15 from middle
     instance.RTSPangaeaTeamerConfigSimMin = math.floor(_width * 0.2 + 0.5); -- on 4v4 = +-17 from middle
+    -- Close teams: hard band for a new teammate is ]minimumDistance, minimumDistance + CloseTeamStep].
+    -- Spawn blocking covers rings 0 to the minimum distance, so the first usable ring is minimum + 1.
+    -- The band is measured against at least one already placed teammate, which allows chain layouts.
+    -- When no bias-valid tile is left in the band, the window is widened once by CloseTeamWidenStep
+    -- and never again: the next failure drops the rule and falls back on technical valid tiles.
+    instance.CloseTeamStep = 3;
+    instance.CloseTeamWidenStep = 3;
+    instance.CloseTeamMalusAvg = 5;
+    instance.CloseTeamMalusFar = 15;
+    instance.CloseTeamWindow = {};
     -- Put maps parameters here ? (world age, temperature, rainfall etc)
     -- BBM Mountains change = recalculate areas
     AreaBuilder.Recalculate();
@@ -884,8 +895,10 @@ function HexMap:SetMinimumDistanceMajorToMajorCivs()
         or self.mapScript == MapScripts.MAP_RICH_HIGHLANDS then
             return 15;
         elseif self.mapScript == MapScripts.MAP_RICH_RIVERLANDS then
-            -- Small uses a Tiny grid (60x38) so needs a reduced distance.
-            if Map.GetMapSize() <= 1 then return 11; end
+            -- Duel keeps its default grid, which is too small for 14. Tiny and Small use enlarged grids (see rich_riverlands.lua).
+            -- Tiny is only 34 rows tall and starts must avoid tundra, so Tiny and Small get 13.
+            if Map.GetMapSize() == 0 then return 11; end
+            if Map.GetMapSize() <= 2 then return 13; end
             return 14;
         elseif self.mapScript == MapScripts.MAP_INLAND_SEA 
         or self.mapScript == MapScripts.MAP_PANGAEA_ULTIMA then
@@ -1156,8 +1169,13 @@ function HexMap:ComputeResourcesScore(hex)
 
 end
 
+-- Jungle bias : jungle close to the spawn matters more than far away jungle
+-- Weight per ring (spawn tile excluded, settling removes it)
+JungleRingWeights = { 3, 3, 2, 0.5, 0.5, 0.5 };
+
 function HexMap:ComputeFeaturesScore(hex)
     hex.FeaturesScore = {}
+    hex.JungleWeightedScore = 0
     local mapRing6 = hex.AllRing6Map
     for i = 1, #mapRing6 do
         local ring = mapRing6[i]
@@ -1167,6 +1185,9 @@ function HexMap:ComputeFeaturesScore(hex)
                 local score = hex.FeaturesScore[h.FeatureType] or 0 --init
                 score = score + 1
                 hex.FeaturesScore[h.FeatureType] = score
+                if h.FeatureType == g_FEATURE_JUNGLE then
+                    hex.JungleWeightedScore = hex.JungleWeightedScore + (JungleRingWeights[i] or 0)
+                end
             end
         end
     end
@@ -2432,21 +2453,19 @@ function HexMap:HasTerraformTo4YieldsRequirements(hex)
 end
 
 function HexMap:TerraformTo4YieldsTundra(hex, garanteed22)
-    -- 4yields considered as 1/2 or 1/3
+    -- 4yields considered as 1/2 only (tundra food counts +1, so 1/2 = 2/2)
+    -- Never produce hills + forest + deer : it is a 1/3 (= 2/3), counted as a high yield tile
     -- Possible resources (lux excluded) are sheep, deer, copper
     _Debug("Enter TerraformTo4YieldsTundra ", hex:PrintXY())
     if garanteed22 then
-        -- Default will be deer with hill/forest or both
+        -- Default will be deer with hill or forest (never both : 1/3 is a high yield)
         self:TerraformSetTerrain(hex, g_TERRAIN_TYPE_TUNDRA);
         self:TerraformSetFeature(hex, g_FEATURE_NONE, true);
         self:TerraformSetResource(hex, g_RESOURCE_DEER, true);
         local rng = TerrainBuilder.GetRandomNumber(100, "Random yields");
-        if rng <= 45 then
+        if rng <= 50 then
             return self:TerraformSetTerrain(hex, g_TERRAIN_TYPE_TUNDRA_HILLS);
-        elseif rng <= 75 then
-            return self:TerraformSetFeature(hex, g_FEATURE_FOREST, true);
         else
-            self:TerraformSetTerrain(hex, g_TERRAIN_TYPE_TUNDRA_HILLS);
             return self:TerraformSetFeature(hex, g_FEATURE_FOREST, true);
         end
     end
@@ -2454,6 +2473,9 @@ function HexMap:TerraformTo4YieldsTundra(hex, garanteed22)
         return false;
     end
     local rng = TerrainBuilder.GetRandomNumber(100, "Random resource");
+    -- Start from an empty tile : an existing forest or deer would end as hills + forest + deer (1/3, high yield)
+    self:TerraformSetFeature(hex, g_FEATURE_NONE, true);
+    self:TerraformSetResource(hex, g_RESOURCE_NONE, true);
     _Debug("TerraformTo4YieldsTundra - added hills ", hex:PrintXY());
     self:TerraformSetTerrain(hex, g_TERRAIN_TYPE_TUNDRA_HILLS);
     if rng <= 25 then
@@ -2513,7 +2535,8 @@ function HexMap:TerraformAdd1Food(hex, canMinusProd, canExtraYield)
         if hex.ResourceType == g_RESOURCE_MAIZE or hex.ResourceType == g_RESOURCE_COPPER then
             self:TerraformSetResource(hex, g_RESOURCE_NONE, false);
         elseif hex.Food + hex.Prod == 3 and g_RESOURCES_BONUS_LIST[hex.ResourceType] then
-            self:TerraformTo22Yields(hex, true);
+            -- 3 yields bonus tile to 2/2 : stop here, do not add food again on the new tile
+            return self:TerraformTo22Yields(hex, true);
         else
             return false;
         end
@@ -2568,8 +2591,13 @@ function HexMap:TerraformAdd1FoodOnFeatureHex(hex, canMinusProd, canExtraYield)
         --end
     -- JUNGLE
     elseif hex.FeatureType == g_FEATURE_JUNGLE then
-        _Debug("TerraformAdd1FoodOnFeatureHex added bananas")
-        return self:TerraformSetResource(hex, g_RESOURCE_BANANAS, false)
+        -- Bananas on hills jungle make a high yield tile (2/2 -> 3/2) : only allowed with canExtraYield
+        -- Otherwise only on flat jungle (2/1 -> 3/1)
+        if canExtraYield or IsFlat(hex.TerrainType) then
+            _Debug("TerraformAdd1FoodOnFeatureHex added bananas")
+            return self:TerraformSetResource(hex, g_RESOURCE_BANANAS, false)
+        end
+        return false;
     -- FOREST
     elseif hex.FeatureType == g_FEATURE_FOREST then
         if canMinusProd and IsPlainLand(hex.TerrainType) then
@@ -2632,7 +2660,7 @@ function HexMap:Terraform4YieldsToHighYields(hex, canChangeResource, canAddLux)
             _Debug("Terraform4YieldsToHighYields Added a lux from standard ", hex.ResourceType)
             return true;
         end
-        if canChangeResource and (hex.ResourceType ~= g_RESOURCE_NONE and g_RESOURCES_LUX_LIST[hex.ResourceType] == false and g_RESOURCES_STRATEGICS[hex.ResourceType] == false) then
+        if canChangeResource and (hex.ResourceType ~= g_RESOURCE_NONE and not g_RESOURCES_LUX_LIST[hex.ResourceType] and not g_RESOURCES_STRATEGICS[hex.ResourceType]) then
             -- Stone, Sheep
             if hex.ResourceType ~= g_RESOURCE_BANANAS and hex.ResourceType ~= g_RESOURCE_DEER then
                 _Debug("Terraform4YieldsToHighYields Resource cleared", hex.ResourceType);
@@ -3667,6 +3695,9 @@ function even(test)
 end
 
 function HexMap:GetTeamerPositionConfig() 
+    if MapConfiguration.GetValue("BBM_Team_Spawn") == 2 then
+        return TeamerConfigCloseTeams;
+    end
     if MapConfiguration.GetValue("BBM_Team_Spawn") ~= nil and Is1v1OrTeamerConfig() then
         local Teamers_Config = MapConfiguration.GetValue("BBM_Team_Spawn");
         _Debug("GetTeamerPositionConfig : ", Teamers_Config)
@@ -4451,6 +4482,7 @@ end
 local function BBM_BuildLuxCandidates(startPlot, rMin, rMax, contTypes, luxByIdx, iW, iH)
     local sx      = startPlot:GetX();
     local sy      = startPlot:GetY();
+    local contID  = startPlot:GetContinentType(); -- candidates must stay on the start plot continent (contTypes come from it)
     local cands   = {};
     local typeArr = {};
     for ri, _ in pairs(contTypes) do table.insert(typeArr, ri); end
@@ -4463,7 +4495,7 @@ local function BBM_BuildLuxCandidates(startPlot, rMin, rMax, contTypes, luxByIdx
                 local dist = Map.GetPlotDistance(sx, sy, nx, ny);
                 if dist >= rMin and dist <= rMax then
                     local plot = Map.GetPlot(nx, ny);
-                    if plot and not plot:IsWater() and plot:GetResourceType() < 0 then
+                    if plot and not plot:IsWater() and plot:GetResourceType() < 0 and plot:GetContinentType() == contID then
                         typeArr = GetShuffledCopyOfTable(typeArr);
                         for _, ri in ipairs(typeArr) do
                             local info = luxByIdx[ri];
