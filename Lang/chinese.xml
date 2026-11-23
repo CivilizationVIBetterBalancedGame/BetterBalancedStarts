@@ -150,7 +150,7 @@
 			<Text>标准</Text>
 		</Replace>
 		<Replace Tag="BBM_MIN_DISTANCE_AUTO_DESC" Language="zh_Hans_CN">
-			<Text>标准距离，取决于地图尺寸</Text>
+			<Text>标准距离，取决于地图类型</Text>
 		</Replace>
 		<Replace Tag="BBM_MIN_DISTANCE_SIX_NAME" Language="zh_Hans_CN">
 			<Text>6</Text>
@@ -387,6 +387,12 @@
 		<Replace Tag="BBM_Team_Spawn_EW_DESC" Language="zh_Hans_CN">
 			<Text>同一队伍的文明很大概率共同位于东侧或西侧。</Text>
 		</Replace>
+		<Replace Tag="BBM_Team_Spawn_TEAMS_NAME" Language="zh_Hans_CN">
+			<Text>队友聚集</Text>
+		</Replace>
+		<Replace Tag="BBM_Team_Spawn_TEAMS_DESC" Language="zh_Hans_CN">
+			<Text>2人或以上的队伍（如2v2v2v2v2、3v3、4v4）：每位玩家出生在队友附近。</Text>
+		</Replace>
 		<Replace Tag="BBM_Team_Spawn_NS_NAME" Language="zh_Hans_CN">
 			<Text>南北对战</Text>
 		</Replace>
@@ -497,7 +503,7 @@
 			<Text>拉克伊斯·马拉赫塞斯国家公园</Text>
 		</Replace>
 		<Replace Tag="LOC_FEATURE_LENCOIS_MARANHENSES_DESCRIPTION" Language="zh_Hans_CN">
-			<Text>占2个单元格的自然奇观。提供+2 [ICON_FOOD] 食物、+2 [ICON_GOLD] 金币和+2 [ICON_CULTURE] 文化值。若文明拥有至少一个该奇观单元格，则所有沙漠和草原泛滥平原单元格+1 [ICON_CULTURE] 文化值。提供淡水。</Text>
+			<Text>占2个单元格的自然奇观。提供+2 [ICON_FOOD] 食物、+2 [ICON_GOLD] 金币和+2 [ICON_CULTURE] 文化值。若文明拥有至少一个该奇观单元格，则所有沙漠和平原泛滥平原单元格+1 [ICON_CULTURE] 文化值。提供淡水。</Text>
 		</Replace>
 		<Replace Tag="LOC_FEATURE_LENCOIS_MARANHENSES_QUOTE" Language="zh_Hans_CN">
 			<Text>“我看到了白色和金色沙子的草地，它们的形状随着风的创造心情和突发奇想而不断变化。”[NEWLINE]——吉尔特·毛里西奥·巴斯</Text>
@@ -510,7 +516,7 @@
 			<Text>喀拉喀托火山</Text>
 		</Replace>
 		<Replace Tag="LOC_FEATURE_KRAKATOA_DESCRIPTION" Language="zh_Hans_CN">
-			<Text>占1个单元格的自然奇观，无法通行，表现为火山。为相邻单元格提供+2 [ICON_SCIENCE] 科技值。喷发时为相邻单元格提供产出，但会造成 [ICON_Citizen] 人口减少。始终处于活跃状态。</Text>
+			<Text>占1个单元格的自然奇观，无法通行，表现为火山。为相邻单元格提供+2 [ICON_SCIENCE] 科技值。喷发时为相邻单元格提供产出，但会造成 [ICON_Citizen] 人口减少并损坏改良设施。始终处于活跃状态。</Text>
 		</Replace>
 		<Replace Tag="LOC_FEATURE_KRAKATOA_QUOTE" Language="zh_Hans_CN">
 			<Text>“我惊奇地看到喀拉喀托火山岛完全焚毁，变得荒芜，同时从四个地方喷出巨大的火块。”[NEWLINE]——约翰·威廉·沃格尔</Text>
@@ -560,7 +566,7 @@
 			<Text>"我相信南非是世界上最美丽的地方。诚然，我有偏见，但我认为即使是最谨慎的批评者也会同意我们拥有一片真正美妙的土地。"[NEWLINE]——尼尔森·曼德拉</Text>
 		</Replace>
 		<Replace Tag="LOC_PEDIA_FEATURES_PAGE_FEATURE_MOTLATSE_CANYON_CHAPTER_HISTORY_PARA_1" Language="zh_Hans_CN">
-			<Text>布莱德河峡谷是南非的一处重要自然景观，位于姆普马兰加省，是德拉肯斯山山脉山脉边缘的北部组成部分。它位于布莱德河峡谷自然保护区，全长25公里，平均深度约750米，拥有地球上所有峡谷中最陡峭的悬崖之一。</Text>
+			<Text>布莱德河峡谷是南非的一处重要自然景观，位于姆普马兰加省，是德拉肯斯山脉边缘的北部组成部分。它位于布莱德河峡谷自然保护区，全长25公里，平均深度约750米，拥有地球上所有峡谷中最陡峭的悬崖之一。</Text>
 		</Replace>
 		<Replace Tag="LOC_PEDIA_FEATURES_PAGE_FEATURE_MOTLATSE_CANYON_CHAPTER_HISTORY_PARA_2" Language="zh_Hans_CN">
 			<Text>虽然很难将全球的峡谷进行比较，不过布莱德河峡谷是地球上最大的峡谷之一，由于其茂密的亚热带植被，它可能是最大的绿色峡谷。这里支持着极其丰富的动植物多样性，包括众多鱼类和羚羊物种，以及河马、鳄鱼和南非所有灵长类动物，使其成为非常受欢迎的旅游地区。</Text>
@@ -608,7 +614,7 @@
 			<Text>“它在我们逗留期间以规律的间隔喷发了九次，每次喷发时热水柱被喷出的高度在90至125英尺之间，每次持续时间为15至20分钟。我们给它取名为“老实泉”。”[NEWLINE]——纳撒尼尔·P·朗福德</Text>
 		</Replace>
 		<Replace Tag="LOC_PEDIA_FEATURES_PAGE_FEATURE_OLD_FAITHFUL_CHAPTER_HISTORY_PARA_1" Language="zh_Hans_CN">
-			<Text>"老实泉"是位于美国怀俄明州黄石国家公园内的一座间歇泉。它于1870年被欧洲人首次发现（而当地原住民早在一万年前就已经发现了这个景观），因其喷发的规律性而得名。该泉每隔60-90分钟就会喷发一次，将一柱热水喷射到约30-50米（100-175英尺）的高度（间隔时间取决于前一次喷发的猛烈程度）。间歇泉是由于地下水与岩浆（熔岩）相遇而产生的。水瞬间被转化为蒸汽，以极高的压力冲出最近的可用开口。老忠实泉和黄石国家公园内的其他250个间歇泉每年吸引着约300万游客的到来。</Text>
+			<Text>"老实泉"是位于美国怀俄明州黄石国家公园内的一座间歇泉。它于1870年被欧洲人首次发现（而当地原住民早在一万年前就已经发现了这个景观），因其喷发的规律性而得名。该泉每隔60-90分钟就会喷发一次，将一柱热水喷射到约30-50米（100-175英尺）的高度（间隔时间取决于前一次喷发的猛烈程度）。间歇泉是由于地下水与岩浆（熔岩）相遇而产生的。水瞬间被转化为蒸汽，以极高的压力冲出最近的可用开口。老实泉和黄石国家公园内的其他250个间歇泉每年吸引着约300万游客的到来。</Text>
 		</Replace>
 		<Replace Tag="LOC_DISTRICT_OLD_FAITHFUL_SCIENCE" Language="zh_Hans_CN">
 			<Text>相邻老实泉：+{1_num} [ICON_SCIENCE] 科技值。</Text>
@@ -729,7 +735,7 @@
 			<Text>奢侈品密度保障</Text>
 		</Replace>
 		<Replace Tag="LOC_BBM_LUX_EXP1_DESC" Language="zh_Hans_CN">
-			<Text>确保每位玩家在其首都6格范围内至少拥有7个奢侈品资源。低于此下限的玩家将在附近获得适合其大陆的额外奢侈品资源。高楼层玩家不受影响。适用于所有地图。</Text>
+			<Text>确保每位玩家在其首都6格范围内至少拥有7个奢侈品资源。低于此下限的玩家将在附近获得适合其大陆的额外奢侈品资源。达到此下限的玩家不受影响。适用于所有地图。</Text>
 		</Replace>
 		<Replace Tag="LOC_MAP_WRAPAROUND_NAME" Language="zh_Hans_CN">
 			<Text>环球</Text>
