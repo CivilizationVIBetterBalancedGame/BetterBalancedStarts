@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<GameData>
+	<LocalizedText>
+		<!-- === MAPS === -->
+		<Replace Tag="LOC_MAP_RICH_HIGHLANDS_NAME" Language="it_IT">
+			<Text>Altopiani ricchi</Text>
+		</Replace>
+		<Replace Tag="LOC_MAP_RICH_HIGHLANDS_DESCRIPTION" Language="it_IT">
+			<Text>Altopiani, con più risorse</Text>
+		</Replace>
+		<Replace Tag="LOC_MAP_RICH_RIVERLANDS_NAME" Language="it_IT">
+			<Text>Terre fluviali ricche</Text>
+		</Replace>
+		<Replace Tag="LOC_MAP_RICH_RIVERLANDS_DESCRIPTION" Language="it_IT">
+			<Text>Altopiani ricchi di fiumi, laghi e risorse. Ogni dimensione della mappa usa una griglia di un livello più piccola, per un territorio più denso e conteso.</Text>
+		</Replace>
+		<Replace Tag="LOC_MAP_PANGAEA_ULTIMA_NAME" Language="it_IT">
+			<Text>Pangea Ultima</Text>
+		</Replace>
+		<Replace Tag="LOC_MAP_PANGAEA_ULTIMA_DESCRIPTION" Language="it_IT">
+			<Text>Una mappa Pangea più grande, con più terra utilizzabile</Text>
+		</Replace>
+	</LocalizedText>
+</GameData>

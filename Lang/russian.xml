@@ -8,7 +8,7 @@
 		
 	<!-- Maps -->
 	<Replace Tag="LOC_MAP_RICH_HIGHLANDS_NAME" Language="ru_RU">
-        <Text>Rich Highlands</Text>
+        <Text>Богатые нагорья</Text>
     </Replace>
     <Replace Tag="LOC_MAP_RICH_HIGHLANDS_DESCRIPTION" Language="ru_RU">
         <Text>Карта с большим количеством холмов, гор, и ресурсов.</Text>
@@ -710,6 +710,16 @@
         <Replace Tag="LOC_BBM_BREAK_DESERT_DESC" Language="ru_RU">
             <Text>НЕ ИСПОЛЬЗУЙТЕ, ЕСЛИ В ИГРЕ ЕСТЬ МАЛИ. Разбивает крупные сплошные пустынные области на небольшие разрозненные участки. Клетки пустыни, имеющие 3 и более соседних пустынных клетки, превращаются в равнины, чтобы игроки не начинали игру рядом с непригодной для заселения пустыней, при этом небольшие пустынные участки сохраняются для появления чудес природы.</Text>
         </Replace>
+		<!-- === BBM MAP NAMES (missing translations) === -->
+		<Replace Tag="LOC_MAP_RICH_RIVERLANDS_NAME" Language="ru_RU">
+			<Text>Богатые речные земли</Text>
+		</Replace>
+		<Replace Tag="LOC_MAP_RICH_RIVERLANDS_DESCRIPTION" Language="ru_RU">
+			<Text>Нагорья с обилием рек, озёр и ресурсов. Каждый размер карты использует сетку на ступень меньше — для более плотного и напряжённого ландшафта.</Text>
+		</Replace>
+		<Replace Tag="LOC_MAP_PANGAEA_ULTIMA_NAME" Language="ru_RU">
+			<Text>Пангея Ультима</Text>
+		</Replace>
         </LocalizedText>
 
 </GameData>

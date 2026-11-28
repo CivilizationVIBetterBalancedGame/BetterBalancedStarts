@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<GameData>
+	<LocalizedText>
+		<!-- === MAPS === -->
+		<Replace Tag="LOC_MAP_RICH_HIGHLANDS_NAME" Language="pl_PL">
+			<Text>Bogate wyżyny</Text>
+		</Replace>
+		<Replace Tag="LOC_MAP_RICH_HIGHLANDS_DESCRIPTION" Language="pl_PL">
+			<Text>Wyżyny z większą ilością surowców</Text>
+		</Replace>
+		<Replace Tag="LOC_MAP_RICH_RIVERLANDS_NAME" Language="pl_PL">
+			<Text>Bogate krainy rzeczne</Text>
+		</Replace>
+		<Replace Tag="LOC_MAP_RICH_RIVERLANDS_DESCRIPTION" Language="pl_PL">
+			<Text>Wyżyny pełne rzek, jezior i surowców. Każdy rozmiar mapy używa siatki o jeden stopień mniejszej, co daje gęstszy i bardziej sporny teren.</Text>
+		</Replace>
+		<Replace Tag="LOC_MAP_PANGAEA_ULTIMA_NAME" Language="pl_PL">
+			<Text>Pangea Ultima</Text>
+		</Replace>
+		<Replace Tag="LOC_MAP_PANGAEA_ULTIMA_DESCRIPTION" Language="pl_PL">
+			<Text>Większa mapa Pangei z większą ilością użytecznego lądu</Text>
+		</Replace>
+	</LocalizedText>
+</GameData>
