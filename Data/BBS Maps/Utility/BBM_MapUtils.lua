@@ -884,7 +884,7 @@ function HexMap.new(_width, _height, mapScript)
 end
 
 function HexMap:CanCircumnavigate()
-    return self.mapScript ~= MapScripts.MAP_INLAND_SEA and self.mapScript ~= MapScripts.MAP_TILTED_AXIS;
+    return Map:IsWrapX();
 end
 
 function HexMap:SetMinimumDistanceMajorToMajorCivs()
